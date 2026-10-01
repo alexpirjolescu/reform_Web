@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<title>re_form — panou de știri (A, dark studio)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&amp;family=Lexend:wght@300;400;500&amp;display=swap">
+<style>
+body{margin:0;background:#221f20}
+a{color:#ffffff;text-decoration:none}a:hover{color:#77bfb2}
+button,input,select{font-family:'Lexend',sans-serif}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #221f20; color: #ffffff; font-family: 'Lexend', sans-serif">
+
+<header style="max-width: 1200px; margin: 0 auto; padding: 28px 40px; display: flex; align-items: center; gap: 40px; flex-wrap: wrap">
+<a href="#" aria-label="re_form ed, acasă" style="display: flex"><img src="../logos/logo-ed-white.png" alt="re_form ed" style="height: 40px; width: auto; display: block"></a>
+<nav aria-label="Navigare principală" style="display: flex; gap: 28px; flex-wrap: wrap; font-size: 15px; flex-grow: 1">
+<a href="#" style="padding-bottom: 6px; border-bottom: 3px solid {{accent}}">activități</a>
+<a href="#" style="padding-bottom: 6px">despre noi</a>
+<a href="#" style="padding-bottom: 6px">școli partenere</a>
+<a href="#" style="padding-bottom: 6px">contact</a>
+</nav>
+<div style="display: flex; align-items: center; gap: 20px">
+<div style="display: flex; gap: 8px; font-size: 13px; color: #bdb9bb"><a href="#" aria-current="true" style="color: #ffffff">ro</a><span aria-hidden="true">/</span><a href="#" style="color: #bdb9bb">en</a></div>
+<a href="#" style="background: {{accent}}; color: #221f20; font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 15px; padding: 12px 20px; border-radius: 2px">intră în cont</a>
+</div>
+</header>
+
+<section style="position: relative; max-width: 1200px; margin: 0 auto; padding: 72px 40px 104px 72px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); gap: 56px; align-items: end; box-sizing: border-box">
+<div>
+<p style="margin: 0 0 24px; font-size: 14px; letter-spacing: 0.06em; color: {{accent}}">_ academie de educație nonformală pentru liceeni</p>
+<h1 style="margin: 0; font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 104px; line-height: 0.92; letter-spacing: -0.03em">învățăm<br>făcând<span aria-hidden="true" style="display: inline-block; width: 0.9em; height: 0.15em; margin-left: 0.1em; background: {{accent}}"></span></h1>
+</div>
+<div>
+<p style="margin: 0 0 32px; font-size: 20px; line-height: 1.6; font-weight: 300; color: #e8e5e6">Creăm contexte reale în care liceenii învață făcând, își descoperă abilitățile și construiesc proiecte cu sens, sprijiniți prin mentorship și o comunitate relevantă.</p>
+<div style="display: flex; gap: 12px; flex-wrap: wrap">
+<a href="#urmeaza" style="background: {{accent}}; color: #221f20; font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 16px; padding: 15px 24px; border-radius: 2px">vezi ce urmează</a>
+<a href="#" style="border: 1px solid #ffffff; font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 2px">despre re_form</a>
+</div>
+</div>
+<span aria-hidden="true" style="position: absolute; left: 24px; bottom: 104px; writing-mode: vertical-rl; transform: rotate(180deg); font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 0.08em">2026</span>
+</section>
+
+<section aria-label="Pe scurt" style="border-top: 1px solid #403c3e; border-bottom: 1px solid #403c3e">
+<div style="max-width: 1200px; margin: 0 auto; padding: 0 40px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); box-sizing: border-box">
+<div style="padding: 28px 0"><div style="font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 40px; color: {{accent}}">[nr]</div><div style="font-size: 14px; color: #bdb9bb">licee partenere</div></div>
+<div style="padding: 28px 0"><div style="font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 40px; color: {{accent}}">[nr]</div><div style="font-size: 14px; color: #bdb9bb">liceeni în echipele core</div></div>
+<div style="padding: 28px 0"><div style="font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 40px; color: {{accent}}">[nr]</div><div style="font-size: 14px; color: #bdb9bb">proiecte în desfășurare</div></div>
+<div style="padding: 28px 0"><div style="font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 40px; color: {{accent}}">[nr]</div><div style="font-size: 14px; color: #bdb9bb">întâlniri anul acesta</div></div>
+</div>
+</section>
+
+<section id="urmeaza" style="max-width: 1200px; margin: 0 auto; padding: 96px 40px 40px; box-sizing: border-box">
+<div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; margin-bottom: 36px">
+<h2 style="margin: 0; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 64px; line-height: 1; letter-spacing: -0.02em; color: {{accent}}">urmează</h2>
+<div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center">
+<div role="group" aria-label="Filtrează după tip" style="display: flex; gap: 8px; flex-wrap: wrap">
+<button type="button" aria-pressed="true" style="font-size: 14px; padding: 10px 16px; border-radius: 999px; border: 1px solid #ffffff; background: #ffffff; color: #221f20; cursor: pointer">toate</button>
+<button type="button" aria-pressed="false" style="font-size: 14px; padding: 10px 16px; border-radius: 999px; border: 1px solid #5a5557; background: transparent; color: #ffffff; cursor: pointer">ateliere</button>
+<button type="button" aria-pressed="false" style="font-size: 14px; padding: 10px 16px; border-radius: 999px; border: 1px solid #5a5557; background: transparent; color: #ffffff; cursor: pointer">întâlniri</button>
+<button type="button" aria-pressed="false" style="font-size: 14px; padding: 10px 16px; border-radius: 999px; border: 1px solid #5a5557; background: transparent; color: #ffffff; cursor: pointer">evenimente</button>
+<button type="button" aria-pressed="false" style="font-size: 14px; padding: 10px 16px; border-radius: 999px; border: 1px solid #5a5557; background: transparent; color: #ffffff; cursor: pointer">prezentări</button>
+</div>
+<label style="display: flex; align-items: center; gap: 8px; font-size: 14px; color: #bdb9bb">liceu
+<select style="font-size: 14px; padding: 10px 12px; background: #2c292a; color: #ffffff; border: 1px solid #5a5557; border-radius: 2px"><option>toate liceele</option><option>[Liceul 1]</option><option>[Liceul 2]</option></select>
+</label>
+</div>
+</div>
+
+<div style="display: flex; gap: 40px; flex-wrap: wrap">
+<article style="flex: 1 1 560px; background: #2c292a; display: flex; flex-direction: column">
+<div style="aspect-ratio: 2 / 1; background: {{accent}}; position: relative; display: flex; align-items: flex-end; padding: 20px; box-sizing: border-box">
+<span aria-hidden="true" style="position: absolute; left: 12%; top: 42%; width: 34%; height: 26px; background: #221f20"></span>
+<span style="font-size: 12px; color: #221f20">[fotografie eveniment]</span>
+</div>
+<div style="padding: 28px 32px 32px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap; font-size: 13px; color: #bdb9bb">
+<span style="display: inline-flex; align-items: center; gap: 8px; color: #ffffff"><span aria-hidden="true" style="width: 10px; height: 10px; background: #79569a"></span>atelier</span>
+<span>joi, 15 octombrie · 16:00</span><span>[Locație]</span>
+</div>
+<h3 style="margin: 0; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 34px; line-height: 1.1">Atelier: vorbitul în public, fără emoții</h3>
+<p style="margin: 0; font-size: 16px; line-height: 1.6; color: #d9d5d7; font-weight: 300">Exersăm cum îți structurezi un mesaj, cum îți folosești vocea și cum răspunzi la întrebări grele. Deschis tuturor echipelor core.</p>
+<a href="#" style="margin-top: 6px; font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 16px; color: {{accent}}">detalii și adaugă în calendar →</a>
+</div>
+</article>
+
+<div style="flex: 1 1 380px; display: flex; flex-direction: column">
+<sc-for list="{{upcoming}}" as="ev" hint-placeholder-count="3">
+<a href="#" style="display: grid; grid-template-columns: 76px 1fr; gap: 20px; padding: 24px 0; border-bottom: 1px solid #403c3e">
+<div><div style="font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 48px; line-height: 1">{{ev.day}}</div><div style="font-size: 14px; color: {{accent}}; margin-top: 4px">{{ev.mon}}</div></div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px"><span aria-hidden="true" style="width: 10px; height: 10px; background: {{ev.color}}"></span>{{ev.cat}}</span>
+<span style="font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 21px; line-height: 1.25">{{ev.title}}</span>
+<span style="font-size: 14px; color: #bdb9bb">{{ev.meta}}</span>
+</div>
+</a>
+</sc-for>
+<a href="#" style="padding-top: 24px; font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 16px; color: {{accent}}">tot calendarul →</a>
+</div>
+</div>
+</section>
+
+<section style="max-width: 1200px; margin: 0 auto; padding: 80px 40px 40px; box-sizing: border-box">
+<div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; margin-bottom: 36px">
+<h2 style="margin: 0; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 64px; line-height: 1; letter-spacing: -0.02em; color: {{accent}}">s-a întâmplat</h2>
+<a href="#" style="font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 16px">toată arhiva →</a>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px">
+<sc-for list="{{past}}" as="p" hint-placeholder-count="3">
+<article style="display: flex; flex-direction: column; gap: 14px">
+<div style="aspect-ratio: 3 / 2; background: {{p.color}}; position: relative; display: flex; align-items: flex-end; padding: 16px; box-sizing: border-box">
+<span aria-hidden="true" style="position: absolute; left: 14%; top: 44%; width: 30%; height: 18px; background: #221f20"></span>
+<span style="font-size: 12px; color: {{p.ink}}">[fotografie]</span>
+</div>
+<div style="display: flex; gap: 14px; font-size: 13px; color: #bdb9bb"><span style="display: inline-flex; align-items: center; gap: 8px; color: #ffffff"><span aria-hidden="true" style="width: 10px; height: 10px; background: {{p.color}}"></span>{{p.cat}}</span><span>{{p.date}}</span></div>
+<h3 style="margin: 0; font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 24px; line-height: 1.2">{{p.title}}</h3>
+<p style="margin: 0; font-size: 15px; line-height: 1.6; color: #d9d5d7; font-weight: 300">{{p.sum}}</p>
+<a href="#" style="font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 15px; color: {{accent}}">citește →</a>
+</article>
+</sc-for>
+</div>
+</section>
+
+<section style="max-width: 1200px; margin: 0 auto; padding: 80px 40px; box-sizing: border-box">
+<div style="background: #2c292a; padding: 40px; display: flex; gap: 32px; align-items: center; justify-content: space-between; flex-wrap: wrap">
+<div>
+<h2 style="margin: 0 0 8px; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 32px">noutățile re_form, o dată pe lună</h2>
+<p style="margin: 0; font-size: 15px; color: #bdb9bb">Pentru părinți, școli, parteneri și oricine vrea să vadă ce construiesc liceenii.</p>
+</div>
+<form style="display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end">
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #bdb9bb">adresa de email
+<input type="email" placeholder="nume@exemplu.ro" style="width: 280px; font-size: 15px; padding: 13px 14px; background: #221f20; color: #ffffff; border: 1px solid #5a5557; border-radius: 2px">
+</label>
+<button type="button" style="font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 15px; padding: 14px 22px; background: {{accent}}; color: #221f20; border: 0; border-radius: 2px; cursor: pointer">abonează-te</button>
+</form>
+</div>
+</section>
+
+<footer style="border-top: 1px solid #403c3e">
+<div style="max-width: 1200px; margin: 0 auto; padding: 48px 40px 56px; display: flex; gap: 48px; flex-wrap: wrap; justify-content: space-between; box-sizing: border-box">
+<div style="display: flex; flex-direction: column; gap: 16px"><img src="../logos/logo-ed-white.png" alt="re_form ed" style="height: 40px; width: auto; align-self: flex-start"><span style="font-size: 13px; color: #bdb9bb">re_form 2026 ©</span></div>
+<nav aria-label="Subsol" style="display: flex; gap: 56px; flex-wrap: wrap; font-size: 14px">
+<div style="display: flex; flex-direction: column; gap: 10px"><span style="color: #bdb9bb">academia</span><a href="#">despre noi</a><a href="#">școli partenere</a><a href="#">echipa</a></div>
+<div style="display: flex; flex-direction: column; gap: 10px"><span style="color: #bdb9bb">contact</span><a href="#">[email]</a><a href="#">[Instagram]</a><a href="#">[Facebook]</a></div>
+<div style="display: flex; flex-direction: column; gap: 10px"><span style="color: #bdb9bb">legal</span><a href="#">confidențialitate</a><a href="#">acordul pentru fotografii</a></div>
+</nav>
+</div>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#77bfb2","options":["#77bfb2","#e1b345","#abca54","#e28ba3"]},"$preview":{"width":1280,"height":2500}}'>
+class Component extends DCLogic {
+renderVals() {
+return {
+accent: this.props.accent ?? '#77bfb2',
+upcoming: [
+{ day: '22', mon: 'oct', cat: 'întâlnire', color: '#e28ba3', title: 'Întâlnire core: planificăm proiectul de semestru', meta: 'joi · 17:00 · [Liceul 2]' },
+{ day: '07', mon: 'nov', cat: 'eveniment', color: '#dd6937', title: 'Hackathon civic de toamnă', meta: 'sâmbătă · 10:00 · [Locație]' },
+{ day: '28', mon: 'nov', cat: 'prezentare de proiect', color: '#abca54', title: 'Demo day: echipele core își prezintă proiectele', meta: 'sâmbătă · 11:00 · [Locație]' }
+],
+past: [
+{ date: '26 sept. 2026', cat: 'eveniment', color: '#dd6937', ink: '#221f20', title: 'Tabăra de început de an', sum: 'Primul weekend împreună: echipe noi, roluri clare și obiective pentru semestru.' },
+{ date: '19 sept. 2026', cat: 'atelier', color: '#79569a', ink: '#ffffff', title: 'Atelier: feedback care chiar ajută', sum: 'Cum dai și cum primești feedback într-o echipă de proiect, cu exerciții practice.' },
+{ date: '12 sept. 2026', cat: 'întâlnire', color: '#e28ba3', ink: '#221f20', title: 'Prima rundă de mentorship 1:1', sum: 'Fiecare echipă core și-a cunoscut mentorul și și-a stabilit primii pași.' }
+]
+};
+}
+}
+</script>
+</body>
+</html>

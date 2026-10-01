@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<title>re_form platform — evaluări (B, white paper)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&amp;family=Lexend:wght@300;400;500&amp;display=swap">
+<style>
+body{margin:0;background:#ffffff}
+a{color:#221f20;text-decoration:none}a:hover{color:#2b7a6e}
+button,input,select{font-family:'Lexend',sans-serif}
+</style>
+</helmet>
+<div style="height: 100vh; min-height: 760px; display: flex; flex-direction: column; background: #ffffff; color: #221f20; font-family: 'Lexend', sans-serif; overflow: hidden">
+
+<header style="display: flex; align-items: stretch; gap: 36px; padding: 0 28px; height: 68px; border-bottom: 1px solid #221f20; flex-shrink: 0">
+<img src="../logos/logo-platform.png" alt="re_form platform" style="height: 34px; width: auto; align-self: center">
+<nav aria-label="Aplicație" style="display: flex; gap: 26px; font-size: 15px">
+<a href="#" style="display: flex; align-items: center; color: #5f5b5d; border-bottom: 4px solid transparent; padding-top: 4px">proiecte</a>
+<a href="#" style="display: flex; align-items: center; color: #5f5b5d; border-bottom: 4px solid transparent; padding-top: 4px">resurse</a>
+<a href="#" aria-current="page" style="display: flex; align-items: center; gap: 6px; font-weight: 500; border-bottom: 4px solid #77bfb2; padding-top: 4px">evaluări <span style="font-size: 12px; background: #221f20; color: #ffffff; padding: 0 6px">2</span></a>
+<a href="#" style="display: flex; align-items: center; gap: 6px; color: #5f5b5d; border-bottom: 4px solid transparent; padding-top: 4px">mesaje <span style="font-size: 12px; background: #221f20; color: #ffffff; padding: 0 6px">3</span></a>
+</nav>
+<div style="margin-left: auto; display: flex; align-items: center; gap: 12px">
+<button type="button" aria-label="Notificări" style="width: 44px; height: 44px; background: #ffffff; border: 1px solid #221f20; display: grid; place-items: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#221f20" stroke-width="2" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/></svg></button>
+<span aria-label="Ana Popescu" role="img" style="width: 40px; height: 40px; border-radius: 50%; background: #77bfb2; display: grid; place-items: center; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 14px">AP</span>
+</div>
+</header>
+
+<div style="flex-grow: 1; min-height: 0; display: flex">
+<aside style="width: 300px; flex-shrink: 0; border-right: 1px solid #221f20; padding: 26px 26px; overflow: auto; display: flex; flex-direction: column; gap: 26px; box-sizing: border-box">
+<div>
+<p style="margin: 0 0 6px; font-size: 13px; color: #2b7a6e; font-weight: 500">_ quiz · după întâlnirea din 8 oct.</p>
+<h1 style="margin: 0; font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 28px; line-height: 1.1">Planificarea unui proiect</h1>
+</div>
+<dl style="margin: 0; display: grid; grid-template-columns: 1fr; row-gap: 2px; font-size: 14px">
+<div style="display: flex; justify-content: space-between; padding: 8px 0; border-top: 1px solid #e4e1e2"><dt style="color: #5f5b5d">se închide</dt><dd style="margin: 0">vineri, 16 oct, 23:59</dd></div>
+<div style="display: flex; justify-content: space-between; padding: 8px 0; border-top: 1px solid #e4e1e2"><dt style="color: #5f5b5d">încercarea</dt><dd style="margin: 0">1 din 2</dd></div>
+<div style="display: flex; justify-content: space-between; padding: 8px 0; border-top: 1px solid #e4e1e2; border-bottom: 1px solid #e4e1e2"><dt style="color: #5f5b5d">timp</dt><dd style="margin: 0">fără limită</dd></div>
+</dl>
+<nav aria-label="Întrebări">
+<h2 style="margin: 0 0 12px; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 16px">întrebări</h2>
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px">
+<a href="#" aria-label="Întrebarea 1, răspunsă" style="height: 48px; display: grid; place-items: center; background: #221f20; color: #ffffff; font-family: 'Outfit', sans-serif; font-weight: 600">1</a>
+<a href="#" aria-label="Întrebarea 2, răspunsă" style="height: 48px; display: grid; place-items: center; background: #221f20; color: #ffffff; font-family: 'Outfit', sans-serif; font-weight: 600">2</a>
+<a href="#" aria-current="step" aria-label="Întrebarea 3, curentă" style="height: 48px; display: grid; place-items: center; background: #77bfb2; border: 2px solid #221f20; font-family: 'Outfit', sans-serif; font-weight: 700; box-sizing: border-box">3</a>
+<a href="#" aria-label="Întrebarea 4" style="height: 48px; display: grid; place-items: center; border: 1px solid #221f20; font-family: 'Outfit', sans-serif">4</a>
+<a href="#" aria-label="Întrebarea 5" style="height: 48px; display: grid; place-items: center; border: 1px solid #221f20; font-family: 'Outfit', sans-serif">5</a>
+<a href="#" aria-label="Întrebarea 6" style="height: 48px; display: grid; place-items: center; border: 1px solid #221f20; font-family: 'Outfit', sans-serif">6</a>
+<a href="#" aria-label="Întrebarea 7" style="height: 48px; display: grid; place-items: center; border: 1px solid #221f20; font-family: 'Outfit', sans-serif">7</a>
+<a href="#" aria-label="Întrebarea 8, răspuns deschis" style="height: 48px; display: grid; place-items: center; border: 1px dashed #221f20; font-family: 'Outfit', sans-serif">8</a>
+</div>
+<p style="margin: 10px 0 0; font-size: 12px; color: #5f5b5d">întrebarea 8 are răspuns deschis și o corectează mentorul</p>
+</nav>
+<div>
+<h2 style="margin: 0 0 4px; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 16px">alte evaluări</h2>
+<a href="#" style="display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid #e4e1e2; font-size: 14px"><span>Temă: harta părților interesate</span><span style="color: #5f5b5d; white-space: nowrap">19 oct</span></a>
+<a href="#" style="display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid #e4e1e2; font-size: 14px"><span>Temă: pitch de 2 minute</span><span style="font-weight: 600; white-space: nowrap">8/10 · feedback</span></a>
+<a href="#" style="display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid #e4e1e2; font-size: 14px"><span>Quiz: rolurile într-o echipă</span><span style="font-weight: 600; white-space: nowrap">9/10</span></a>
+</div>
+</aside>
+
+<main style="flex-grow: 1; min-width: 0; overflow: auto; padding: 40px 64px; display: flex; flex-direction: column; gap: 28px; box-sizing: border-box">
+<div style="display: flex; align-items: baseline; gap: 18px; border-bottom: 2px solid #221f20; padding-bottom: 14px">
+<span style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 64px; line-height: 0.9; color: #3a978a">03</span>
+<span style="font-size: 14px; color: #5f5b5d">din 08 · un singur răspuns corect</span>
+</div>
+<fieldset style="margin: 0; padding: 0; border: 0; display: flex; flex-direction: column; max-width: 780px">
+<legend style="font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 32px; line-height: 1.2; margin-bottom: 24px; padding: 0">Echipa ta are 4 săptămâni până la eveniment. Care este primul pas?</legend>
+<sc-for list="{{options}}" as="o" hint-placeholder-count="4">
+<label style="display: flex; align-items: center; gap: 18px; padding: 18px 4px; border-top: 1px solid #221f20; background: {{o.bg}}; cursor: pointer; font-size: 17px; line-height: 1.4">
+<input type="radio" name="q3" checked="{{o.sel}}" style="width: 20px; height: 20px; accent-color: #221f20; flex-shrink: 0; margin-left: 12px">
+<span style="font-family: 'Outfit', sans-serif; font-weight: 800; width: 20px">{{o.k}}</span>
+<span>{{o.t}}</span>
+</label>
+</sc-for>
+<span aria-hidden="true" style="border-top: 1px solid #221f20"></span>
+</fieldset>
+<div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; max-width: 780px">
+<button type="button" style="height: 48px; padding: 0 20px; background: #ffffff; color: #221f20; border: 1px solid #221f20; font-size: 15px; cursor: pointer">← înapoi</button>
+<span style="font-size: 13px; color: #5f5b5d">_ se salvează automat</span>
+<button type="button" style="margin-left: auto; height: 48px; padding: 0 24px; background: #221f20; color: #ffffff; border: 0; font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 16px; cursor: pointer">următoarea →</button>
+</div>
+</main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":820}}'>
+class Component extends DCLogic {
+renderVals() {
+const o = (k, t, sel) => ({ k, t, sel: !!sel, bg: sel ? '#e4f2ef' : 'transparent' });
+return {
+options: [
+o('A', 'Stabiliți obiectivul și cum arată succesul', true),
+o('B', 'Faceți afișul, ca să atrageți atenția din timp'),
+o('C', 'Alegeți data și rezervați sala'),
+o('D', 'Cereți buget de la direcțiune')
+]
+};
+}
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<title>re_form platform — proiecte (B, white paper)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&amp;family=Lexend:wght@300;400;500&amp;display=swap">
+<style>
+body{margin:0;background:#ffffff}
+a{color:#221f20;text-decoration:none}a:hover{color:#2b7a6e}
+button,input,select{font-family:'Lexend',sans-serif}
+</style>
+</helmet>
+<div style="height: 100vh; min-height: 760px; display: flex; flex-direction: column; background: #ffffff; color: #221f20; font-family: 'Lexend', sans-serif; overflow: hidden">
+
+<header style="display: flex; align-items: stretch; gap: 36px; padding: 0 28px; height: 68px; border-bottom: 1px solid #221f20; flex-shrink: 0">
+<img src="../logos/logo-platform.png" alt="re_form platform" style="height: 34px; width: auto; align-self: center">
+<nav aria-label="Aplicație" style="display: flex; gap: 26px; font-size: 15px">
+<a href="#" aria-current="page" style="display: flex; align-items: center; font-weight: 500; border-bottom: 4px solid #77bfb2; padding-top: 4px">proiecte</a>
+<a href="#" style="display: flex; align-items: center; color: #5f5b5d; border-bottom: 4px solid transparent; padding-top: 4px">resurse</a>
+<a href="#" style="display: flex; align-items: center; gap: 6px; color: #5f5b5d; border-bottom: 4px solid transparent; padding-top: 4px">evaluări <span style="font-size: 12px; background: #221f20; color: #ffffff; padding: 0 6px">2</span></a>
+<a href="#" style="display: flex; align-items: center; gap: 6px; color: #5f5b5d; border-bottom: 4px solid transparent; padding-top: 4px">mesaje <span style="font-size: 12px; background: #221f20; color: #ffffff; padding: 0 6px">3</span></a>
+</nav>
+<div style="margin-left: auto; display: flex; align-items: center; gap: 12px">
+<label style="display: flex; align-items: center; gap: 8px; border: 1px solid #221f20; padding: 0 12px; height: 40px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#221f20" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">caută</span><input type="search" placeholder="caută în proiecte" style="border: 0; outline-offset: 4px; font-size: 14px; width: 170px"></label>
+<button type="button" aria-label="Notificări" style="width: 44px; height: 44px; background: #ffffff; border: 1px solid #221f20; display: grid; place-items: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#221f20" stroke-width="2" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/></svg></button>
+<span aria-label="Ana Popescu" role="img" style="width: 40px; height: 40px; border-radius: 50%; background: #77bfb2; display: grid; place-items: center; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 14px">AP</span>
+</div>
+</header>
+
+<div style="padding: 22px 28px 18px; display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap; border-bottom: 1px solid #e4e1e2; flex-shrink: 0">
+<div>
+<div style="font-size: 13px; color: #5f5b5d; margin-bottom: 6px">[Liceul tău] / proiecte</div>
+<h1 style="margin: 0; font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 36px; letter-spacing: -0.02em">Campania „Vocea elevilor”</h1>
+</div>
+<div style="display: flex; align-items: center; gap: 12px">
+<div role="tablist" aria-label="Vizualizare" style="display: flex; border: 1px solid #221f20">
+<button type="button" role="tab" aria-selected="true" style="height: 40px; padding: 0 16px; background: #221f20; color: #ffffff; border: 0; font-size: 14px; cursor: pointer">tablă</button>
+<button type="button" role="tab" aria-selected="false" style="height: 40px; padding: 0 16px; background: #ffffff; color: #221f20; border: 0; border-left: 1px solid #221f20; font-size: 14px; cursor: pointer">calendar</button>
+<button type="button" role="tab" aria-selected="false" style="height: 40px; padding: 0 16px; background: #ffffff; color: #221f20; border: 0; border-left: 1px solid #221f20; font-size: 14px; cursor: pointer">listă</button>
+</div>
+<button type="button" style="height: 42px; padding: 0 18px; background: #77bfb2; color: #221f20; border: 1px solid #221f20; font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 15px; cursor: pointer">+ sarcină</button>
+</div>
+</div>
+
+<div style="flex-grow: 1; min-height: 0; display: flex">
+<div style="flex-grow: 1; min-width: 0; overflow: auto; padding: 18px 14px; display: flex; align-items: flex-start">
+<sc-for list="{{cols}}" as="col" hint-placeholder-count="4">
+<section style="flex: 0 0 232px; padding: 0 14px; border-left: {{col.rule}}; display: flex; flex-direction: column; gap: 10px; box-sizing: border-box">
+<div style="display: flex; align-items: baseline; gap: 8px; padding-bottom: 10px; border-bottom: 2px solid #221f20">
+<h2 style="margin: 0; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 16px">{{col.name}}</h2>
+<span style="font-size: 13px; color: #5f5b5d">{{col.count}}</span>
+</div>
+<sc-for list="{{col.cards}}" as="card" hint-placeholder-count="3">
+<article style="border: {{card.border}}; padding: 12px; display: flex; flex-direction: column; gap: 8px; background: #ffffff">
+<div style="display: flex; gap: 10px; flex-wrap: wrap"><sc-for list="{{card.labels}}" as="l" hint-placeholder-count="1"><span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #5f5b5d"><span aria-hidden="true" style="width: 9px; height: 9px; background: {{l.c}}"></span>{{l.t}}</span></sc-for></div>
+<h3 style="margin: 0; font-family: 'Outfit', sans-serif; font-weight: 500; font-size: 15px; line-height: 1.35; color: {{card.ink}}">{{card.title}}</h3>
+<div style="display: flex; align-items: center; gap: 10px; font-size: 12px; color: #5f5b5d">
+<sc-if value="{{card.late}}" hint-placeholder-val="{{ false }}"><span style="color: #221f20; font-weight: 500; border-bottom: 3px solid #dd6937">întârziat, {{card.due}}</span></sc-if>
+<sc-if value="{{card.onTime}}" hint-placeholder-val="{{ true }}"><span>{{card.due}}</span></sc-if>
+<sc-if value="{{card.hasCheck}}" hint-placeholder-val="{{ true }}"><span>· {{card.check}}</span></sc-if>
+<span style="margin-left: auto; font-weight: 500; color: #221f20">{{card.whoText}}</span>
+</div>
+</article>
+</sc-for>
+<button type="button" style="background: transparent; border: 0; color: #2b7a6e; padding: 6px 0; font-size: 14px; text-align: left; cursor: pointer">+ adaugă</button>
+</section>
+</sc-for>
+</div>
+
+<aside aria-label="Detalii sarcină" style="width: 384px; flex-shrink: 0; border-left: 1px solid #221f20; overflow: auto; padding: 22px 26px 28px; display: flex; flex-direction: column; gap: 20px; box-sizing: border-box">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<span style="font-size: 13px; border: 1px solid #221f20; padding: 4px 10px">în revizuire</span>
+<button type="button" aria-label="Închide detaliile" style="width: 40px; height: 40px; background: #ffffff; border: 0; font-size: 22px; cursor: pointer">×</button>
+</div>
+<h2 style="margin: 0; font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 28px; line-height: 1.1">Afișul campaniei, varianta 2</h2>
+<dl style="margin: 0; display: grid; grid-template-columns: 110px 1fr; row-gap: 10px; font-size: 14px">
+<dt style="color: #5f5b5d">responsabil</dt><dd style="margin: 0">Ioana Radu</dd>
+<dt style="color: #5f5b5d">termen</dt><dd style="margin: 0">azi, 13 octombrie</dd>
+<dt style="color: #5f5b5d">etichete</dt><dd style="margin: 0; display: flex; align-items: center; gap: 6px"><span aria-hidden="true" style="width: 9px; height: 9px; background: #e28ba3"></span>design</dd>
+</dl>
+<p style="margin: 0; font-size: 15px; line-height: 1.6; font-weight: 300">Varianta 2 după feedbackul mentorului: titlu mai mare, logo-ul re_form jos și un cod QR spre formularul de înscriere.</p>
+<fieldset style="margin: 0; padding: 0; border: 0; display: flex; flex-direction: column; gap: 8px">
+<legend style="font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 16px; margin-bottom: 8px">_ checklist · 2/4</legend>
+<label style="display: flex; gap: 10px; font-size: 14px; align-items: center"><input type="checkbox" checked style="width: 18px; height: 18px; accent-color: #221f20">titlu mai mare</label>
+<label style="display: flex; gap: 10px; font-size: 14px; align-items: center"><input type="checkbox" checked style="width: 18px; height: 18px; accent-color: #221f20">logo re_form jos</label>
+<label style="display: flex; gap: 10px; font-size: 14px; align-items: center"><input type="checkbox" style="width: 18px; height: 18px; accent-color: #221f20">cod QR spre formular</label>
+<label style="display: flex; gap: 10px; font-size: 14px; align-items: center"><input type="checkbox" style="width: 18px; height: 18px; accent-color: #221f20">verificare text și diacritice</label>
+</fieldset>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<h3 style="margin: 0 0 4px; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 16px">_ atașamente</h3>
+<a href="#" style="display: flex; align-items: center; gap: 12px; border: 1px solid #e4e1e2; padding: 10px"><span style="font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 11px; background: #dd6937; padding: 6px 6px">PDF</span><span style="display: flex; flex-direction: column"><span style="font-size: 14px">afis-campanie-v2.pdf</span><span style="font-size: 12px; color: #5f5b5d">1,2 MB · din resurse</span></span></a>
+<a href="#" style="display: flex; align-items: center; gap: 12px; border: 1px solid #e4e1e2; padding: 10px"><span style="font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 11px; background: #abca54; padding: 6px 6px">PNG</span><span style="display: flex; flex-direction: column"><span style="font-size: 14px">previzualizare-afis.png</span><span style="font-size: 12px; color: #5f5b5d">640 KB</span></span></a>
+</div>
+<div style="display: flex; flex-direction: column; gap: 12px">
+<h3 style="margin: 0; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 16px">_ comentarii · 2</h3>
+<div style="font-size: 14px; line-height: 1.5"><div style="font-weight: 500">Matei Toma <span style="font-weight: 400; color: #5f5b5d; font-size: 12px">· 10:12</span></div>Titlul arată mult mai bine. Putem mări și data?</div>
+<div style="font-size: 14px; line-height: 1.5"><div style="font-weight: 500">Ioana Radu <span style="font-weight: 400; color: #5f5b5d; font-size: 12px">· 10:20</span></div>Da, o măresc în varianta 3.</div>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #5f5b5d">comentariu nou<textarea rows="2" placeholder="scrie un comentariu" style="font-family: 'Lexend', sans-serif; font-size: 14px; padding: 10px; border: 1px solid #221f20; resize: vertical"></textarea></label>
+<p style="margin: 0; font-size: 12px; color: #5f5b5d">Ioana Radu a mutat sarcina în „în revizuire” · ieri, 18:20</p>
+</div>
+</aside>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":820}}'>
+class Component extends DCLogic {
+renderVals() {
+const L = (t, c) => ({ t, c });
+const card = (title, labels, due, check, who, extra) => Object.assign({ title, labels, due, check, hasCheck: !!check, whoText: who, late: false, onTime: true, border: '1px solid #d9d5d7', ink: '#221f20' }, extra || {});
+return {
+cols: [
+{ name: 'de făcut', count: '4', rule: '0', cards: [
+card('Cere acordul direcțiunii pentru sala de festivități', [L('logistică', '#79569a')], '12 oct', '0/2', 'AP', { late: true, onTime: false }),
+card('Sondaj în clase: ce ar schimba elevii?', [L('cercetare', '#e1b345')], '16 oct', '0/4', 'MT, IR'),
+card('Listă de invitați pentru dezbatere', [L('eveniment', '#dd6937')], '20 oct', '', 'IR'),
+card('Buget estimativ: afișe și gustări', [L('buget', '#abca54')], '21 oct', '1/3', 'DS')
+] },
+{ name: 'în lucru', count: '3', rule: '1px solid #e4e1e2', cards: [
+card('Textul pentru afiș și postările de lansare', [L('comunicare', '#77bfb2')], '15 oct', '3/5', 'AP, IR'),
+card('Prezentare pentru consiliul elevilor', [L('comunicare', '#77bfb2')], '17 oct', '2/6', 'MT'),
+card('Formular de înscriere pentru voluntari', [L('eveniment', '#dd6937')], '18 oct', '1/2', 'DS')
+] },
+{ name: 'în revizuire', count: '2', rule: '1px solid #e4e1e2', cards: [
+card('Afișul campaniei, varianta 2', [L('design', '#e28ba3')], 'azi', '2/4', 'IR', { border: '2px solid #221f20' }),
+card('Plan de comunicare pe 4 săptămâni', [L('comunicare', '#77bfb2')], '15 oct', '4/4', 'AP')
+] },
+{ name: 'gata', count: '3', rule: '1px solid #e4e1e2', cards: [
+card('Am ales tema campaniei', [L('cercetare', '#e1b345')], '2 oct', '', 'toți', { ink: '#5f5b5d' }),
+card('Roluri stabilite în echipă', [L('logistică', '#79569a')], '5 oct', '', 'MT', { ink: '#5f5b5d' }),
+card('Prima întâlnire cu mentorul', [L('mentorship', '#e28ba3')], '8 oct', '', 'AP', { ink: '#5f5b5d' })
+] }
+]
+};
+}
+}
+</script>
+</body>
+</html>

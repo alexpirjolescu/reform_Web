@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<title>re_form — panou de știri (C, colour system)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&amp;family=Lexend:wght@300;400;500&amp;family=Sour+Gummy:wght@500;700&amp;display=swap">
+<style>
+body{margin:0;background:#ffffff}
+a{color:#221f20;text-decoration:none}a:hover{color:#221f20;text-decoration:underline}
+button,input,select{font-family:'Lexend',sans-serif}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #ffffff; color: #221f20; font-family: 'Lexend', sans-serif">
+
+<header style="max-width: 1240px; margin: 0 auto; padding: 24px 32px; display: flex; align-items: center; gap: 32px; flex-wrap: wrap; box-sizing: border-box">
+<a href="#" aria-label="re_form ed, acasă" style="display: flex"><img src="../logos/logo-ed.png" alt="re_form ed" style="height: 40px; width: auto; display: block"></a>
+<nav aria-label="Navigare principală" style="display: flex; gap: 6px; flex-wrap: wrap; flex-grow: 1; font-size: 15px">
+<a href="#" style="padding: 10px 16px; border-radius: 999px; background: #221f20; color: #ffffff">activități</a>
+<a href="#" style="padding: 10px 16px; border-radius: 999px">despre noi</a>
+<a href="#" style="padding: 10px 16px; border-radius: 999px">școli partenere</a>
+<a href="#" style="padding: 10px 16px; border-radius: 999px">contact</a>
+</nav>
+<div style="display: flex; align-items: center; gap: 14px">
+<div style="display: flex; gap: 6px; font-size: 14px"><a href="#" aria-current="true" style="font-weight: 600">ro</a><span aria-hidden="true">·</span><a href="#">en</a></div>
+<a href="#" style="background: #77bfb2; border: 2px solid #221f20; border-radius: 999px; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 15px; padding: 11px 20px">intră în cont</a>
+</div>
+</header>
+
+<section style="max-width: 1240px; margin: 0 auto; padding: 12px 32px 0; display: flex; gap: 20px; flex-wrap: wrap; box-sizing: border-box">
+<div style="flex: 2 1 560px; background: #77bfb2; border: 2px solid #221f20; border-radius: 28px; padding: 48px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px; position: relative">
+<span style="align-self: flex-start; font-family: 'Sour Gummy', sans-serif; font-weight: 700; font-size: 18px; background: #ffffff; border: 2px solid #221f20; border-radius: 999px; padding: 6px 16px">hai în echipă!</span>
+<h1 style="margin: 0; font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 80px; line-height: 0.95; letter-spacing: -0.03em">învățăm<br>făcând.</h1>
+<p style="margin: 0; font-size: 18px; line-height: 1.6; max-width: 560px">Creăm contexte reale în care liceenii învață făcând, își descoperă abilitățile și construiesc proiecte cu sens, sprijiniți prin mentorship și o comunitate relevantă.</p>
+<div style="display: flex; gap: 12px; flex-wrap: wrap">
+<a href="#urmeaza" style="background: #221f20; color: #ffffff; border-radius: 999px; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 16px; padding: 14px 24px">vezi ce urmează</a>
+<a href="#" style="background: #ffffff; border: 2px solid #221f20; border-radius: 999px; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 16px; padding: 12px 22px">despre re_form</a>
+</div>
+</div>
+<div style="flex: 1 1 320px; display: flex; flex-direction: column; gap: 20px">
+<a href="#" style="flex-grow: 1; background: #79569a; color: #ffffff; border: 2px solid #221f20; border-radius: 28px; padding: 28px; display: flex; flex-direction: column; gap: 10px; text-decoration: none">
+<span style="font-size: 14px">următorul atelier</span>
+<span style="font-family: 'Sour Gummy', sans-serif; font-weight: 700; font-size: 72px; line-height: 0.9">15 oct</span>
+<span style="font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 22px; line-height: 1.2">Vorbitul în public, fără emoții</span>
+<span style="font-size: 14px">joi · 16:00 · [Locație] →</span>
+</a>
+<div style="background: #e1b345; border: 2px solid #221f20; border-radius: 28px; padding: 24px 28px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px">
+<div><div style="font-family: 'Sour Gummy', sans-serif; font-weight: 700; font-size: 40px; line-height: 1">[nr]</div><div style="font-size: 13px">licee partenere</div></div>
+<div><div style="font-family: 'Sour Gummy', sans-serif; font-weight: 700; font-size: 40px; line-height: 1">[nr]</div><div style="font-size: 13px">liceeni core</div></div>
+<div><div style="font-family: 'Sour Gummy', sans-serif; font-weight: 700; font-size: 40px; line-height: 1">[nr]</div><div style="font-size: 13px">proiecte</div></div>
+<div><div style="font-family: 'Sour Gummy', sans-serif; font-weight: 700; font-size: 40px; line-height: 1">[nr]</div><div style="font-size: 13px">întâlniri</div></div>
+</div>
+</div>
+</section>
+
+<section id="urmeaza" style="max-width: 1240px; margin: 0 auto; padding: 72px 32px 0; box-sizing: border-box">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 28px">
+<h2 style="margin: 0; display: flex; align-items: center; gap: 14px; font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 48px; letter-spacing: -0.02em">
+<svg width="44" height="44" viewBox="0 0 48 48" aria-hidden="true"><rect x="5" y="9" width="38" height="34" rx="4" fill="#ffffff" stroke="#221f20" stroke-width="3"/><rect x="5" y="9" width="38" height="10" fill="#dd6937" stroke="#221f20" stroke-width="3"/><path d="M15 5v8M33 5v8" stroke="#221f20" stroke-width="3" stroke-linecap="round"/><rect x="13" y="26" width="7" height="7" fill="#221f20"/></svg>
+urmează</h2>
+<div role="group" aria-label="Filtrează după tip" style="display: flex; gap: 8px; flex-wrap: wrap">
+<button type="button" aria-pressed="true" style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; padding: 9px 16px; border-radius: 999px; border: 2px solid #221f20; background: #221f20; color: #ffffff; cursor: pointer">toate</button>
+<button type="button" aria-pressed="false" style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; padding: 9px 16px; border-radius: 999px; border: 2px solid #221f20; background: #ffffff; color: #221f20; cursor: pointer"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 50%; background: #79569a"></span>ateliere</button>
+<button type="button" aria-pressed="false" style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; padding: 9px 16px; border-radius: 999px; border: 2px solid #221f20; background: #ffffff; color: #221f20; cursor: pointer"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 50%; background: #e28ba3"></span>întâlniri</button>
+<button type="button" aria-pressed="false" style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; padding: 9px 16px; border-radius: 999px; border: 2px solid #221f20; background: #ffffff; color: #221f20; cursor: pointer"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 50%; background: #dd6937"></span>evenimente</button>
+<button type="button" aria-pressed="false" style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; padding: 9px 16px; border-radius: 999px; border: 2px solid #221f20; background: #ffffff; color: #221f20; cursor: pointer"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 50%; background: #abca54"></span>prezentări</button>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px">
+<sc-for list="{{upcoming}}" as="ev" hint-placeholder-count="4">
+<article style="border: 2px solid #221f20; border-radius: 24px; overflow: hidden; display: flex; flex-direction: column; background: #ffffff">
+<div style="background: {{ev.color}}; color: {{ev.ink}}; border-bottom: 2px solid #221f20; padding: 18px 22px; display: flex; align-items: flex-end; justify-content: space-between">
+<span style="font-family: 'Sour Gummy', sans-serif; font-weight: 700; font-size: 56px; line-height: 0.9">{{ev.day}}</span>
+<span style="font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 18px">{{ev.mon}}</span>
+</div>
+<div style="padding: 20px 22px 22px; display: flex; flex-direction: column; gap: 10px; flex-grow: 1">
+<span style="align-self: flex-start; font-size: 12px; font-weight: 500; border: 2px solid #221f20; border-radius: 999px; padding: 3px 10px">{{ev.cat}}</span>
+<h3 style="margin: 0; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 21px; line-height: 1.2">{{ev.title}}</h3>
+<span style="font-size: 14px; color: #5f5b5d">{{ev.meta}}</span>
+<a href="#" style="margin-top: auto; align-self: flex-start; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 15px; border-bottom: 2px solid #221f20">detalii</a>
+</div>
+</article>
+</sc-for>
+</div>
+</section>
+
+<section style="max-width: 1240px; margin: 0 auto; padding: 72px 32px 0; box-sizing: border-box">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 28px">
+<h2 style="margin: 0; display: flex; align-items: center; gap: 14px; font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 48px; letter-spacing: -0.02em">
+<svg width="44" height="44" viewBox="0 0 48 48" aria-hidden="true"><rect x="5" y="8" width="38" height="32" rx="4" fill="#ffffff" stroke="#221f20" stroke-width="3"/><circle cx="17" cy="19" r="4" fill="#e1b345" stroke="#221f20" stroke-width="3"/><path d="M5 34l12-10 9 8 6-5 11 9" fill="none" stroke="#221f20" stroke-width="3" stroke-linejoin="round"/></svg>
+s-a întâmplat</h2>
+<a href="#" style="font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 16px; border-bottom: 2px solid #221f20">toată arhiva</a>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px">
+<sc-for list="{{past}}" as="p" hint-placeholder-count="3">
+<article style="border: 2px solid #221f20; border-radius: 24px; padding: 14px; display: flex; flex-direction: column; gap: 12px">
+<div style="aspect-ratio: 3 / 2; background: {{p.color}}; border: 2px solid #221f20; border-radius: 16px; position: relative; display: flex; align-items: flex-end; padding: 14px; box-sizing: border-box">
+<span aria-hidden="true" style="position: absolute; right: 18%; top: 22%; width: 64px; height: 64px; border-radius: 50%; background: #ffffff; border: 2px solid #221f20"></span>
+<span aria-hidden="true" style="position: absolute; left: 14%; top: 50%; width: 30%; height: 18px; background: #221f20; border-radius: 4px"></span>
+<span style="font-size: 12px; color: {{p.ink}}">[fotografie]</span>
+</div>
+<div style="padding: 4px 8px 10px; display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 13px; color: #5f5b5d">{{p.cat}} · {{p.date}}</span>
+<h3 style="margin: 0; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 23px; line-height: 1.2">{{p.title}}</h3>
+<p style="margin: 0; font-size: 15px; line-height: 1.55">{{p.sum}}</p>
+</div>
+</article>
+</sc-for>
+</div>
+</section>
+
+<section style="max-width: 1240px; margin: 0 auto; padding: 72px 32px 80px; box-sizing: border-box">
+<div style="background: #abca54; border: 2px solid #221f20; border-radius: 28px; padding: 40px 48px; display: flex; gap: 32px; align-items: center; justify-content: space-between; flex-wrap: wrap">
+<div style="max-width: 520px">
+<h2 style="margin: 0 0 8px; font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 38px; line-height: 1.05">noutățile re_form, direct în inbox</h2>
+<p style="margin: 0; font-size: 16px">O dată pe lună, pentru părinți, școli, parteneri și curioși.</p>
+</div>
+<form style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end">
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 500">adresa de email
+<input type="email" placeholder="nume@exemplu.ro" style="width: 280px; font-size: 15px; padding: 13px 18px; border: 2px solid #221f20; border-radius: 999px; background: #ffffff">
+</label>
+<button type="button" style="font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 15px; padding: 14px 24px; background: #221f20; color: #ffffff; border: 2px solid #221f20; border-radius: 999px; cursor: pointer">abonează-te</button>
+</form>
+</div>
+</section>
+
+<footer style="background: #221f20; color: #ffffff">
+<div style="max-width: 1240px; margin: 0 auto; padding: 48px 32px 56px; display: flex; gap: 48px; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; box-sizing: border-box">
+<div style="display: flex; flex-direction: column; gap: 18px">
+<img src="../logos/logo-ed-white.png" alt="re_form ed" style="height: 40px; width: auto; align-self: flex-start">
+<div aria-hidden="true" style="display: flex; gap: 8px"><span style="width: 18px; height: 18px; border-radius: 50%; background: #77bfb2"></span><span style="width: 18px; height: 18px; border-radius: 50%; background: #e1b345"></span><span style="width: 18px; height: 18px; border-radius: 50%; background: #79569a"></span><span style="width: 18px; height: 18px; border-radius: 50%; background: #dd6937"></span><span style="width: 18px; height: 18px; border-radius: 50%; background: #abca54"></span><span style="width: 18px; height: 18px; border-radius: 50%; background: #e28ba3"></span></div>
+<span style="font-size: 13px; color: #bdb9bb">re_form 2026 ©</span>
+</div>
+<nav aria-label="Subsol" style="display: flex; gap: 56px; flex-wrap: wrap; font-size: 14px">
+<div style="display: flex; flex-direction: column; gap: 10px"><span style="color: #bdb9bb">academia</span><a href="#" style="color: #ffffff">despre noi</a><a href="#" style="color: #ffffff">școli partenere</a></div>
+<div style="display: flex; flex-direction: column; gap: 10px"><span style="color: #bdb9bb">contact</span><a href="#" style="color: #ffffff">[email]</a><a href="#" style="color: #ffffff">[Instagram]</a></div>
+<div style="display: flex; flex-direction: column; gap: 10px"><span style="color: #bdb9bb">legal</span><a href="#" style="color: #ffffff">confidențialitate</a><a href="#" style="color: #ffffff">acordul pentru fotografii</a></div>
+</nav>
+</div>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":2450}}'>
+class Component extends DCLogic {
+renderVals() {
+return {
+upcoming: [
+{ day: '15', mon: 'oct', cat: 'atelier', color: '#79569a', ink: '#ffffff', title: 'Vorbitul în public, fără emoții', meta: 'joi · 16:00 · [Locație]' },
+{ day: '22', mon: 'oct', cat: 'întâlnire', color: '#e28ba3', ink: '#221f20', title: 'Întâlnire core: planificăm semestrul', meta: 'joi · 17:00 · [Liceul 2]' },
+{ day: '07', mon: 'nov', cat: 'eveniment', color: '#dd6937', ink: '#221f20', title: 'Hackathon civic de toamnă', meta: 'sâmbătă · 10:00 · [Locație]' },
+{ day: '28', mon: 'nov', cat: 'prezentare', color: '#abca54', ink: '#221f20', title: 'Demo day: proiectele echipelor core', meta: 'sâmbătă · 11:00 · [Locație]' }
+],
+past: [
+{ date: '26 sept. 2026', cat: 'eveniment', color: '#dd6937', ink: '#221f20', title: 'Tabăra de început de an', sum: 'Primul weekend împreună: echipe noi, roluri clare și obiective pentru semestru.' },
+{ date: '19 sept. 2026', cat: 'atelier', color: '#79569a', ink: '#ffffff', title: 'Atelier: feedback care chiar ajută', sum: 'Cum dai și cum primești feedback într-o echipă de proiect, cu exerciții practice.' },
+{ date: '12 sept. 2026', cat: 'întâlnire', color: '#e28ba3', ink: '#221f20', title: 'Prima rundă de mentorship 1:1', sum: 'Fiecare echipă core și-a cunoscut mentorul și și-a stabilit primii pași.' }
+]
+};
+}
+}
+</script>
+</body>
+</html>

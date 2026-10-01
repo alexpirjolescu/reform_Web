@@ -260,21 +260,21 @@ Most account holders are minors, so privacy and access control come first; the s
 
 ## Technical considerations
 
-The proposed stack is a Next.js web app, a separate Node.js API and PostgreSQL, with files in EU object storage; the final choice is still open.
+The stack was chosen on 1 Oct 2026: Next.js 16 with Supabase (PostgreSQL with row level security, Auth, Storage and Realtime), hosted in an EU region.
 
-![Proposed architecture, option B](images/architecture-option-b.png)
+![Architecture: Next.js + Supabase](images/architecture.png)
 
-The web app renders public pages on the server so search engines can read them. The API enforces every permission rule, pushes live board updates and new messages over WebSockets and hands out short-lived links, so large files never pass through the API.
+Next.js renders public pages on the server so search engines can read them, and runs the privileged server code such as invites and admin actions. Supabase enforces every permission rule inside the database, pushes live board updates and new messages through Realtime and hands out short-lived Storage links, so large files never pass through the web server.
 
 ### Stack options
 
 | Option | Front end | Back end and data | Strength | Trade-off |
 | --- | --- | --- | --- | --- |
-| A. Next.js + Supabase | Next.js (React, TypeScript) | Supabase: PostgreSQL, login, file storage, live updates, row-level access rules | Fastest to build | Less custom back-end code; some features tie you to Supabase |
-| B. Next.js + own API (proposed) | Next.js (React, TypeScript) | Node.js API (NestJS or Express), PostgreSQL with Prisma, S3-compatible storage | Full control and a clean front-end/back-end split | More to build and run: login, file access, live updates |
+| A. Next.js + Supabase (chosen) | Next.js (React, TypeScript) | Supabase: PostgreSQL, login, file storage, live updates, row-level access rules | Fastest to build | Less custom back-end code; some features tie you to Supabase |
+| B. Next.js + own API | Next.js (React, TypeScript) | Node.js API (NestJS or Express), PostgreSQL with Prisma, S3-compatible storage | Full control and a clean front-end/back-end split | More to build and run: login, file access, live updates |
 | C. Django | Django templates with some React | Django, PostgreSQL, built-in Django admin | Staff admin screens come almost free | Drag-and-drop boards still need a separate JavaScript front end |
 
-The repository (reform\_Web) can hold both parts as a monorepo: apps/web for the front end and apps/api for the back end.
+The repository (reform\_Web) holds the Next.js app at its root and the database migrations and email templates in supabase/.
 
 ### Data model sketch
 

@@ -1,0 +1,127 @@
+{
+  "meta": {
+    "title": "re_form",
+    "description": "Academie de educație nonformală pentru liceeni: proiecte, mentorship și comunitate."
+  },
+  "common": {
+    "login": "intră în cont",
+    "logout": "ieși din cont",
+    "language": "Limba",
+    "newsPanel": "panou de știri",
+    "comingSoon": "în curând",
+    "save": "Salvează",
+    "sending": "Se trimite…"
+  },
+  "home": {
+    "kicker": "_ academie de educație nonformală pentru liceeni",
+    "title": "învățăm făcând",
+    "mission": "Creăm contexte reale în care liceenii învață făcând, își descoperă abilitățile și construiesc proiecte cu sens, sprijiniți prin mentorship și o comunitate relevantă.",
+    "seeUpcoming": "vezi ce urmează",
+    "upcoming": "urmează",
+    "past": "s-a întâmplat",
+    "emptyUpcoming": "Activitățile care urmează vor apărea aici după ce echipa re_form le publică.",
+    "emptyPast": "Aici va apărea arhiva activităților care au avut loc."
+  },
+  "nav": {
+    "label": "Aplicație",
+    "workspace": "proiecte",
+    "library": "resurse",
+    "assessments": "evaluări",
+    "messages": "mesaje",
+    "admin": "utilizatori"
+  },
+  "roles": {
+    "student": "elev",
+    "core_lead": "lider core",
+    "staff": "echipa re_form",
+    "admin": "administrator"
+  },
+  "auth": {
+    "login": {
+      "title": "intră în cont",
+      "email": "Email",
+      "password": "Parolă",
+      "submit": "Intră",
+      "forgot": "Ai uitat parola?",
+      "noAccount": "Conturile sunt create de echipa re_form. Dacă ești în echipa core a liceului tău și n-ai primit o invitație, scrie-ne."
+    },
+    "forgot": {
+      "title": "resetează parola",
+      "intro": "Îți trimitem pe email un link ca să alegi o parolă nouă.",
+      "submit": "Trimite linkul",
+      "sent": "Dacă există un cont cu acest email, ți-am trimis linkul. Verifică și folderul de spam.",
+      "back": "Înapoi la autentificare"
+    },
+    "setPassword": {
+      "title": "alege o parolă",
+      "intro": "Cel puțin 10 caractere, cu litere și cifre.",
+      "password": "Parolă nouă",
+      "confirm": "Repetă parola",
+      "submit": "Salvează parola"
+    },
+    "error": {
+      "title": "linkul nu mai e valid",
+      "body": "Linkul din email a expirat sau a fost deja folosit. Cere unul nou sau scrie echipei re_form.",
+      "retry": "Cere un link nou"
+    },
+    "errors": {
+      "invalidInput": "Completează corect toate câmpurile.",
+      "invalidCredentials": "Email sau parolă greșită.",
+      "mismatch": "Parolele nu coincid.",
+      "weakPassword": "Parola trebuie să aibă cel puțin 10 caractere, cu litere și cifre.",
+      "sessionExpired": "Sesiunea a expirat. Cere un link nou.",
+      "generic": "Ceva n-a mers. Încearcă din nou."
+    },
+    "deactivated": "Contul tău a fost dezactivat. Dacă e o greșeală, scrie echipei re_form.",
+    "noProfile": "Contul tău nu are încă un profil. Scrie echipei re_form."
+  },
+  "app": {
+    "workspace": {
+      "title": "proiecte",
+      "body": "Tabla echipei core: sarcini, termene și cine se ocupă de ce. Vine în faza 2."
+    },
+    "library": {
+      "title": "resurse",
+      "body": "Biblioteca de înregistrări, prezentări și documente. Vine în faza 3."
+    },
+    "assessments": {
+      "title": "evaluări",
+      "body": "Quizuri și teme după fiecare întâlnire. Vine în faza 4."
+    },
+    "messages": {
+      "title": "mesaje",
+      "body": "Mesaje private între elevi și echipa re_form. Vine în faza 5."
+    }
+  },
+  "admin": {
+    "users": {
+      "title": "utilizatori",
+      "inviteTitle": "invită o persoană",
+      "fullName": "Nume complet",
+      "email": "Email",
+      "role": "Rol",
+      "school": "Liceu",
+      "noSchool": "fără liceu (echipa re_form)",
+      "submit": "Trimite invitația",
+      "sent": "Invitația a fost trimisă către {email}.",
+      "listTitle": "conturi",
+      "colName": "Nume",
+      "colRole": "Rol",
+      "colSchool": "Liceu",
+      "colStatus": "Stare",
+      "active": "activ",
+      "deactivated": "dezactivat",
+      "empty": "Nu există încă alte conturi.",
+      "noSchools": "Nu există încă licee. Adaugă-le în tabelul schools din Supabase.",
+      "errors": {
+        "invalidInput": "Verifică emailul, numele și, pentru elevi, liceul.",
+        "inviteFailed": "Invitația nu a putut fi trimisă: {detail}",
+        "profileFailed": "Contul nu a putut fi creat: {detail}"
+      }
+    }
+  },
+  "setup": {
+    "title": "conectează Supabase",
+    "body": "Lipsesc variabilele de mediu pentru Supabase. Copiază .env.example în .env.local și completează-l, apoi repornește serverul. Pașii sunt în README."
+  }
+}

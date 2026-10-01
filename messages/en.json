@@ -1,0 +1,127 @@
+{
+  "meta": {
+    "title": "re_form",
+    "description": "A non-formal education academy for high school students: projects, mentorship and community."
+  },
+  "common": {
+    "login": "log in",
+    "logout": "log out",
+    "language": "Language",
+    "newsPanel": "news panel",
+    "comingSoon": "coming soon",
+    "save": "Save",
+    "sending": "Sending…"
+  },
+  "home": {
+    "kicker": "_ a non-formal education academy for high school students",
+    "title": "learning by doing",
+    "mission": "We create real settings where high school students learn by doing, discover what they are good at and build meaningful projects, supported by mentorship and a community that matters.",
+    "seeUpcoming": "see what's next",
+    "upcoming": "coming up",
+    "past": "what happened",
+    "emptyUpcoming": "Upcoming activities will appear here once the re_form team publishes them.",
+    "emptyPast": "The archive of past activities will appear here."
+  },
+  "nav": {
+    "label": "App",
+    "workspace": "projects",
+    "library": "resources",
+    "assessments": "assessments",
+    "messages": "messages",
+    "admin": "users"
+  },
+  "roles": {
+    "student": "student",
+    "core_lead": "core lead",
+    "staff": "re_form team",
+    "admin": "admin"
+  },
+  "auth": {
+    "login": {
+      "title": "log in",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Log in",
+      "forgot": "Forgot your password?",
+      "noAccount": "Accounts are created by the re_form team. If you are in your school's core team and haven't received an invitation, get in touch."
+    },
+    "forgot": {
+      "title": "reset your password",
+      "intro": "We'll email you a link to choose a new password.",
+      "submit": "Send the link",
+      "sent": "If an account exists for this email, we've sent the link. Check your spam folder too.",
+      "back": "Back to log in"
+    },
+    "setPassword": {
+      "title": "choose a password",
+      "intro": "At least 10 characters, with letters and numbers.",
+      "password": "New password",
+      "confirm": "Repeat the password",
+      "submit": "Save password"
+    },
+    "error": {
+      "title": "this link is no longer valid",
+      "body": "The link in the email has expired or was already used. Ask for a new one or contact the re_form team.",
+      "retry": "Ask for a new link"
+    },
+    "errors": {
+      "invalidInput": "Please fill in every field correctly.",
+      "invalidCredentials": "Wrong email or password.",
+      "mismatch": "The passwords don't match.",
+      "weakPassword": "The password needs at least 10 characters, with letters and numbers.",
+      "sessionExpired": "Your session has expired. Ask for a new link.",
+      "generic": "Something went wrong. Please try again."
+    },
+    "deactivated": "Your account has been deactivated. If that's a mistake, contact the re_form team.",
+    "noProfile": "Your account doesn't have a profile yet. Contact the re_form team."
+  },
+  "app": {
+    "workspace": {
+      "title": "projects",
+      "body": "Your core team's board: tasks, deadlines and who does what. Coming in phase 2."
+    },
+    "library": {
+      "title": "resources",
+      "body": "The library of recordings, slides and documents. Coming in phase 3."
+    },
+    "assessments": {
+      "title": "assessments",
+      "body": "Quizzes and file tasks after each meeting. Coming in phase 4."
+    },
+    "messages": {
+      "title": "messages",
+      "body": "Private messages between students and the re_form team. Coming in phase 5."
+    }
+  },
+  "admin": {
+    "users": {
+      "title": "users",
+      "inviteTitle": "invite someone",
+      "fullName": "Full name",
+      "email": "Email",
+      "role": "Role",
+      "school": "School",
+      "noSchool": "no school (re_form team)",
+      "submit": "Send invitation",
+      "sent": "Invitation sent to {email}.",
+      "listTitle": "accounts",
+      "colName": "Name",
+      "colRole": "Role",
+      "colSchool": "School",
+      "colStatus": "Status",
+      "active": "active",
+      "deactivated": "deactivated",
+      "empty": "No other accounts yet.",
+      "noSchools": "There are no schools yet. Add them to the schools table in Supabase.",
+      "errors": {
+        "invalidInput": "Check the email, the name and, for students, the school.",
+        "inviteFailed": "The invitation couldn't be sent: {detail}",
+        "profileFailed": "The account couldn't be created: {detail}"
+      }
+    }
+  },
+  "setup": {
+    "title": "connect Supabase",
+    "body": "The Supabase environment variables are missing. Copy .env.example to .env.local, fill it in and restart the server. The steps are in the README."
+  }
+}

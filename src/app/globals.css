@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+/*
+ * re_form brand tokens (docs/design/README.md).
+ * Teal #77bfb2 is for fills and bars only: on white, use teal-strong for headings
+ * of 24px and up and teal-text for smaller text, so contrast stays readable.
+ */
+@theme {
+  --color-ink: #221f20;
+  --color-paper: #ffffff;
+  --color-muted: #5f5b5d;
+  --color-line: #e4e1e2;
+
+  --color-teal: #77bfb2;
+  --color-teal-strong: #3a978a;
+  --color-teal-text: #2b7a6e;
+  --color-honey: #e1b345;
+  --color-lavender: #79569a;
+  --color-vermilion: #dd6937;
+  --color-lime: #abca54;
+  --color-pink: #e28ba3;
+}
+
+@theme inline {
+  --font-display: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-lexend), ui-sans-serif, system-ui, sans-serif;
+  --font-fun: var(--font-sour-gummy), ui-rounded, sans-serif;
+}
+
+@layer base {
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-teal-text);
+    outline-offset: 2px;
+  }
+}

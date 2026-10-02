@@ -1,26 +1,20 @@
-// Hand-written row types for the foundation tables (supabase/migrations/*_foundation.sql).
-// Once the Supabase project is linked, replace with generated types:
-//   npx supabase gen types typescript --linked > src/lib/database.types.ts
+import type { Database } from "@/lib/database.types";
+
+// Row types come from the generated database types (npm run db:types).
+type PublicSchema = Database["public"];
+export type Row<T extends keyof PublicSchema["Tables"]> = PublicSchema["Tables"][T]["Row"];
 
 export const appRoles = ["student", "core_lead", "staff", "admin"] as const;
-export type AppRole = (typeof appRoles)[number];
+export type AppRole = PublicSchema["Enums"]["app_role"];
 
-export type School = {
-  id: string;
-  name: string;
-  city: string | null;
-};
+export type School = Pick<Row<"schools">, "id" | "name" | "city">;
+export type Profile = Row<"profiles">;
 
-export type Profile = {
-  id: string;
-  full_name: string;
-  role: AppRole;
-  school_id: string | null;
-  graduation_year: number | null;
-  avatar_path: string | null;
-  locale: "ro" | "en";
-  deactivated_at: string | null;
-};
+export type ActivityCategory = PublicSchema["Enums"]["activity_category"];
+export const activityCategories: ActivityCategory[] = ["workshop", "meeting", "event", "showcase"];
+
+export const labelColors = ["teal", "honey", "lavender", "vermilion", "lime", "pink"] as const;
+export type LabelColor = (typeof labelColors)[number];
 
 export function isStaffRole(role: AppRole) {
   return role === "staff" || role === "admin";

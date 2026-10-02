@@ -1,8 +1,9 @@
 import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
+import { hasSupabaseEnv } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
-import type { Profile } from "@/lib/types";
+import { isStaffRole, type Profile } from "@/lib/types";
 
 export type Session =
   | { status: "signed-out" }
@@ -10,20 +11,15 @@ export type Session =
   | { status: "deactivated"; userId: string; profile: Profile }
   | { status: "active"; userId: string; profile: Profile };
 
-const profileColumns = "id, full_name, role, school_id, graduation_year, avatar_path, locale, deactivated_at";
-
 /** The signed-in user and their profile, read once per request. */
 export const getSession = cache(async (): Promise<Session> => {
+  if (!hasSupabaseEnv) return { status: "signed-out" };
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getClaims();
   const userId = data?.claims?.sub;
   if (error || !userId) return { status: "signed-out" };
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select(profileColumns)
-    .eq("id", userId)
-    .maybeSingle<Profile>();
+  const { data: profile } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
 
   if (!profile) return { status: "no-profile", userId };
   if (profile.deactivated_at) return { status: "deactivated", userId, profile };
@@ -36,6 +32,13 @@ export async function requireProfile() {
   if (session.status === "signed-out") redirect("/auth/login");
   if (session.status !== "active") redirect("/auth/blocked");
   return session.profile;
+}
+
+/** Staff and admins (the re_form team). */
+export async function requireStaff() {
+  const profile = await requireProfile();
+  if (!isStaffRole(profile.role)) redirect("/app");
+  return profile;
 }
 
 /** For admin-only pages and actions. Always call it before using the service-role client. */

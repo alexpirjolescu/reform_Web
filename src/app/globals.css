@@ -2,39 +2,141 @@
 
 /*
  * re_form brand tokens (docs/design/README.md).
- * Teal #77bfb2 is for fills and bars only: on white, use teal-strong for headings
- * of 24px and up and teal-text for smaller text, so contrast stays readable.
+ * Teal #77bfb2 is for fills and bars only on white: use teal-strong for headings of 24px+
+ * and teal-text for smaller text, so contrast stays readable.
  */
 @theme {
   --color-ink: #221f20;
   --color-paper: #ffffff;
   --color-muted: #5f5b5d;
   --color-line: #e4e1e2;
+  --color-sand: #f5f3f1;
 
   --color-teal: #77bfb2;
   --color-teal-strong: #3a978a;
   --color-teal-text: #2b7a6e;
+  --color-teal-wash: #e4f2ef;
   --color-honey: #e1b345;
+  --color-honey-wash: #fbf0d4;
   --color-lavender: #79569a;
   --color-vermilion: #dd6937;
+  --color-vermilion-wash: #fbe6dc;
   --color-lime: #abca54;
   --color-pink: #e28ba3;
+
+  /* Dark studio (theme "dark") surfaces */
+  --color-night: #221f20;
+  --color-night-2: #2a2728;
+  --color-night-3: #2c292a;
+  --color-night-4: #2f2b2d;
+  --color-night-5: #363234;
+  --color-night-line: #403c3e;
+  --color-night-rule: #343032;
+  --color-night-edge: #5a5557;
+  --color-night-muted: #bdb9bb;
+  --color-night-soft: #d0ccce;
+  --color-night-body: #d9d5d7;
 }
 
 @theme inline {
   --font-display: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
   --font-sans: var(--font-lexend), ui-sans-serif, system-ui, sans-serif;
   --font-fun: var(--font-sour-gummy), ui-rounded, sans-serif;
+
+  /* Theme-aware tokens for shared screens (admin pages, forms, dialogs) */
+  --color-th-bg: var(--th-bg);
+  --color-th-fg: var(--th-fg);
+  --color-th-muted: var(--th-muted);
+  --color-th-line: var(--th-line);
+  --color-th-edge: var(--th-edge);
+  --color-th-card: var(--th-card);
+  --color-th-raised: var(--th-raised);
+  --color-th-accent: var(--th-accent);
+  --color-th-accent-fg: var(--th-accent-fg);
+  --color-th-link: var(--th-link);
+  --color-th-heading: var(--th-heading);
+  --radius-th: var(--th-radius);
+  --radius-th-pill: var(--th-pill);
+}
+
+:root,
+[data-theme="white"] {
+  --th-bg: #ffffff;
+  --th-fg: #221f20;
+  --th-muted: #5f5b5d;
+  --th-line: #e4e1e2;
+  --th-edge: #221f20;
+  --th-card: #ffffff;
+  --th-raised: #f5f3f1;
+  --th-accent: #221f20;
+  --th-accent-fg: #ffffff;
+  --th-link: #2b7a6e;
+  --th-heading: #3a978a;
+  --th-radius: 0px;
+  --th-pill: 0px;
+  --th-border: 1px;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --th-bg: #221f20;
+  --th-fg: #ffffff;
+  --th-muted: #bdb9bb;
+  --th-line: #403c3e;
+  --th-edge: #5a5557;
+  --th-card: #2c292a;
+  --th-raised: #2f2b2d;
+  --th-accent: #77bfb2;
+  --th-accent-fg: #221f20;
+  --th-link: #77bfb2;
+  --th-heading: #77bfb2;
+  --th-radius: 2px;
+  --th-pill: 2px;
+  --th-border: 1px;
+}
+
+[data-theme="color"] {
+  --th-bg: #ffffff;
+  --th-fg: #221f20;
+  --th-muted: #5f5b5d;
+  --th-line: #221f20;
+  --th-edge: #221f20;
+  --th-card: #ffffff;
+  --th-raised: #f5f3f1;
+  --th-accent: #e1b345;
+  --th-accent-fg: #221f20;
+  --th-link: #221f20;
+  --th-heading: #221f20;
+  --th-radius: 18px;
+  --th-pill: 999px;
+  --th-border: 2px;
+}
+
+@utility border-th {
+  border-width: var(--th-border);
+  border-color: var(--th-edge);
 }
 
 @layer base {
   body {
-    background: var(--color-paper);
-    color: var(--color-ink);
+    background: var(--th-bg);
+    color: var(--th-fg);
   }
 
   :focus-visible {
-    outline: 3px solid var(--color-teal-text);
+    outline: 3px solid var(--th-link);
     outline-offset: 2px;
   }
+
+  [data-theme="dark"] :focus-visible {
+    outline-color: #77bfb2;
+  }
+
+  .prose-reform h2 { font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; margin: 1.5rem 0 0.5rem; }
+  .prose-reform h3 { font-family: var(--font-display); font-weight: 600; font-size: 1.2rem; margin: 1.25rem 0 0.5rem; }
+  .prose-reform p { margin: 0 0 1rem; line-height: 1.7; }
+  .prose-reform ul { list-style: disc; padding-left: 1.25rem; margin: 0 0 1rem; }
+  .prose-reform ol { list-style: decimal; padding-left: 1.25rem; margin: 0 0 1rem; }
+  .prose-reform a { color: var(--th-link); text-decoration: underline; text-underline-offset: 3px; }
+  .prose-reform blockquote { border-left: 4px solid #77bfb2; padding-left: 1rem; color: var(--th-muted); }
 }

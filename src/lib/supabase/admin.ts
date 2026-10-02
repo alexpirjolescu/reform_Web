@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
+import type { Database } from "@/lib/database.types";
 import { supabaseUrl } from "@/lib/env";
 
 /**
@@ -13,7 +14,7 @@ export function createAdminClient() {
     throw new Error("SUPABASE_SECRET_KEY and NEXT_PUBLIC_SUPABASE_URL must be set on the server.");
   }
 
-  return createClient(supabaseUrl, secretKey, {
+  return createClient<Database>(supabaseUrl, secretKey, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 }

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Lexend, Outfit, Sour_Gummy } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
+import { getSession } from "@/lib/auth";
+import { getTheme } from "@/lib/theme";
 import "./globals.css";
 
 // latin-ext covers Romanian diacritics (ă, â, î, ș, ț).
@@ -15,11 +17,16 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const locale = await getLocale();
+  const [locale, session] = await Promise.all([getLocale(), getSession()]);
+  const theme = await getTheme("profile" in session ? session.profile.theme : null);
 
   return (
-    <html lang={locale} className={`${outfit.variable} ${lexend.variable} ${sourGummy.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col font-sans">
+    <html
+      lang={locale}
+      data-theme={theme}
+      className={`${outfit.variable} ${lexend.variable} ${sourGummy.variable} h-full antialiased`}
+    >
+      <body className="flex min-h-full flex-col font-sans">
         <NextIntlClientProvider>{children}</NextIntlClientProvider>
       </body>
     </html>

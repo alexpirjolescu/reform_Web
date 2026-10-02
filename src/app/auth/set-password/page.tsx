@@ -19,7 +19,7 @@ export default async function SetPasswordPage() {
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-3">
         <h1 className="font-display text-5xl font-extrabold tracking-tight">{t("title")}</h1>
-        <p className="text-muted">{t("intro")}</p>
+        <p className="text-th-muted">{t("intro")}</p>
       </div>
       <SetPasswordForm />
     </div>

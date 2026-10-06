@@ -149,6 +149,8 @@
     "assessments": "assessments",
     "messages": "messages",
     "adminSection": "admin",
+    "admin_overview": "overview",
+    "admin_invites": "invitations",
     "admin_news": "news panel",
     "admin_users": "accounts",
     "admin_reports": "reports"
@@ -197,6 +199,16 @@
       "confirm": "Repeat the password",
       "submit": "Save password",
       "checking": "Checking the link from your email…"
+    },
+    "accept": {
+      "title": "re_form invitation",
+      "inviteTitle": "you've been invited to re_form",
+      "inviteBody": "Press the button to accept the invitation, then choose your password. The link works once.",
+      "inviteSubmit": "Accept the invitation",
+      "recoveryTitle": "choose a new password",
+      "recoveryBody": "Press the button to continue and choose your password. The link works once.",
+      "recoverySubmit": "Continue",
+      "signedInWarning": "You're already signed in in this browser. If you continue, you'll be signed in to the invited account."
     },
     "error": {
       "title": "this link is no longer valid",
@@ -724,12 +736,81 @@
       "reactivate": "reactivate",
       "you": "your account",
       "empty": "No accounts found.",
-      "noSchools": "There are no schools yet. Add them below before inviting students.",
+      "noSchools": "There are no schools yet. An admin adds them under “accounts” before you invite students.",
+      "goToInvites": "go to invitations",
       "errors": {
         "invalidInput": "Check the email, the name and, for students, the school.",
         "inviteFailed": "The invitation couldn't be sent: {detail}",
         "profileFailed": "The account couldn't be saved: {detail}",
         "selfDemote": "You can't change your own admin role."
+      }
+    },
+    "invites": {
+      "title": "invitations",
+      "introAdmin": "Only invited people can get an account. You can invite students, core leads, the re_form team and admins.",
+      "introStaff": "Only invited people can get an account. You can invite students, core leads and colleagues from the re_form team.",
+      "pickSchool": "pick the school",
+      "createLink": "Create invite link",
+      "sendEmail": "Send invite by email",
+      "deliveryHint": "You share the link yourself (WhatsApp, your own email) and it always leads to this site. The email is sent by Supabase and only arrives if email sending is set up.",
+      "linkReady": "The link for {email} is ready. Send it to this person only.",
+      "emailSent": "Invitation emailed to {email}.",
+      "linkLabel": "Invite link (single use)",
+      "linkHint": "Whoever opens the link chooses a password and is signed in. If it expires, create another from the list below.",
+      "copy": "Copy link",
+      "copied": "Copied ✓",
+      "pendingTitle": "open invitations",
+      "noPending": "No open invitations: everyone invited has set up their account.",
+      "invitedOn": "invited {date}",
+      "noProfile": "no profile (invited from Supabase)",
+      "noProfileHint": "Invite again with the form above and the same email, so they get a name, a role and a school.",
+      "adminOnly": "Only an admin can manage this invitation.",
+      "newLink": "new link",
+      "resend": "resend email",
+      "cancel": "withdraw invitation",
+      "cancelConfirm": "yes, withdraw for {email}",
+      "keep": "keep",
+      "cancelled": "The invitation for {email} was withdrawn.",
+      "orphansTitle": "accounts without a profile",
+      "orphansBody": "These accounts can log in but have no profile, so they see “account blocked”. Invite them again with the form above and the same email: they get a profile and a link to set a password.",
+      "emailHelpTitle": "Invite emails don't arrive or lead to localhost?",
+      "emailHelp1": "Supabase → Authentication → URL Configuration: Site URL = this site's address; under Redirect URLs add the site's address followed by /**.",
+      "emailHelp2": "Supabase → Authentication → Emails → Templates: paste supabase/templates/invite.html into “Invite user” and recovery.html into “Reset password”.",
+      "emailHelp3": "Supabase → Authentication → Emails → SMTP: connect an email service; the built-in sender only sends a few emails an hour.",
+      "emailHelp4": "Until then, use “Create invite link”: it works without any of the settings above.",
+      "missingKey": "The server has no SUPABASE_SECRET_KEY, so it can't create accounts. Add it in Vercel → Settings → Environment Variables and redeploy.",
+      "errors": {
+        "invalidInput": "Check the name, the email and, for students and core leads, the school.",
+        "roleNotAllowed": "Only an admin can invite or manage admins.",
+        "alreadyActive": "{detail} already has an active account. Change role and school under “accounts”.",
+        "notPending": "This invitation is no longer open (the person already set up the account, or it was withdrawn).",
+        "inviteFailed": "The invitation couldn't be sent: {detail}",
+        "profileFailed": "The profile couldn't be saved: {detail}"
+      }
+    },
+    "overview": {
+      "title": "administration",
+      "introStaff": "Invitations and the news panel, for the re_form team.",
+      "introAdmin": "Invitations, the news panel, accounts and reports.",
+      "invites": {
+        "title": "invitations",
+        "body": "Invite students, core leads and colleagues. The number shows invitations not yet accepted.",
+        "cta": "invite someone"
+      },
+      "news": {
+        "title": "news panel",
+        "body": "The academy's public activities. The number shows unpublished drafts.",
+        "cta": "open the panel"
+      },
+      "users": {
+        "title": "accounts",
+        "body": "Roles, schools, deactivations and partner schools. The number shows active accounts.",
+        "cta": "manage accounts"
+      },
+      "reports": {
+        "title": "reports",
+        "body": "Conversations reported by users. The number shows open reports.",
+        "cta": "see the reports"
       }
     },
     "schools": {

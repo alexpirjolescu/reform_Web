@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { PageHeader } from "@/components/page-header";
 import { requireAdmin } from "@/lib/auth";
@@ -5,7 +6,6 @@ import { createClient } from "@/lib/supabase/server";
 import { getTheme } from "@/lib/theme";
 import type { AppRole, School } from "@/lib/types";
 import { setActive } from "./actions";
-import { InviteForm } from "./invite-form";
 import { DemoCleanupForm, MemberForm, SchoolForm } from "./member-forms";
 
 type UserRow = {
@@ -44,11 +44,10 @@ export default async function UsersPage({ searchParams }: PageProps<"/app/admin/
     <div className="min-h-0 flex-1 overflow-y-auto">
       <PageHeader variant={theme} kicker={t("nav.adminSection")} title={t("admin.users.title")} />
       <div className="flex max-w-5xl flex-col gap-8 px-4 py-6 sm:px-8">
-        <section aria-labelledby="invite-title" className={card}>
-          <h2 id="invite-title" className="font-display text-2xl font-bold">{t("admin.users.inviteTitle")}</h2>
-          {!schools?.length && <p className="text-sm text-th-muted">{t("admin.users.noSchools")}</p>}
-          <InviteForm schools={schools ?? []} />
-        </section>
+        <Link href="/app/admin/invites" className="flex flex-wrap items-center justify-between gap-3 rounded-th border-th bg-th-card p-5 hover:bg-th-raised">
+          <span className="font-display text-xl font-bold">{t("admin.users.inviteTitle")}</span>
+          <span className="text-sm font-medium text-th-link">{t("admin.users.goToInvites")} →</span>
+        </Link>
 
         <section aria-labelledby="schools-title" className={card}>
           <h2 id="schools-title" className="font-display text-2xl font-bold">{t("admin.schools.title")}</h2>

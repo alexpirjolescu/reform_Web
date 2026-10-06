@@ -9,11 +9,16 @@ export const moduleNav: { key: NavKey; href: string; color: string; ink: string 
   { key: "messages", href: "/app/messages", color: "#dd6937", ink: "#221f20" },
 ];
 
-export type AdminKey = "news" | "users" | "reports";
+export type AdminKey = "overview" | "invites" | "news" | "users" | "reports";
 
-export function adminNav(shell: ShellData): { key: AdminKey; href: string; badge?: number }[] {
-  const items: { key: AdminKey; href: string; badge?: number }[] = [];
-  if (shell.isStaff) items.push({ key: "news", href: "/app/admin/news" });
+/** The administration section: staff send invitations and edit the news panel; admins also manage accounts and reports. */
+export function adminNav(shell: ShellData): { key: AdminKey; href: string; badge?: number; exact?: boolean }[] {
+  const items: { key: AdminKey; href: string; badge?: number; exact?: boolean }[] = [];
+  if (shell.isStaff) {
+    items.push({ key: "overview", href: "/app/admin", exact: true });
+    items.push({ key: "invites", href: "/app/admin/invites" });
+    items.push({ key: "news", href: "/app/admin/news" });
+  }
   if (shell.isAdmin) {
     items.push({ key: "users", href: "/app/admin/users" });
     items.push({ key: "reports", href: "/app/admin/reports", badge: shell.openReports });

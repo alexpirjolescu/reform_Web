@@ -73,3 +73,17 @@ export async function signOut() {
   await supabase.auth.signOut();
   redirect("/");
 }
+
+const acceptSchema = z.object({
+  token_hash: z.string().min(10).max(200),
+  type: z.enum(["invite", "recovery"]),
+});
+
+/** "Accept" on /auth/accept: verify the one-time link, then choose a password. */
+export async function acceptLink(formData: FormData) {
+  const parsed = acceptSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) redirect("/auth/error");
+  const supabase = await createClient();
+  const { error } = await supabase.auth.verifyOtp({ type: parsed.data.type, token_hash: parsed.data.token_hash });
+  redirect(error ? "/auth/error" : "/auth/set-password");
+}

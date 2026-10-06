@@ -59,8 +59,12 @@ The Supabase project **reform-web** (`jdhxaatosmkedggzuiki`, Frankfurt) already 
    npm run admin:bootstrap -- you@example.com "Your Name"
    ```
 
-   Open the invite email, choose a password and you land in `/app`. Invite everyone else from **Accounts**.
-5. **Try it with the demo content**, marked "[demo]": two demo schools, a project board, library links, a quiz and an assignment, and seven activities on the news panel. Invite a test student into a "[demo]" school to see it as a student. When real content is ready, remove it all from **Accounts → demo content**.
+   Open the invite email, choose a password and you land in `/app`.
+5. **Invite everyone else** from **administration → invitations** (staff and admins; staff can't invite admins):
+   - **Create invite link** makes a one-time link to this site that you send yourself (WhatsApp, your own email). It works without any Supabase email setup, and link previews in chat apps can't use it up (the token is only used when the person presses "accept").
+   - **Send invite by email** uses Supabase's email: it needs the URL Configuration above, the templates, and custom SMTP for more than a few emails an hour.
+   - Open invitations are listed with "new link", "resend email" and "withdraw". Set Supabase → Authentication → Providers → Email → *Email OTP Expiration* to `86400` so links stay valid for 24 hours (the default is 1 hour).
+6. **Try it with the demo content**, marked "[demo]": two demo schools, a project board, library links, a quiz and an assignment, and seven activities on the news panel. Invite a test student into a "[demo]" school to see it as a student. When real content is ready, remove it all from **Accounts → demo content**.
 
 ## Run it locally
 

@@ -77,3 +77,9 @@ export const NewsIcon = (p: IconProps) => (
 export const UsersIcon = (p: IconProps) => (
   <svg {...base(p)}><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c.5-4 3-6 6.5-6s6 2 6.5 6M16 4.5a3.5 3.5 0 0 1 0 7M18 14c2 .7 3.3 2.7 3.5 6" /></svg>
 );
+export const MailIcon = (p: IconProps) => (
+  <svg {...base(p)}><rect x="3" y="5" width="18" height="14" /><path d="M3 6l9 7 9-7" /></svg>
+);
+export const GridIcon = (p: IconProps) => (
+  <svg {...base(p)}><rect x="4" y="4" width="7" height="7" /><rect x="13" y="4" width="7" height="7" /><rect x="4" y="13" width="7" height="7" /><rect x="13" y="13" width="7" height="7" /></svg>
+);

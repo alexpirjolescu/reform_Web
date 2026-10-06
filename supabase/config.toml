@@ -234,7 +234,7 @@ max_frequency = "1s"
 # Number of characters used in the email OTP.
 otp_length = 6
 # Number of seconds before the email OTP expires (defaults to 1 hour).
-otp_expiry = 3600
+otp_expiry = 86400
 
 # Use a production-ready SMTP server
 # [auth.email.smtp]
@@ -246,7 +246,7 @@ otp_expiry = 3600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
-# re_form: invite and recovery links use token_hash so the Next.js /auth/confirm route can verify them.
+# re_form: invite and recovery links use token_hash and land on /auth/accept, which verifies them on a button press.
 [auth.email.template.invite]
 subject = "Invitație în re_form platform"
 content_path = "./supabase/templates/invite.html"

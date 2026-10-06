@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { getTranslations } from "next-intl/server";
 import { signOut } from "@/app/auth/actions";
 import { Avatar } from "@/components/avatar";
-import { BoardIcon, ChatIcon, FolderIcon, NewsIcon, QuizIcon, ShieldIcon, UsersIcon } from "@/components/icons";
+import { BoardIcon, ChatIcon, FolderIcon, GridIcon, MailIcon, NewsIcon, QuizIcon, ShieldIcon, UsersIcon } from "@/components/icons";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { Logo } from "@/components/logo";
 import { ThemeSwitcher } from "@/components/theme-switcher";
@@ -17,7 +17,7 @@ const moduleIcons: Record<NavKey, typeof BoardIcon> = {
   assessments: QuizIcon,
   messages: ChatIcon,
 };
-const adminIcons: Record<AdminKey, typeof BoardIcon> = { news: NewsIcon, users: UsersIcon, reports: ShieldIcon };
+const adminIcons: Record<AdminKey, typeof BoardIcon> = { overview: GridIcon, invites: MailIcon, news: NewsIcon, users: UsersIcon, reports: ShieldIcon };
 
 type ShellProps = { shell: ShellData; children: ReactNode };
 
@@ -75,12 +75,12 @@ export async function DarkShell({ shell, children }: ShellProps) {
             );
           })}
           {adminNav(shell).length > 0 && <div className="mt-4 mb-1 hidden px-2.5 text-xs text-night-muted md:block">{t("nav.adminSection")}</div>}
-          {adminNav(shell).map(({ key, href, badge }) => {
+          {adminNav(shell).map(({ key, href, badge, exact }) => {
             const Icon = adminIcons[key];
             return (
-              <NavLink key={key} href={href} className={item} activeClassName={active}
+              <NavLink key={key} href={href} exact={exact} className={item} activeClassName={active}
                 activeExtra={<span aria-hidden="true" className="ml-auto h-1 w-4 bg-teal" />}>
-                <WhenActive href={href} active={<Icon className="text-teal" />} inactive={<Icon />} />
+                <WhenActive href={href} exact={exact} active={<Icon className="text-teal" />} inactive={<Icon />} />
                 {t(`nav.admin_${key}`)}
                 {!!badge && <span className="ml-auto bg-honey px-[7px] py-px text-xs text-night">{badge}</span>}
               </NavLink>
@@ -138,7 +138,7 @@ export async function WhiteShell({ shell, children }: ShellProps) {
           {adminNav(shell).length > 0 && (
             <NavMenu
               label={t("nav.adminSection")}
-              items={adminNav(shell).map(({ key, href, badge }) => ({ href, badge, label: t(`nav.admin_${key}`) }))}
+              items={adminNav(shell).map(({ key, href, badge, exact }) => ({ href, badge, exact, label: t(`nav.admin_${key}`) }))}
               className={tab}
               activeClassName={activeTab}
             />
@@ -207,10 +207,10 @@ export async function ColorShell({ shell, children }: ShellProps) {
               </NavLink>
             );
           })}
-          {adminNav(shell).map(({ key, href, badge }) => {
+          {adminNav(shell).map(({ key, href, badge, exact }) => {
             const Icon = adminIcons[key];
             return (
-              <NavLink key={key} href={href} className={item} activeClassName={active}>
+              <NavLink key={key} href={href} exact={exact} className={item} activeClassName={active}>
                 <span aria-hidden="true" className="grid size-[34px] shrink-0 place-items-center rounded-full border-2 border-ink bg-teal">
                   <Icon size={18} strokeWidth={2.5} />
                 </span>

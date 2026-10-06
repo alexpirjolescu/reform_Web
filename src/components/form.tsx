@@ -11,6 +11,8 @@ export type ActionState = {
   messageValues?: Record<string, string>;
   /** Changes on every successful submit so forms can reset themselves. */
   done?: number;
+  /** A one-time invite link to show with a "copy" button (invitations). */
+  link?: string;
 };
 
 // Shared screens (auth, admin, create forms) follow the chosen theme through the --th-* tokens in globals.css.

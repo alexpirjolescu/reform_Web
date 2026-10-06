@@ -149,6 +149,8 @@
     "assessments": "evaluări",
     "messages": "mesaje",
     "adminSection": "administrare",
+    "admin_overview": "prezentare",
+    "admin_invites": "invitații",
     "admin_news": "panou de știri",
     "admin_users": "conturi",
     "admin_reports": "rapoarte"
@@ -197,6 +199,16 @@
       "confirm": "Repetă parola",
       "submit": "Salvează parola",
       "checking": "Verificăm linkul din email…"
+    },
+    "accept": {
+      "title": "invitație re_form",
+      "inviteTitle": "ai fost invitat(ă) în re_form",
+      "inviteBody": "Apasă butonul ca să accepți invitația, apoi alege-ți parola. Linkul merge o singură dată.",
+      "inviteSubmit": "Acceptă invitația",
+      "recoveryTitle": "alege o parolă nouă",
+      "recoveryBody": "Apasă butonul ca să continui și să-ți alegi parola. Linkul merge o singură dată.",
+      "recoverySubmit": "Continuă",
+      "signedInWarning": "Ești deja autentificat(ă) în acest browser. Dacă continui, vei intra în contul din invitație."
     },
     "error": {
       "title": "linkul nu mai e valabil",
@@ -724,12 +736,81 @@
       "reactivate": "reactivează",
       "you": "contul tău",
       "empty": "Niciun cont găsit.",
-      "noSchools": "Nu există încă licee. Adaugă-le mai jos înainte să inviți elevi.",
+      "noSchools": "Nu există încă licee. Un administrator le adaugă din „conturi” înainte să inviți elevi.",
+      "goToInvites": "mergi la invitații",
       "errors": {
         "invalidInput": "Verifică emailul, numele și, pentru elevi, liceul.",
         "inviteFailed": "Invitația nu s-a putut trimite: {detail}",
         "profileFailed": "Contul nu s-a putut salva: {detail}",
         "selfDemote": "Nu-ți poți schimba singur rolul de administrator."
+      }
+    },
+    "invites": {
+      "title": "invitații",
+      "introAdmin": "Doar oamenii invitați își pot face cont. Poți invita elevi, coordonatori core, echipa re_form și administratori.",
+      "introStaff": "Doar oamenii invitați își pot face cont. Poți invita elevi, coordonatori core și colegi din echipa re_form.",
+      "pickSchool": "alege liceul",
+      "createLink": "Creează linkul de invitație",
+      "sendEmail": "Trimite invitația pe email",
+      "deliveryHint": "Linkul îl trimiți tu (WhatsApp, emailul tău) și duce mereu la acest site. Emailul îl trimite Supabase și ajunge doar dacă trimiterea de emailuri e configurată.",
+      "linkReady": "Linkul pentru {email} e gata. Trimite-l doar acestei persoane.",
+      "emailSent": "Invitație trimisă pe email către {email}.",
+      "linkLabel": "Link de invitație (o singură folosire)",
+      "linkHint": "Cine deschide linkul își alege parola și intră în cont. Dacă linkul expiră, creează altul din lista de mai jos.",
+      "copy": "Copiază linkul",
+      "copied": "Copiat ✓",
+      "pendingTitle": "invitații în așteptare",
+      "noPending": "Nicio invitație în așteptare: toți cei invitați și-au făcut contul.",
+      "invitedOn": "invitat {date}",
+      "noProfile": "fără profil (invitat din Supabase)",
+      "noProfileHint": "Invită din nou, cu formularul de sus și același email, ca să primească nume, rol și liceu.",
+      "adminOnly": "Doar un administrator poate gestiona această invitație.",
+      "newLink": "link nou",
+      "resend": "retrimite emailul",
+      "cancel": "anulează invitația",
+      "cancelConfirm": "da, anulează pentru {email}",
+      "keep": "păstrează",
+      "cancelled": "Invitația pentru {email} a fost anulată.",
+      "orphansTitle": "conturi fără profil",
+      "orphansBody": "Aceste conturi pot intra, dar nu au profil, așa că văd „cont blocat”. Invită-le din nou cu formularul de sus și același email: primesc profilul și un link de setare a parolei.",
+      "emailHelpTitle": "Emailurile de invitație nu ajung sau duc la localhost?",
+      "emailHelp1": "Supabase → Authentication → URL Configuration: Site URL = adresa acestui site; la Redirect URLs adaugă adresa site-ului urmată de /**.",
+      "emailHelp2": "Supabase → Authentication → Emails → Templates: lipește supabase/templates/invite.html la „Invite user” și recovery.html la „Reset password”.",
+      "emailHelp3": "Supabase → Authentication → Emails → SMTP: conectează un serviciu de email; expeditorul inclus trimite doar câteva emailuri pe oră.",
+      "emailHelp4": "Până atunci, folosește „Creează linkul de invitație”: funcționează fără niciuna dintre setările de mai sus.",
+      "missingKey": "Serverul nu are cheia SUPABASE_SECRET_KEY, așa că nu poate crea conturi. Adaug-o în Vercel → Settings → Environment Variables și redeploy.",
+      "errors": {
+        "invalidInput": "Verifică numele, emailul și, pentru elevi și coordonatori, liceul.",
+        "roleNotAllowed": "Doar un administrator poate invita sau gestiona administratori.",
+        "alreadyActive": "{detail} are deja cont activ. Rolul și liceul se schimbă din „conturi”.",
+        "notPending": "Invitația nu mai e în așteptare (persoana și-a făcut deja contul sau a fost anulată).",
+        "inviteFailed": "Invitația nu s-a putut trimite: {detail}",
+        "profileFailed": "Profilul nu s-a putut salva: {detail}"
+      }
+    },
+    "overview": {
+      "title": "administrare",
+      "introStaff": "Invitații și panoul de știri, pentru echipa re_form.",
+      "introAdmin": "Invitații, panoul de știri, conturi și rapoarte.",
+      "invites": {
+        "title": "invitații",
+        "body": "Invită elevi, coordonatori și colegi. Numărul arată invitațiile încă neacceptate.",
+        "cta": "invită pe cineva"
+      },
+      "news": {
+        "title": "panou de știri",
+        "body": "Activitățile publice ale academiei. Numărul arată ciornele nepublicate.",
+        "cta": "deschide panoul"
+      },
+      "users": {
+        "title": "conturi",
+        "body": "Roluri, licee, dezactivări și liceele partenere. Numărul arată conturile active.",
+        "cta": "gestionează conturile"
+      },
+      "reports": {
+        "title": "rapoarte",
+        "body": "Conversații raportate de utilizatori. Numărul arată rapoartele deschise.",
+        "cta": "vezi rapoartele"
       }
     },
     "schools": {

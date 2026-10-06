@@ -24,7 +24,7 @@ const supabase = createClient(url, secretKey, { auth: { autoRefreshToken: false,
 
 const { count } = await supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "admin");
 if (count && count > 0) {
-  console.error("An admin already exists. Invite more people from /app/admin/users instead.");
+  console.error("An admin already exists. Invite more people from /app/admin/invites instead.");
   process.exit(1);
 }
 

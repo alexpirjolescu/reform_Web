@@ -119,7 +119,7 @@ try {
 
   // --- Theme choice sticks to the profile ------------------------------------
   await outsider.goto(`${base}/app/workspace`);
-  await outsider.click("form[aria-label='Aspect'] button[value='dark'] >> nth=0");
+  await outsider.click("form[aria-label='Aspect']:visible button[value='dark']");
   await outsider.waitForLoadState("networkidle");
   check((await outsider.locator("html").getAttribute("data-theme")) === "dark", "theme switches to dark");
 

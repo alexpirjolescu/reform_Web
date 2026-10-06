@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { choiceLetter, isAnswered, type RunnerAnswer, type RunnerQuestion } from "@/lib/assessments";
@@ -17,14 +17,12 @@ type Props = {
   questions: RunnerQuestion[];
   initialAnswers: Record<string, RunnerAnswer>;
   /** White design: blocks drawn in the left column above and below the question grid. */
-  asideTop?: ReactNode;
-  asideBottom?: ReactNode;
 };
 
 const empty: RunnerAnswer = { choice_ids: [], text_answer: "" };
 
 /** Takes a quiz one question at a time; every change is saved straight away (save_answer). */
-export function QuizRunner({ variant, attemptId, title, kicker, closesLabel, attemptLabel, questions, initialAnswers, asideTop, asideBottom }: Props) {
+export function QuizRunner({ variant, attemptId, title, kicker, closesLabel, attemptLabel, questions, initialAnswers }: Props) {
   const t = useTranslations("assessments");
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
@@ -120,11 +118,9 @@ export function QuizRunner({ variant, attemptId, title, kicker, closesLabel, att
             onChange={(e) => update(q.id, { ...answer, text_answer: e.target.value }, 800)}
             placeholder={t("openPlaceholder")}
             className={
-              variant === "dark"
-                ? "w-full rounded-[2px] border border-night-edge bg-night-2 p-4 text-base leading-relaxed text-white"
-                : variant === "color"
-                  ? "w-full rounded-[22px] border-2 border-ink p-4 text-base leading-relaxed"
-                  : "w-full border border-ink p-4 text-base leading-relaxed"
+              variant === "color"
+                ? "w-full rounded-[22px] border-2 border-ink p-4 text-base leading-relaxed"
+                : "w-full rounded-th border border-th-edge bg-th-sunk p-4 text-base leading-relaxed text-th-fg"
             }
           />
         </label>
@@ -147,33 +143,24 @@ export function QuizRunner({ variant, attemptId, title, kicker, closesLabel, att
           name={`q-${q.id}`}
           checked={selected}
           onChange={toggle}
-          className={variant === "color" ? "sr-only" : `size-5 shrink-0 ${variant === "dark" ? "accent-teal" : "accent-ink"} ${variant === "white" ? "ml-3" : ""}`}
+          className={variant === "color" ? "sr-only" : "size-5 shrink-0 accent-th-link"}
         />
       );
-      if (variant === "dark") {
+      if (variant !== "color") {
         return (
-          <label key={choice.id} className={`flex cursor-pointer items-center gap-4 px-[18px] py-4 text-base leading-snug ${selected ? "border-2 border-teal bg-night-4" : "border border-night-edge"} has-focus-visible:outline-3 has-focus-visible:outline-teal`}>
+          <label key={choice.id} className={`flex cursor-pointer items-center gap-4 rounded-th px-[18px] py-4 text-base leading-snug ${selected ? "border-2 border-teal bg-th-raised" : "border border-th-edge"} has-focus-visible:outline-3 has-focus-visible:outline-teal`}>
             {input}
-            <span className="w-[18px] font-display font-bold text-teal">{choiceLetter(i)}</span>
-            <span>{choice.label}</span>
-          </label>
-        );
-      }
-      if (variant === "color") {
-        return (
-          <label key={choice.id} className={`flex cursor-pointer items-center gap-3.5 rounded-full border-2 border-ink py-2.5 pr-[18px] pl-2.5 text-base font-medium has-focus-visible:outline-3 has-focus-visible:outline-ink ${selected ? "bg-honey-wash" : "bg-white"}`}>
-            {input}
-            <span aria-hidden="true" className={`grid size-9 shrink-0 place-items-center rounded-full border-2 border-ink font-fun text-[17px] font-bold ${selected ? "bg-honey" : "bg-white"}`}>
-              {multiple && selected ? "✓" : choiceLetter(i)}
-            </span>
+            <span className="w-[18px] font-display font-bold text-th-link">{choiceLetter(i)}</span>
             <span>{choice.label}</span>
           </label>
         );
       }
       return (
-        <label key={choice.id} className={`flex cursor-pointer items-center gap-[18px] border-t border-ink px-1 py-[18px] text-[17px] leading-snug ${selected ? "bg-teal-wash" : ""}`}>
+        <label key={choice.id} className={`flex cursor-pointer items-center gap-3.5 rounded-full border-2 border-ink py-2.5 pr-[18px] pl-2.5 text-base font-medium has-focus-visible:outline-3 has-focus-visible:outline-ink ${selected ? "bg-honey-wash" : "bg-white"}`}>
           {input}
-          <span className="w-5 font-display font-extrabold">{choiceLetter(i)}</span>
+          <span aria-hidden="true" className={`grid size-9 shrink-0 place-items-center rounded-full border-2 border-ink font-fun text-[17px] font-bold ${selected ? "bg-honey" : "bg-white"}`}>
+            {multiple && selected ? "✓" : choiceLetter(i)}
+          </span>
           <span>{choice.label}</span>
         </label>
       );
@@ -181,19 +168,16 @@ export function QuizRunner({ variant, attemptId, title, kicker, closesLabel, att
   };
 
   const legendClass =
-    variant === "dark"
-      ? "mb-[18px] font-display text-[26px] leading-tight font-semibold sm:text-[30px]"
-      : variant === "color"
-        ? "mb-3.5 font-display text-[22px] leading-tight font-bold sm:text-[26px]"
-        : "mb-6 font-display text-[26px] leading-tight font-bold sm:text-[32px]";
+    variant === "color"
+      ? "mb-3.5 font-display text-[22px] leading-tight font-bold sm:text-[26px]"
+      : "mb-[18px] font-display text-[26px] leading-tight font-semibold sm:text-[30px]";
 
   const questionBlock = question && (
-    <fieldset className={`flex max-w-[780px] flex-col ${variant === "white" ? "" : variant === "color" ? "gap-2.5" : "gap-3"}`}>
+    <fieldset className={`flex max-w-[780px] flex-col ${variant === "color" ? "gap-2.5" : "gap-3"}`}>
       <legend className={legendClass}>
         <span className="whitespace-pre-line">{question.prompt}</span>
       </legend>
       {optionList(question)}
-      {variant === "white" && question.kind !== "open" && <span aria-hidden="true" className="border-t border-ink" />}
     </fieldset>
   );
 
@@ -201,14 +185,14 @@ export function QuizRunner({ variant, attemptId, title, kicker, closesLabel, att
 
   const summaryBlock = (
     <div className="flex max-w-[780px] flex-col gap-4">
-      <p className={variant === "white" ? "font-display text-[32px] font-bold" : "font-display text-[26px] font-bold"}>{t("readyTitle")}</p>
+      <p className="font-display text-[26px] font-bold">{t("readyTitle")}</p>
       <p className="text-base leading-relaxed">{t("answeredOf", { answered: answeredCount, total })}</p>
       {unanswered.length > 0 && (
         <div className="flex flex-col gap-2">
           <p className="text-sm">{t("unansweredList")}</p>
           <div className="flex flex-wrap gap-2">
             {unanswered.map(({ i }) => (
-              <button key={i} type="button" onClick={() => go(i)} className={`min-h-11 min-w-11 px-3 font-display font-semibold ${variant === "dark" ? "border border-night-edge" : variant === "color" ? "rounded-full border-2 border-ink" : "border border-ink"}`}>
+              <button key={i} type="button" onClick={() => go(i)} className={`min-h-11 min-w-11 px-3 font-display font-semibold ${variant === "color" ? "rounded-full border-2 border-ink" : "rounded-th border border-th-edge"}`}>
                 {i + 1}
               </button>
             ))}
@@ -219,19 +203,24 @@ export function QuizRunner({ variant, attemptId, title, kicker, closesLabel, att
     </div>
   );
 
+  const studio = {
+    back: "min-h-12 rounded-th border border-th-edge px-5 text-[15px] hover:border-th-fg disabled:opacity-40",
+    next: "ml-auto min-h-12 rounded-th bg-teal px-6 font-display text-base font-semibold text-ink disabled:opacity-60",
+    note: "text-[13px] text-th-muted",
+  };
   const buttons = {
-    dark: { back: "min-h-12 rounded-[2px] border border-night-edge px-5 text-[15px] hover:border-white disabled:opacity-40", next: "ml-auto min-h-12 rounded-[2px] bg-teal px-6 font-display text-base font-semibold text-night disabled:opacity-60", note: "text-[13px] text-night-muted" },
-    white: { back: "min-h-12 border border-ink bg-white px-5 text-[15px] disabled:opacity-40", next: "ml-auto min-h-12 bg-ink px-6 font-display text-base font-semibold text-white disabled:opacity-60", note: "text-[13px] text-muted" },
+    dark: studio,
+    white: studio,
     color: { back: "min-h-12 rounded-full border-2 border-ink bg-white px-5 text-[15px] disabled:opacity-40", next: "ml-auto min-h-12 rounded-full border-2 border-ink bg-lavender px-6 font-display text-base font-bold text-white disabled:opacity-60", note: "text-[13px] text-muted" },
   }[variant];
 
   const footer = (
     <div className="flex max-w-[780px] flex-wrap items-center gap-3 pt-2">
       <button type="button" onClick={() => go(index - 1)} disabled={index === 0} className={buttons.back}>← {t("back")}</button>
-      <span className={buttons.note} aria-live="polite">{variant === "color" ? `${closesLabel} · ${attemptLabel}` : variant === "white" ? `_ ${savedNote}` : savedNote}</span>
+      <span className={buttons.note} aria-live="polite">{variant === "color" ? `${closesLabel} · ${attemptLabel}` : savedNote}</span>
       {index < total ? (
         <button type="button" onClick={() => go(index + 1)} className={buttons.next}>
-          {index === total - 1 ? t("toSummary") : variant === "dark" ? t("nextQuestion") : t("next")} →
+          {index === total - 1 ? t("toSummary") : variant === "color" ? t("next") : t("nextQuestion")} →
         </button>
       ) : confirming ? (
         <button type="button" onClick={() => void submit()} disabled={submitting} className={buttons.next}>
@@ -249,15 +238,16 @@ export function QuizRunner({ variant, attemptId, title, kicker, closesLabel, att
 
   // --- layouts --------------------------------------------------------------
 
-  if (variant === "dark") {
+  if (variant !== "color") {
+    // Studio (dark and white)
     return (
       <div className="flex flex-col gap-[26px]">
         <div className="flex flex-wrap items-start justify-between gap-5">
           <div className="min-w-0 flex-[1_1_320px]">
-            {kicker && <p className="mb-2 text-[13px] text-teal">_ {kicker}</p>}
+            {kicker && <p className="mb-2 text-[13px] text-th-link">_ {kicker}</p>}
             <h2 className="font-display text-[30px] font-bold">{title}</h2>
           </div>
-          <div className="shrink-0 text-[13px] leading-relaxed text-night-soft sm:text-right">
+          <div className="shrink-0 text-[13px] leading-relaxed text-th-soft sm:text-right">
             {closesLabel}
             <br />
             {attemptLabel} · {t("noTimeLimit")}
@@ -267,10 +257,10 @@ export function QuizRunner({ variant, attemptId, title, kicker, closesLabel, att
           <div role="progressbar" aria-label={t("progress")} aria-valuemin={0} aria-valuemax={total} aria-valuenow={answeredCount} className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${Math.max(total, 1)}, minmax(0, 1fr))` }}>
             {questions.map((q, i) => (
               <button key={q.id} type="button" onClick={() => go(i)} aria-label={t("goTo", { n: i + 1 })}
-                className={`h-1.5 ${i === index ? "bg-white" : isAnswered(q, answers[q.id]) ? "bg-teal" : "bg-night-line"}`} />
+                className={`h-1.5 ${i === index ? "bg-th-fg" : isAnswered(q, answers[q.id]) ? "bg-teal" : "bg-th-line"}`} />
             ))}
           </div>
-          <div ref={headingRef} tabIndex={-1} className="mt-2.5 text-[13px] text-night-muted outline-none">{stepLabel}</div>
+          <div ref={headingRef} tabIndex={-1} className="mt-2.5 text-[13px] text-th-muted outline-none">{stepLabel}</div>
         </div>
         {question ? questionBlock : summaryBlock}
         {footer}
@@ -278,75 +268,29 @@ export function QuizRunner({ variant, attemptId, title, kicker, closesLabel, att
     );
   }
 
-  if (variant === "color") {
-    return (
-      <section className="overflow-hidden rounded-[28px] border-2 border-ink">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b-2 border-ink bg-lavender px-[26px] py-5 text-white">
-          <div>
-            {kicker && <div className="text-[13px]">{t("kinds.quiz")} · {kicker}</div>}
-            <h2 className="mt-1 font-display text-[26px] font-extrabold">{title}</h2>
-          </div>
-          <span className="font-fun text-[44px] leading-none font-bold">
-            {Math.min(index + 1, total)}<span className="text-2xl">/{total}</span>
-          </span>
-        </div>
-        <div className="flex flex-col gap-[18px] px-[26px] pt-6 pb-[26px]">
-          <div role="progressbar" aria-label={t("progress")} aria-valuemin={0} aria-valuemax={total} aria-valuenow={answeredCount} className="flex flex-wrap gap-2">
-            {questions.map((q, i) => (
-              <button key={q.id} type="button" onClick={() => go(i)} aria-label={t("goTo", { n: i + 1 })}
-                className={`size-[22px] rounded-full border-2 border-ink ${i === index ? "bg-honey" : isAnswered(q, answers[q.id]) ? "bg-lime" : "bg-white"}`} />
-            ))}
-          </div>
-          <div ref={headingRef} tabIndex={-1} className="text-[13px] font-medium outline-none">{stepLabel}</div>
-          {question ? questionBlock : summaryBlock}
-          {footer}
-          <span className="text-xs text-muted" aria-live="polite">{savedNote}</span>
-        </div>
-      </section>
-    );
-  }
-
-  // white: question grid lives in the left column
   return (
-    <div className="flex min-h-0 flex-1 flex-col md:flex-row">
-      <aside className="flex shrink-0 flex-col gap-[26px] overflow-auto border-b border-ink p-[26px] md:w-[300px] md:border-r md:border-b-0">
-        {asideTop}
-        <nav aria-label={t("questions")}>
-          <h2 className="mb-3 font-display text-base font-bold">{t("questions")}</h2>
-          <div className="grid grid-cols-4 gap-2">
-            {questions.map((q, i) => {
-              const done = isAnswered(q, answers[q.id]);
-              const current = i === index;
-              const cls = current
-                ? "border-2 border-ink bg-teal font-bold"
-                : done
-                  ? "bg-ink text-white font-semibold"
-                  : q.kind === "open"
-                    ? "border border-dashed border-ink"
-                    : "border border-ink";
-              return (
-                <button key={q.id} type="button" onClick={() => go(i)} aria-current={current ? "step" : undefined}
-                  aria-label={`${t("goTo", { n: i + 1 })}${done ? `, ${t("answered")}` : ""}`}
-                  className={`grid h-12 place-items-center font-display ${cls}`}>
-                  {i + 1}
-                </button>
-              );
-            })}
-          </div>
-          {questions.some((q) => q.kind === "open") && <p className="mt-2.5 text-xs text-muted">{t("openNote")}</p>}
-        </nav>
-        {asideBottom}
-      </aside>
-      <div className="flex min-w-0 flex-1 flex-col gap-7 overflow-auto px-4 py-10 sm:px-16">
-        <div className="flex items-baseline gap-[18px] border-b-2 border-ink pb-3.5">
-          <span className="font-display text-[64px] leading-[0.9] font-extrabold text-teal-strong">{String(Math.min(index + 1, total)).padStart(2, "0")}</span>
-          <span ref={headingRef} tabIndex={-1} className="text-sm text-muted outline-none">
-            {question ? `${t("of")} ${String(total).padStart(2, "0")} · ${kindNote(question)}` : t("summaryStep", { total })}
-          </span>
+    <section className="overflow-hidden rounded-[28px] border-2 border-ink">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b-2 border-ink bg-lavender px-[26px] py-5 text-white">
+        <div>
+          {kicker && <div className="text-[13px]">{t("kinds.quiz")} · {kicker}</div>}
+          <h2 className="mt-1 font-display text-[26px] font-extrabold">{title}</h2>
         </div>
+        <span className="font-fun text-[44px] leading-none font-bold">
+          {Math.min(index + 1, total)}<span className="text-2xl">/{total}</span>
+        </span>
+      </div>
+      <div className="flex flex-col gap-[18px] px-[26px] pt-6 pb-[26px]">
+        <div role="progressbar" aria-label={t("progress")} aria-valuemin={0} aria-valuemax={total} aria-valuenow={answeredCount} className="flex flex-wrap gap-2">
+          {questions.map((q, i) => (
+            <button key={q.id} type="button" onClick={() => go(i)} aria-label={t("goTo", { n: i + 1 })}
+              className={`size-[22px] rounded-full border-2 border-ink ${i === index ? "bg-honey" : isAnswered(q, answers[q.id]) ? "bg-lime" : "bg-white"}`} />
+          ))}
+        </div>
+        <div ref={headingRef} tabIndex={-1} className="text-[13px] font-medium outline-none">{stepLabel}</div>
         {question ? questionBlock : summaryBlock}
         {footer}
+        <span className="text-xs text-muted" aria-live="polite">{savedNote}</span>
       </div>
-    </div>
+    </section>
   );
 }

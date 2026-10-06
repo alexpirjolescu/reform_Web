@@ -26,27 +26,21 @@ type Detail = {
 
 type LibraryPick = { id: string; name: string; folderName: string };
 
+// Studio (dark and white) panel; the colour design has its own.
+const studio: Record<string, string> = {
+  panel: "bg-th-card text-th-fg",
+  input: "w-full rounded-th border border-th-edge bg-th-bg px-3 py-2.5 text-[15px] text-th-fg",
+  button: "min-h-11 rounded-th bg-teal px-4 font-display font-semibold text-ink",
+  ghost: "min-h-11 rounded-th border border-th-edge px-3 text-sm text-th-fg hover:border-th-fg",
+  heading: "font-display text-base font-semibold text-th-heading",
+  muted: "text-th-muted",
+  chip: "rounded-th",
+  rule: "border-th-line",
+};
+
 const ui: Record<Theme, Record<string, string>> = {
-  dark: {
-    panel: "bg-night-3 text-white",
-    input: "w-full rounded-[2px] border border-night-edge bg-night px-3 py-2.5 text-[15px] text-white",
-    button: "min-h-11 rounded-[2px] bg-teal px-4 font-display font-semibold text-night",
-    ghost: "min-h-11 rounded-[2px] border border-night-edge px-3 text-sm text-white hover:border-white",
-    heading: "font-display text-base font-semibold text-teal",
-    muted: "text-night-muted",
-    chip: "rounded-[2px]",
-    rule: "border-night-line",
-  },
-  white: {
-    panel: "bg-white text-ink",
-    input: "w-full border border-ink bg-white px-3 py-2.5 text-[15px]",
-    button: "min-h-11 bg-ink px-4 font-display font-semibold text-white",
-    ghost: "min-h-11 border border-ink px-3 text-sm",
-    heading: "font-display text-base font-bold",
-    muted: "text-muted",
-    chip: "",
-    rule: "border-line",
-  },
+  dark: studio,
+  white: studio,
   color: {
     panel: "bg-white text-ink",
     input: "w-full rounded-xl border-2 border-ink bg-white px-3 py-2.5 text-[15px]",
@@ -203,13 +197,10 @@ export function CardDetail({
     }
   }
 
-  const container =
-    variant === "white"
-      ? "flex h-full w-full flex-col gap-5 overflow-y-auto border-l border-ink px-6 py-5 md:w-[384px] md:shrink-0"
-      : `fixed inset-y-0 right-0 z-50 flex w-full max-w-[440px] flex-col gap-5 overflow-y-auto px-6 py-5 shadow-none ${variant === "color" ? "border-l-2 border-ink" : "border-l border-night-line"}`;
+  const container = `fixed inset-y-0 right-0 z-50 flex w-full max-w-[440px] flex-col gap-5 overflow-y-auto px-6 py-5 shadow-none ${variant === "color" ? "border-l-2 border-ink" : "border-l border-th-line"}`;
 
   const body = (
-    <section role={variant === "white" ? "region" : "dialog"} aria-modal={variant === "white" ? undefined : true} aria-label={t("detailLabel")} className={`${container} ${s.panel}`}>
+    <section role="dialog" aria-modal aria-label={t("detailLabel")} className={`${container} ${s.panel}`}>
       <div className="flex items-center justify-between gap-3">
         {detail ? (
           <label className="flex items-center gap-2 text-sm">
@@ -238,7 +229,7 @@ export function CardDetail({
               defaultValue={detail.title}
               rows={2}
               onBlur={(e) => e.target.value.trim() && e.target.value !== detail.title && updateCard({ title: e.target.value.trim() })}
-              className={`resize-none bg-transparent font-display text-[26px] leading-[1.15] font-extrabold ${variant === "dark" ? "text-white" : ""}`}
+              className={`resize-none bg-transparent font-display text-[26px] leading-[1.15] font-extrabold ${variant === "color" ? "" : "text-th-fg"}`}
             />
           </label>
 
@@ -268,7 +259,7 @@ export function CardDetail({
                           : supabase.from("card_assignees").insert({ card_id: cardId, profile_id: member.id }),
                       )
                     }
-                    className={`rounded-full p-0.5 ${on ? "ring-2 ring-offset-1 " + (variant === "dark" ? "ring-teal ring-offset-night-3" : "ring-ink") : "opacity-50 hover:opacity-100"}`}
+                    className={`rounded-full p-0.5 ${on ? "ring-2 ring-offset-1 " + (variant === "color" ? "ring-ink" : "ring-th-link ring-offset-th-card") : "opacity-50 hover:opacity-100"}`}
                   >
                     <Avatar id={member.id} name={member.full_name} size={30} />
                     <span className="sr-only">{member.full_name}</span>
@@ -330,7 +321,7 @@ export function CardDetail({
                   type="checkbox"
                   checked={item.done}
                   onChange={() => run(supabase.from("checklist_items").update({ done: !item.done }).eq("id", item.id))}
-                  className={`size-[18px] ${variant === "dark" ? "accent-teal" : "accent-ink"}`}
+                  className={`size-[18px] ${variant === "color" ? "accent-ink" : "accent-th-link"}`}
                 />
                 <label htmlFor={`item-${item.id}`} className={`flex-grow ${item.done ? "line-through opacity-70" : ""}`}>{item.label}</label>
                 <button type="button" aria-label={t("removeItem", { name: item.label })} onClick={() => run(supabase.from("checklist_items").delete().eq("id", item.id))} className={`grid size-8 place-items-center ${s.muted}`}>
@@ -467,7 +458,6 @@ export function CardDetail({
     </section>
   );
 
-  if (variant === "white") return body;
   return (
     <>
       <button type="button" aria-label={t("close")} onClick={onClose} className="fixed inset-0 z-40 cursor-default bg-ink/40" />

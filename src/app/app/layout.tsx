@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { ColorShell, DarkShell, WhiteShell } from "@/components/shells/shells";
+import { ColorShell, StudioShell } from "@/components/shells/shells";
 import { requireProfile } from "@/lib/auth";
 import { hasSupabaseEnv } from "@/lib/env";
 import { getShellData } from "@/lib/shell";
@@ -19,7 +19,6 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
   const profile = await requireProfile();
   const [shell, theme] = await Promise.all([getShellData(profile), getTheme(profile.theme)]);
 
-  if (theme === "dark") return <DarkShell shell={shell}>{children}</DarkShell>;
   if (theme === "color") return <ColorShell shell={shell}>{children}</ColorShell>;
-  return <WhiteShell shell={shell}>{children}</WhiteShell>;
+  return <StudioShell shell={shell} theme={theme}>{children}</StudioShell>;
 }

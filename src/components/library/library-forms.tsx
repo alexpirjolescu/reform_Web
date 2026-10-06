@@ -125,7 +125,7 @@ export function AttachToCard({ fileId, variant, className }: { fileId: string; v
 
   const shown = (cards ?? []).filter((card) => `${card.title} ${card.board}`.toLocaleLowerCase("ro").includes(search.toLocaleLowerCase("ro")));
   const panel =
-    variant === "dark" ? "bg-night-4 text-white" : variant === "color" ? "rounded-[18px] border-2 border-ink bg-white" : "border border-ink bg-white";
+    variant === "color" ? "rounded-[18px] border-2 border-ink bg-white" : "border border-th-cardline bg-th-raised text-th-fg";
 
   return (
     <div className="relative">
@@ -149,7 +149,7 @@ export function AttachToCard({ fileId, variant, className }: { fileId: string; v
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t("searchTasks")}
-            className={`min-h-11 px-3 text-sm ${variant === "dark" ? "border border-night-edge bg-night" : variant === "color" ? "rounded-xl border-2 border-ink" : "border border-ink"}`}
+            className={`min-h-11 px-3 text-sm ${variant === "color" ? "rounded-xl border-2 border-ink" : "border border-th-edge bg-th-bg text-th-fg"}`}
           />
           {done && <p role="status" className="text-[13px]">{t("attachedTo", { title: done })}</p>}
           {error && <p role="alert" className="text-[13px] text-vermilion">{error}</p>}

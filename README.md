@@ -4,7 +4,7 @@ Website and platform for re_form, a non-formal education academy that helps high
 
 - **Public news panel:** past and upcoming academy activities, open to parents, school boards, investors and anyone else.
 - **For students and staff (with an account):** a Trello-style workspace per school, a resource library, assessments (quizzes and hand-ins) and direct messages.
-- **Three looks, chosen by each person:** white (design B, "white paper"), dark (design A, "dark studio") and colour (design C, "colour system"). Each look keeps its own layout for every module, as in the design canvas. Visitors pick with a cookie; signed-in people keep the choice on their profile.
+- **Three looks, chosen by each person:** white, dark and colour. The public pages (news panel, calendar, about) use the "white paper" newspaper layout (design B) on white, night or honey paper. Inside the platform, white and dark share the sidebar "studio" layout (design A), and colour keeps its sticker layout (design C). Visitors pick with a cookie; signed-in people keep the choice on their profile.
 
 Product requirements and design directions are in [docs/](docs/).
 

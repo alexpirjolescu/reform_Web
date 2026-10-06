@@ -57,6 +57,15 @@
   --color-th-accent-fg: var(--th-accent-fg);
   --color-th-link: var(--th-link);
   --color-th-heading: var(--th-heading);
+  /* Surface ladder of the sidebar ("studio") layout that dark and white share */
+  --color-th-sunk: var(--th-sunk);
+  --color-th-high: var(--th-high);
+  --color-th-rule: var(--th-rule);
+  --color-th-soft: var(--th-soft);
+  --color-th-body: var(--th-body);
+  --color-th-cardline: var(--th-cardline);
+  --color-th-fieldline: var(--th-fieldline);
+  --color-th-notice: var(--th-notice);
   --radius-th: var(--th-radius);
   --radius-th-pill: var(--th-pill);
 }
@@ -77,6 +86,15 @@
   --th-radius: 0px;
   --th-pill: 0px;
   --th-border: 1px;
+  /* studio surfaces: panels sit a step below the page, cards a step above (white + a thin line) */
+  --th-sunk: #f4f2f0;
+  --th-high: #ffffff;
+  --th-rule: #eceae9;
+  --th-soft: #3f3b3d;
+  --th-body: #2f2b2d;
+  --th-cardline: #e4e1e2;
+  --th-fieldline: #221f20; /* search boxes and fields that have no outline in dark */
+  --th-notice: #7a5c0f; /* "new feedback" text: honey, darkened to read on white */
 }
 
 [data-theme="dark"] {
@@ -95,6 +113,14 @@
   --th-radius: 2px;
   --th-pill: 2px;
   --th-border: 1px;
+  --th-sunk: #2a2728;
+  --th-high: #363234;
+  --th-rule: #343032;
+  --th-soft: #d0ccce;
+  --th-body: #d9d5d7;
+  --th-cardline: transparent;
+  --th-fieldline: transparent;
+  --th-notice: #e1b345;
 }
 
 [data-theme="color"] {
@@ -112,6 +138,14 @@
   --th-radius: 18px;
   --th-pill: 999px;
   --th-border: 2px;
+  --th-sunk: #f5f3f1;
+  --th-high: #ffffff;
+  --th-rule: #e4e1e2;
+  --th-soft: #3f3b3d;
+  --th-body: #2f2b2d;
+  --th-cardline: #221f20;
+  --th-fieldline: #221f20;
+  --th-notice: #221f20;
 }
 
 @utility border-th {

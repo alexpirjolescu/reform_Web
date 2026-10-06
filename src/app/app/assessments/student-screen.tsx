@@ -1,4 +1,4 @@
-import { StudentColor, StudentDark, StudentWhite, type StudentScreenData, type Tab } from "@/components/assessments/student-views";
+import { StudentColor, StudentStudio, type StudentScreenData, type Tab } from "@/components/assessments/student-views";
 import { studentGroup } from "@/lib/assessments";
 import { getAttemptReview, getRunnerData, listStudentAssessments } from "@/lib/assessments-server";
 import type { Theme } from "@/lib/theme-shared";
@@ -25,7 +25,6 @@ export async function StudentScreen({ selectedId, tab, theme, locale }: { select
     locale,
   };
 
-  if (theme === "dark") return <StudentDark data={data} />;
   if (theme === "color") return <StudentColor data={data} />;
-  return <StudentWhite data={data} />;
+  return <StudentStudio data={data} variant={theme} />;
 }

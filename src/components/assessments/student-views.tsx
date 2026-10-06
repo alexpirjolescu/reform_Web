@@ -80,17 +80,18 @@ function dueLine(a: StudentAssessment, t: T, locale: string) {
   return null;
 }
 
-function Markdown({ children, dark }: { children: string; dark?: boolean }) {
+function Markdown({ children, studio }: { children: string; studio?: boolean }) {
   return (
-    <div className={`prose-reform max-w-[70ch] text-base ${dark ? "text-night-body" : ""}`}>
+    <div className={`prose-reform max-w-[70ch] text-base ${studio ? "text-th-body" : ""}`}>
       <ReactMarkdown>{children}</ReactMarkdown>
     </div>
   );
 }
 
+const studioStart = "min-h-12 rounded-th bg-teal px-6 font-display text-base font-semibold text-ink disabled:opacity-60";
 const startClass: Record<Theme, string> = {
-  dark: "min-h-12 rounded-[2px] bg-teal px-6 font-display text-base font-semibold text-night disabled:opacity-60",
-  white: "min-h-12 bg-ink px-6 font-display text-base font-semibold text-white disabled:opacity-60",
+  dark: studioStart,
+  white: studioStart,
   color: "min-h-12 rounded-full border-2 border-ink bg-lavender px-6 font-display text-base font-bold text-white disabled:opacity-60",
 };
 
@@ -100,8 +101,10 @@ async function DetailBody({ data, variant }: { data: StudentScreenData; variant:
   const a = data.selected;
   if (!a) return null;
   const { locale } = data;
-  const muted = variant === "dark" ? "text-night-muted" : "text-muted";
-  const panel = variant === "dark" ? "bg-night-2 p-5" : variant === "color" ? "rounded-[22px] border-2 border-ink p-5" : "border border-ink p-5";
+  const studio = variant !== "color";
+  const muted = studio ? "text-th-muted" : "text-muted";
+  const panel = studio ? "bg-th-sunk p-5" : "rounded-[22px] border-2 border-ink p-5";
+  const good = studio ? "text-th-link" : "text-teal-text";
   const latest = a.latest;
   const startLabel = a.state === "in_progress" ? t("assessments.resume") : latest ? t("assessments.tryAgain") : a.kind === "quiz" ? t("assessments.startQuiz") : t("assessments.startAssignment");
 
@@ -147,7 +150,7 @@ async function DetailBody({ data, variant }: { data: StudentScreenData; variant:
           )}
         </div>
         {latest.feedback && (
-          <blockquote className={`border-l-4 pl-4 text-base leading-relaxed ${variant === "dark" ? "border-teal" : variant === "color" ? "border-lime" : "border-teal"}`}>
+          <blockquote className={`border-l-4 pl-4 text-base leading-relaxed ${studio ? "border-teal" : "border-lime"}`}>
             „{latest.feedback}”
           </blockquote>
         )}
@@ -171,7 +174,7 @@ async function DetailBody({ data, variant }: { data: StudentScreenData; variant:
                 <div className="flex flex-wrap items-baseline justify-between gap-3">
                   <span className="font-medium">{i + 1}. {q.prompt}</span>
                   <span className={`text-[13px] ${muted}`}>
-                    {verdict && <span className={review?.is_correct ? "font-medium text-teal-text" : "font-medium text-vermilion"}>{verdict}</span>}
+                    {verdict && <span className={review?.is_correct ? `font-medium ${good}` : "font-medium text-vermilion"}>{verdict}</span>}
                     {review?.points_awarded !== null && review?.points_awarded !== undefined && ` · ${scoreText(review.points_awarded, q.points, locale)}`}
                   </span>
                 </div>
@@ -187,7 +190,7 @@ async function DetailBody({ data, variant }: { data: StudentScreenData; variant:
                           <span className="w-4 font-display font-bold">{choiceLetter(ci)}</span>
                           <span>{choice.label}</span>
                           {picked && <span>· {t("assessments.yourChoice")}</span>}
-                          {right && <span className="text-teal-text">· {t("assessments.rightChoice")}</span>}
+                          {right && <span className={good}>· {t("assessments.rightChoice")}</span>}
                         </li>
                       );
                     })}
@@ -221,7 +224,7 @@ async function DetailBody({ data, variant }: { data: StudentScreenData; variant:
       {outcome}
       {a.state === "upcoming" && <p className={`${panel} text-base`}>{t("assessments.upcomingBody", { date: deadline(a.opens_at, locale) })}</p>}
       {a.state === "missed" && <p className={`${panel} text-base`}>{t("assessments.missedBody")}</p>}
-      {a.instructions && (!latest || a.state === "todo") && <Markdown dark={variant === "dark"}>{a.instructions}</Markdown>}
+      {a.instructions && (!latest || a.state === "todo") && <Markdown studio={studio}>{a.instructions}</Markdown>}
       {(!latest || a.state === "todo" || a.state === "upcoming") && meta}
       {startButton}
       {answersReview}
@@ -231,7 +234,7 @@ async function DetailBody({ data, variant }: { data: StudentScreenData; variant:
 }
 
 /** The runner for an attempt in progress, drawn for the given design. */
-function Runner({ data, variant, t, asideTop, asideBottom }: { data: StudentScreenData; variant: Theme; t: T; asideTop?: ReactNode; asideBottom?: ReactNode }) {
+function Runner({ data, variant, t }: { data: StudentScreenData; variant: Theme; t: T }) {
   const a = data.selected;
   if (!a || a.state !== "in_progress" || !a.latest || !data.runner) return null;
   const { locale } = data;
@@ -243,7 +246,7 @@ function Runner({ data, variant, t, asideTop, asideBottom }: { data: StudentScre
         initialText={a.latest.text_response}
         initialLink={a.latest.link_response}
         initialFiles={data.runner.files}
-        header={a.instructions ? <Markdown dark={variant === "dark"}>{a.instructions}</Markdown> : undefined}
+        header={a.instructions ? <Markdown studio={variant !== "color"}>{a.instructions}</Markdown> : undefined}
       />
     );
   }
@@ -257,8 +260,6 @@ function Runner({ data, variant, t, asideTop, asideBottom }: { data: StudentScre
       attemptLabel={attemptLabel(a, t)}
       questions={data.runner.questions}
       initialAnswers={data.runner.answers}
-      asideTop={asideTop}
-      asideBottom={asideBottom}
     />
   );
 }
@@ -266,9 +267,9 @@ function Runner({ data, variant, t, asideTop, asideBottom }: { data: StudentScre
 const href = (a: StudentAssessment) => `/app/assessments/${a.id}`;
 
 // ---------------------------------------------------------------------------
-// A · Dark studio: list column + runner
+// A · Studio (dark and white): list column + runner
 // ---------------------------------------------------------------------------
-export async function StudentDark({ data }: { data: StudentScreenData }) {
+export async function StudentStudio({ data, variant }: { data: StudentScreenData; variant: "dark" | "white" }) {
   const t = await getTranslations();
   const g = grouped(data.list);
   const a = data.selected;
@@ -276,23 +277,23 @@ export async function StudentDark({ data }: { data: StudentScreenData }) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col md:flex-row">
-      <nav aria-label={t("assessments.mine")} className="flex shrink-0 flex-col gap-[22px] overflow-auto border-b border-night-line px-[18px] py-[26px] md:w-[300px] md:border-r md:border-b-0">
-        <h1 className="font-display text-[36px] font-bold text-teal">{t("assessments.title")}</h1>
-        {data.list.length === 0 && <p className="text-sm text-night-muted">{t("assessments.emptyStudent")}</p>}
+      <nav aria-label={t("assessments.mine")} className="flex shrink-0 flex-col gap-[22px] overflow-auto border-b border-th-line px-[18px] py-[26px] md:w-[300px] md:border-r md:border-b-0">
+        <h1 className="font-display text-[36px] font-bold text-th-heading">{t("assessments.title")}</h1>
+        {data.list.length === 0 && <p className="text-sm text-th-muted">{t("assessments.emptyStudent")}</p>}
         {groups.map((group) =>
           g[group].length ? (
             <div key={group} className="flex flex-col gap-2">
-              <h2 className="text-xs text-night-muted">{t(`assessments.groups.${group}`)} · {g[group].length}</h2>
+              <h2 className="text-xs text-th-muted">{t(`assessments.groups.${group}`)} · {g[group].length}</h2>
               {g[group].map((item) => {
                 const active = item.id === a?.id;
                 const reviewed = item.state === "reviewed";
                 return (
                   <Link key={item.id} href={href(item)} aria-current={active ? "true" : undefined}
-                    className={`flex items-center gap-3 p-3.5 ${active ? "border-t-[3px] border-teal bg-night-4" : "bg-night-2 hover:bg-night-4"}`}>
+                    className={`flex items-center gap-3 p-3.5 ${active ? "border-t-[3px] border-teal bg-th-raised" : "bg-th-sunk hover:bg-th-raised"}`}>
                     <span className="flex flex-1 flex-col gap-1.5">
-                      <span className={`text-xs ${active ? "text-teal" : isNewFeedback(item) ? "text-honey" : "text-night-muted"}`}>{statusLine(item, t)}</span>
+                      <span className={`text-xs ${active ? "text-th-link" : isNewFeedback(item) ? "font-medium text-th-notice" : "text-th-muted"}`}>{statusLine(item, t)}</span>
                       <span className="font-display text-base font-semibold">{item.title}</span>
-                      {dueLine(item, t, data.locale) && <span className="text-xs text-night-soft">{dueLine(item, t, data.locale)}</span>}
+                      {dueLine(item, t, data.locale) && <span className="text-xs text-th-soft">{dueLine(item, t, data.locale)}</span>}
                     </span>
                     {reviewed && <span className="font-display text-[22px] font-bold">{scoreText(item.latest?.final_score ?? null, item.latest?.max_score ?? null, data.locale)}</span>}
                   </Link>
@@ -303,15 +304,15 @@ export async function StudentDark({ data }: { data: StudentScreenData }) {
         )}
       </nav>
       <div className="flex min-w-0 flex-1 flex-col gap-[26px] overflow-auto px-4 py-8 sm:px-12">
-        {!a && <p className="text-night-muted">{t("assessments.pickOne")}</p>}
+        {!a && <p className="text-th-muted">{t("assessments.pickOne")}</p>}
         {a && !quizRunning && (
           <div className="flex flex-wrap items-start justify-between gap-5">
             <div className="min-w-0 flex-[1_1_320px]">
-              {kicker(a, t, data.locale) && <p className="mb-2 text-[13px] text-teal">_ {kicker(a, t, data.locale)}</p>}
+              {kicker(a, t, data.locale) && <p className="mb-2 text-[13px] text-th-link">_ {kicker(a, t, data.locale)}</p>}
               <h2 className="font-display text-[30px] font-bold">{a.title}</h2>
             </div>
             {(a.state === "todo" || a.state === "in_progress") && (
-              <div className="shrink-0 text-[13px] leading-relaxed text-night-soft sm:text-right">
+              <div className="shrink-0 text-[13px] leading-relaxed text-th-soft sm:text-right">
                 {t("assessments.closesOn", { date: deadline(a.closes_at, data.locale) })}
                 <br />
                 {attemptLabel(a, t)} · {t("assessments.noTimeLimit")}
@@ -319,77 +320,7 @@ export async function StudentDark({ data }: { data: StudentScreenData }) {
             )}
           </div>
         )}
-        {a?.state === "in_progress" ? <Runner data={data} variant="dark" t={t} /> : <DetailBody data={data} variant="dark" />}
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// B · White paper: assessment sheet on the left, one big question on the right
-// ---------------------------------------------------------------------------
-export async function StudentWhite({ data }: { data: StudentScreenData }) {
-  const t = await getTranslations();
-  const a = data.selected;
-  const others = data.list.filter((item) => item.id !== a?.id);
-
-  const asideTop = a ? (
-    <>
-      <div>
-        <p className="mb-1.5 text-[13px] font-medium text-teal-text">_ {t(`assessments.kinds.${a.kind}`)}{a.activity ? ` · ${t("assessments.afterMeetingShort", { date: shortDate(a.activity.starts_at, data.locale) })}` : ""}</p>
-        <h1 className="font-display text-[28px] leading-[1.1] font-extrabold">{a.title}</h1>
-      </div>
-      <dl className="flex flex-col text-sm">
-        <div className="flex justify-between gap-3 border-t border-line py-2"><dt className="text-muted">{t("assessments.closes")}</dt><dd className="text-right">{deadline(a.closes_at, data.locale)}</dd></div>
-        <div className="flex justify-between gap-3 border-t border-line py-2"><dt className="text-muted">{t("assessments.attempt")}</dt><dd>{t("assessments.attemptShort", { n: Math.max(1, a.latest?.attempt_number ?? 1), max: a.max_attempts })}</dd></div>
-        <div className="flex justify-between gap-3 border-y border-line py-2"><dt className="text-muted">{t("assessments.time")}</dt><dd>{t("assessments.noLimit")}</dd></div>
-      </dl>
-    </>
-  ) : (
-    <h1 className="font-display text-[36px] font-extrabold">{t("assessments.title")}</h1>
-  );
-
-  const asideBottom = (
-    <div>
-      <h2 className="mb-1 font-display text-base font-bold">{a ? t("assessments.others") : t("assessments.mine")}</h2>
-      {(a ? others : data.list).map((item) => (
-        <Link key={item.id} href={href(item)} className="flex justify-between gap-2.5 border-b border-line py-2.5 text-sm hover:underline">
-          <span>{t(`assessments.kindPrefix.${item.kind}`)}: {item.title}</span>
-          <span className={`whitespace-nowrap ${item.state === "reviewed" ? "font-semibold" : "text-muted"}`}>
-            {item.state === "reviewed"
-              ? `${scoreText(item.latest?.final_score ?? null, item.latest?.max_score ?? null, data.locale)}${item.latest?.feedback ? ` · ${t("assessments.feedback")}` : ""}`
-              : item.state === "submitted"
-                ? t("assessments.state.submitted")
-                : shortDate(item.closes_at, data.locale)}
-          </span>
-        </Link>
-      ))}
-      {data.list.length === 0 && <p className="text-sm text-muted">{t("assessments.emptyStudent")}</p>}
-    </div>
-  );
-
-  if (a?.state === "in_progress" && a.kind === "quiz") {
-    return <Runner data={data} variant="white" t={t} asideTop={asideTop} asideBottom={asideBottom} />;
-  }
-
-  return (
-    <div className="flex min-h-0 flex-1 flex-col md:flex-row">
-      <aside className="flex shrink-0 flex-col gap-[26px] overflow-auto border-b border-ink p-[26px] md:w-[300px] md:border-r md:border-b-0">
-        {asideTop}
-        {asideBottom}
-      </aside>
-      <div className="flex min-w-0 flex-1 flex-col gap-7 overflow-auto px-4 py-10 sm:px-16">
-        {!a ? (
-          <p className="text-muted">{t("assessments.pickOne")}</p>
-        ) : (
-          <>
-            <div className="flex items-baseline gap-[18px] border-b-2 border-ink pb-3.5">
-              <span className="font-display text-[40px] leading-[0.9] font-extrabold text-teal-strong">{t(`assessments.groups.${studentGroup(a.state)}`)}</span>
-              {dueLine(a, t, data.locale) && <span className="text-sm text-muted">{dueLine(a, t, data.locale)}</span>}
-            </div>
-            {a.state === "in_progress" ? <Runner data={data} variant="white" t={t} /> : <DetailBody data={data} variant="white" />}
-          </>
-        )}
+        {a?.state === "in_progress" ? <Runner data={data} variant={variant} t={t} /> : <DetailBody data={data} variant={variant} />}
       </div>
     </div>
   );

@@ -20,7 +20,6 @@ import { SortableContext, sortableKeyboardCoordinates, useSortable, verticalList
 import { CSS } from "@dnd-kit/utilities";
 import { Avatar } from "@/components/avatar";
 import { Logo } from "@/components/logo";
-import { PlusIcon } from "@/components/icons";
 import { createClient } from "@/lib/supabase/client";
 import type { Theme } from "@/lib/theme-shared";
 import { cardSelect, positionBetween, toBoardCard, type BoardCard, type BoardColumn, type BoardData, type Member, type RawCard } from "@/lib/workspace";
@@ -33,29 +32,22 @@ function todayIso() {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Bucharest" }).format(new Date());
 }
 
+// Studio (dark and white) columns sit a step below the page; colour uses rounded sand columns.
+const studio: Record<string, string> = {
+  root: "bg-th-bg text-th-fg",
+  column: "flex w-[260px] shrink-0 flex-col gap-2.5 bg-th-sunk p-3 md:w-auto md:flex-[1_0_224px]",
+  columnTitle: "font-display text-base font-semibold",
+  count: "text-[13px] text-th-muted",
+  addCard: "border border-dashed border-th-edge p-2.5 text-left text-[13px] text-th-muted hover:text-th-fg",
+  input: "w-full rounded-th border border-th-edge bg-th-bg px-3 py-2 text-sm text-th-fg",
+  primary: "inline-flex min-h-11 items-center gap-2 rounded-th bg-teal px-[18px] font-display text-[15px] font-semibold text-ink",
+  ghost: "min-h-11 rounded-th border border-th-edge px-3 text-[13px] text-th-fg hover:border-th-fg",
+  muted: "text-th-muted",
+};
+
 const styles: Record<Theme, Record<string, string>> = {
-  dark: {
-    root: "bg-night text-white",
-    column: "flex w-[260px] shrink-0 flex-col gap-2.5 bg-night-2 p-3 md:w-auto md:flex-[1_0_224px]",
-    columnTitle: "font-display text-base font-semibold",
-    count: "text-[13px] text-night-muted",
-    addCard: "border border-dashed border-night-edge p-2.5 text-left text-[13px] text-night-muted hover:text-white",
-    input: "w-full rounded-[2px] border border-night-edge bg-night px-3 py-2 text-sm text-white",
-    primary: "inline-flex min-h-11 items-center gap-2 rounded-[2px] bg-teal px-[18px] font-display text-[15px] font-semibold text-night",
-    ghost: "min-h-11 rounded-[2px] border border-night-edge px-3 text-[13px] text-white hover:border-white",
-    muted: "text-night-muted",
-  },
-  white: {
-    root: "bg-white text-ink",
-    column: "flex w-[232px] shrink-0 flex-col gap-2.5 px-3.5",
-    columnTitle: "font-display text-base font-bold",
-    count: "text-[13px] text-muted",
-    addCard: "py-1.5 text-left text-sm text-teal-text hover:underline",
-    input: "w-full border border-ink bg-white px-3 py-2 text-sm",
-    primary: "inline-flex min-h-11 items-center gap-2 border border-ink bg-teal px-[18px] font-display text-[15px] font-semibold text-ink",
-    ghost: "min-h-11 border border-ink px-3 text-sm",
-    muted: "text-muted",
-  },
+  dark: studio,
+  white: studio,
   color: {
     root: "bg-white text-ink",
     column: "flex w-[250px] shrink-0 flex-col gap-2.5 rounded-[22px] bg-sand p-3 md:w-auto md:flex-[1_0_226px]",
@@ -240,14 +232,13 @@ export function Board({
 
   const boardBody = (
     <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={onDragStart} onDragOver={onDragOver} onDragEnd={onDragEnd}>
-      <div className={`flex min-h-0 flex-1 items-start gap-3.5 overflow-auto ${variant === "white" ? "px-3.5 py-[18px]" : "px-4 pt-5 pb-6 sm:px-8"} ${variant === "color" ? "pt-0" : ""}`}>
-        {columns.map((column, index) => (
+      <div className={`flex min-h-0 flex-1 items-start gap-3.5 overflow-auto px-4 pb-6 sm:px-8 ${variant === "color" ? "pt-0" : "pt-5"}`}>
+        {columns.map((column) => (
           <ColumnView
             key={column.id}
             column={column}
             cards={byColumn.get(column.id) ?? []}
             variant={variant}
-            first={index === 0}
             adding={adding === column.id}
             setAdding={(on) => setAdding(on ? column.id : null)}
             onAdd={(title) => addCard(column.id, title)}
@@ -276,7 +267,7 @@ export function Board({
     <div className="min-h-0 flex-1 overflow-auto px-4 py-5 sm:px-8">
       <table className="w-full border-collapse text-left text-sm">
         <thead>
-          <tr className={variant === "dark" ? "border-b border-night-line text-night-muted" : "border-b-2 border-ink"}>
+          <tr className={variant === "color" ? "border-b-2 border-ink" : "border-b border-th-line text-th-muted"}>
             <th scope="col" className="py-2 pr-4 font-medium">{t("title")}</th>
             <th scope="col" className="py-2 pr-4 font-medium">{t("status")}</th>
             <th scope="col" className="py-2 pr-4 font-medium">{t("due")}</th>
@@ -285,7 +276,7 @@ export function Board({
         </thead>
         <tbody>
           {[...visible].sort((a, b) => (a.due_date ?? "9999").localeCompare(b.due_date ?? "9999")).map((card) => (
-            <tr key={card.id} className={variant === "dark" ? "border-b border-night-rule" : "border-b border-line"}>
+            <tr key={card.id} className={variant === "color" ? "border-b border-line" : "border-b border-th-rule"}>
               <td className="py-3 pr-4">
                 <button type="button" onClick={() => setSelected(card.id)} className="text-left font-medium underline-offset-4 hover:underline">{card.title}</button>
               </td>
@@ -354,9 +345,8 @@ export function Board({
       )}
       <div className="flex min-h-0 flex-1">
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">{view === "board" ? boardBody : view === "list" ? list : calendar}</div>
-        {variant === "white" && detail}
       </div>
-      {variant !== "white" && detail}
+      {detail}
     </div>
   );
 }
@@ -386,7 +376,6 @@ function ColumnView({
   column,
   cards,
   variant,
-  first,
   adding,
   setAdding,
   onAdd,
@@ -397,7 +386,6 @@ function ColumnView({
   column: BoardColumn;
   cards: BoardCard[];
   variant: Theme;
-  first: boolean;
   adding: boolean;
   setAdding: (on: boolean) => void;
   onAdd: (title: string) => Promise<void>;
@@ -415,9 +403,9 @@ function ColumnView({
     <section
       ref={setNodeRef}
       aria-label={column.name}
-      className={`${s.column} ${variant === "white" && !first ? "border-l border-line" : ""} ${isOver ? "outline-2 outline-teal outline-dashed" : ""}`}
+      className={`${s.column} ${isOver ? "outline-2 outline-teal outline-dashed" : ""}`}
     >
-      <div className={`flex items-center gap-2 px-1 pb-1 ${variant === "white" ? "border-b-2 border-ink pb-2.5" : ""}`}>
+      <div className="flex items-center gap-2 px-1 pb-1">
         {editing ? (
           <input
             autoFocus
@@ -550,34 +538,34 @@ function BoardHeader({
     ? Math.round((Date.parse(`${data.board.due_date}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000)
     : null;
   const mineToggle = (
-    <label className={`inline-flex min-h-11 items-center gap-2 text-[13px] ${variant === "dark" ? "" : "font-medium"}`}>
-      <input type="checkbox" checked={onlyMine} onChange={(e) => setOnlyMine(e.target.checked)} className={`size-4 ${variant === "dark" ? "accent-teal" : "accent-ink"}`} />
+    <label className={`inline-flex min-h-11 items-center gap-2 text-[13px] ${variant === "color" ? "font-medium" : ""}`}>
+      <input type="checkbox" checked={onlyMine} onChange={(e) => setOnlyMine(e.target.checked)} className={`size-4 ${variant === "color" ? "accent-ink" : "accent-th-link"}`} />
       {t("onlyMine")}
     </label>
   );
 
-  if (variant === "dark") {
+  if (variant !== "color") {
     return (
       <div className="shrink-0">
         <div className="flex flex-wrap items-end justify-between gap-5 px-4 pt-[26px] sm:px-8">
           <div>
-            <div className="mb-1.5 text-[13px] text-night-muted">
-              <Link href="/app/workspace" className="hover:text-teal">{t("title_projects")}</Link> / {data.board.schoolName}
+            <div className="mb-1.5 text-[13px] text-th-muted">
+              <Link href="/app/workspace" className="hover:text-th-link">{t("title_projects")}</Link> / {data.board.schoolName}
             </div>
             <h1 className="font-display text-[34px] font-bold tracking-[-0.01em]">{data.board.name}</h1>
           </div>
           <div className="flex items-center gap-3">
             <div className="flex" aria-label={t("members")}>
-              {students.slice(0, 5).map((m, i) => <Avatar key={m.id} id={m.id} name={m.full_name} size={32} ring="#221f20" className={i ? "-ml-2" : ""} />)}
+              {students.slice(0, 5).map((m, i) => <Avatar key={m.id} id={m.id} name={m.full_name} size={32} ring="var(--th-bg)" className={i ? "-ml-2" : ""} />)}
             </div>
             <button type="button" onClick={onNewTask} className={s.primary}>+ {t("newTask")}</button>
           </div>
         </div>
-        <div className="mt-5 flex flex-wrap items-center justify-between gap-4 border-b border-night-line px-4 sm:px-8">
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-4 border-b border-th-line px-4 sm:px-8">
           <div role="tablist" aria-label={t("views")} className="flex gap-6 text-[15px]">
             {views.map((v) => (
               <button key={v} type="button" role="tab" aria-selected={view === v} onClick={() => setView(v)}
-                className={`border-b-[3px] py-3 ${view === v ? "border-teal text-white" : "border-transparent text-night-muted"}`}>
+                className={`border-b-[3px] py-3 ${view === v ? "border-teal text-th-fg" : "border-transparent text-th-muted"}`}>
                 {t(`view_${v}`)}
               </button>
             ))}
@@ -588,64 +576,39 @@ function BoardHeader({
     );
   }
 
-  if (variant === "color") {
-    return (
-      <div className="shrink-0">
-        <div className="flex flex-wrap items-center justify-between gap-5 px-4 pt-6 pb-[18px] sm:px-7">
-          <div className="flex flex-col gap-2.5">
-            <Logo name="core" height={30} />
-            <h1 className="font-display text-[36px] font-extrabold tracking-[-0.02em]">{data.board.name}</h1>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex min-w-[190px] flex-col gap-2 rounded-[18px] border-2 border-ink px-4 py-2.5">
-              <span className="text-[13px] font-medium">{t("progress", { done, total })}</span>
-              <span aria-hidden="true" className="block h-2.5 overflow-hidden rounded-full border-2 border-ink">
-                <span className="block h-full bg-pink" style={{ width: `${total ? Math.round((100 * done) / total) : 0}%` }} />
-              </span>
-            </div>
-            {daysLeft !== null && daysLeft >= 0 && (
-              <div className="flex items-center gap-2.5 rounded-[18px] border-2 border-ink bg-honey px-4 py-2">
-                <span className="font-fun text-[34px] leading-none font-bold">{daysLeft}</span>
-                <span className="text-[13px] leading-tight font-medium whitespace-pre-line">{t("daysLeft")}</span>
-              </div>
-            )}
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center justify-between gap-3 px-4 pb-4 sm:px-7">
-          <div role="tablist" aria-label={t("views")} className="flex flex-wrap gap-1.5">
-            {views.map((v) => (
-              <button key={v} type="button" role="tab" aria-selected={view === v} onClick={() => setView(v)}
-                className={`h-10 rounded-full border-2 border-ink px-[18px] text-sm ${view === v ? "bg-ink font-medium text-white" : "bg-white"}`}>
-                {t(`view_${v}`)}
-              </button>
-            ))}
-            {mineToggle}
-          </div>
-          <button type="button" onClick={onNewTask} className={s.primary}>+ {t("newTask")}</button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex shrink-0 flex-wrap items-end justify-between gap-5 border-b border-line px-4 pt-[22px] pb-[18px] sm:px-7">
-      <div>
-        <div className="mb-1.5 text-[13px] text-muted">
-          {data.board.schoolName} / <Link href="/app/workspace" className="hover:text-teal-text">{t("title_projects")}</Link>
+    <div className="shrink-0">
+      <div className="flex flex-wrap items-center justify-between gap-5 px-4 pt-6 pb-[18px] sm:px-7">
+        <div className="flex flex-col gap-2.5">
+          <Logo name="core" height={30} />
+          <h1 className="font-display text-[36px] font-extrabold tracking-[-0.02em]">{data.board.name}</h1>
         </div>
-        <h1 className="font-display text-[36px] font-extrabold tracking-[-0.02em]">{data.board.name}</h1>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex min-w-[190px] flex-col gap-2 rounded-[18px] border-2 border-ink px-4 py-2.5">
+            <span className="text-[13px] font-medium">{t("progress", { done, total })}</span>
+            <span aria-hidden="true" className="block h-2.5 overflow-hidden rounded-full border-2 border-ink">
+              <span className="block h-full bg-pink" style={{ width: `${total ? Math.round((100 * done) / total) : 0}%` }} />
+            </span>
+          </div>
+          {daysLeft !== null && daysLeft >= 0 && (
+            <div className="flex items-center gap-2.5 rounded-[18px] border-2 border-ink bg-honey px-4 py-2">
+              <span className="font-fun text-[34px] leading-none font-bold">{daysLeft}</span>
+              <span className="text-[13px] leading-tight font-medium whitespace-pre-line">{t("daysLeft")}</span>
+            </div>
+          )}
+        </div>
       </div>
-      <div className="flex flex-wrap items-center gap-3">
-        {mineToggle}
-        <div role="tablist" aria-label={t("views")} className="flex border border-ink">
-          {views.map((v, i) => (
+      <div className="flex flex-wrap items-center justify-between gap-3 px-4 pb-4 sm:px-7">
+        <div role="tablist" aria-label={t("views")} className="flex flex-wrap gap-1.5">
+          {views.map((v) => (
             <button key={v} type="button" role="tab" aria-selected={view === v} onClick={() => setView(v)}
-              className={`h-10 px-4 text-sm ${i ? "border-l border-ink" : ""} ${view === v ? "bg-ink text-white" : "bg-white"}`}>
+              className={`h-10 rounded-full border-2 border-ink px-[18px] text-sm ${view === v ? "bg-ink font-medium text-white" : "bg-white"}`}>
               {t(`view_${v}`)}
             </button>
           ))}
+          {mineToggle}
         </div>
-        <button type="button" onClick={onNewTask} className={s.primary}><PlusIcon size={16} /> {t("task")}</button>
+        <button type="button" onClick={onNewTask} className={s.primary}>+ {t("newTask")}</button>
       </div>
     </div>
   );

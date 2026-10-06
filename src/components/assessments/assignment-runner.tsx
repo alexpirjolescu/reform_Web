@@ -105,25 +105,15 @@ export function AssignmentRunner({
     router.refresh();
   }
 
-  const box =
-    variant === "dark"
-      ? "rounded-[2px] border border-night-edge bg-night-2 text-white"
-      : variant === "color"
-        ? "rounded-[18px] border-2 border-ink bg-white"
-        : "border border-ink bg-white";
-  const primary =
-    variant === "dark"
-      ? "min-h-12 rounded-[2px] bg-teal px-6 font-display font-semibold text-night disabled:opacity-60"
-      : variant === "color"
-        ? "min-h-12 rounded-full border-2 border-ink bg-lavender px-6 font-display font-bold text-white disabled:opacity-60"
-        : "min-h-12 bg-ink px-6 font-display font-semibold text-white disabled:opacity-60";
-  const ghost =
-    variant === "dark"
-      ? "inline-flex min-h-11 items-center gap-2 rounded-[2px] border border-night-edge px-4 text-sm hover:border-white"
-      : variant === "color"
-        ? "inline-flex min-h-11 items-center gap-2 rounded-full border-2 border-ink bg-honey px-4 text-sm font-medium"
-        : "inline-flex min-h-11 items-center gap-2 border border-ink px-4 text-sm";
-  const muted = variant === "dark" ? "text-night-muted" : "text-muted";
+  const studio = variant !== "color";
+  const box = studio ? "rounded-th border border-th-edge bg-th-sunk text-th-fg" : "rounded-[18px] border-2 border-ink bg-white";
+  const primary = studio
+    ? "min-h-12 rounded-th bg-teal px-6 font-display font-semibold text-ink disabled:opacity-60"
+    : "min-h-12 rounded-full border-2 border-ink bg-lavender px-6 font-display font-bold text-white disabled:opacity-60";
+  const ghost = studio
+    ? "inline-flex min-h-11 items-center gap-2 rounded-th border border-th-edge px-4 text-sm hover:border-th-fg"
+    : "inline-flex min-h-11 items-center gap-2 rounded-full border-2 border-ink bg-honey px-4 text-sm font-medium";
+  const muted = studio ? "text-th-muted" : "text-muted";
 
   return (
     <div className="flex max-w-[780px] flex-col gap-6">

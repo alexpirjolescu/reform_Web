@@ -1,5 +1,5 @@
 import { getLocale, getTranslations } from "next-intl/server";
-import { LibraryColor, LibraryDark, LibraryWhite } from "@/components/library/library-views";
+import { LibraryColor, LibraryStudio } from "@/components/library/library-views";
 import { requireProfile } from "@/lib/auth";
 import { getLibrary, parseLibraryQuery } from "@/lib/library-server";
 import { getTheme } from "@/lib/theme";
@@ -14,7 +14,6 @@ export default async function LibraryPage({ searchParams }: PageProps<"/app/libr
   const [params, theme, locale, t] = await Promise.all([searchParams, getTheme(profile.theme), getLocale(), getTranslations("library")]);
   const data = await getLibrary(profile, parseLibraryQuery(params), t("shared"));
 
-  if (theme === "dark") return <LibraryDark data={data} locale={locale} />;
   if (theme === "color") return <LibraryColor data={data} locale={locale} />;
-  return <LibraryWhite data={data} locale={locale} />;
+  return <LibraryStudio data={data} locale={locale} variant={theme} />;
 }

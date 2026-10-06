@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { paperFor } from "@/components/news/paper";
 import { PublicFrame } from "@/components/public-frame";
 import { getSession } from "@/lib/auth";
 import { hasSupabaseEnv } from "@/lib/env";
@@ -18,8 +19,8 @@ export default async function AboutPage() {
     getTheme("profile" in session ? session.profile.theme : null),
     hasSupabaseEnv ? getNewsMeta() : Promise.resolve({ schools: [] as { id: string; name: string; city: string | null }[] }),
   ]);
-  const dark = theme === "dark";
-  const heading = `font-display text-4xl font-extrabold tracking-tight ${dark ? "text-teal" : theme === "color" ? "" : "text-teal-strong"}`;
+  const p = paperFor(theme);
+  const heading = `font-display text-4xl font-extrabold tracking-tight ${p.heading}`;
   const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
 
   return (
@@ -38,14 +39,14 @@ export default async function AboutPage() {
           {meta.schools.length ? (
             <ul className="grid gap-2 sm:grid-cols-2">
               {meta.schools.map((school) => (
-                <li key={school.id} className={`px-4 py-3 ${theme === "color" ? "rounded-2xl border-2 border-ink" : dark ? "bg-night-3" : "border-b border-line"}`}>
+                <li key={school.id} className={`px-4 py-3 ${p.listItem}`}>
                   <span className="font-medium">{school.name}</span>
-                  {school.city && <span className={dark ? "text-night-muted" : "text-muted"}> · {school.city}</span>}
+                  {school.city && <span className={p.muted}> · {school.city}</span>}
                 </li>
               ))}
             </ul>
           ) : (
-            <p className={dark ? "text-night-muted" : "text-muted"}>{t("noSchools")}</p>
+            <p className={p.muted}>{t("noSchools")}</p>
           )}
         </section>
         <section id="contact" className="flex scroll-mt-6 flex-col gap-4">
@@ -54,7 +55,7 @@ export default async function AboutPage() {
           {contactEmail ? (
             <a href={`mailto:${contactEmail}`} className="self-start font-display text-xl font-bold underline underline-offset-4">{contactEmail}</a>
           ) : (
-            <p className={dark ? "text-night-muted" : "text-muted"}>{t("contactMissing")}</p>
+            <p className={p.muted}>{t("contactMissing")}</p>
           )}
         </section>
       </div>

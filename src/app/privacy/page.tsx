@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { paperFor } from "@/components/news/paper";
 import { PublicFrame } from "@/components/public-frame";
 import { getSession } from "@/lib/auth";
 import { getTheme } from "@/lib/theme";
@@ -18,7 +19,7 @@ export default async function PrivacyPage() {
     <PublicFrame theme={theme} signedIn={session.status === "active"}>
       <article className="mx-auto flex max-w-3xl flex-col gap-6">
         <h1 className="font-display text-4xl font-extrabold tracking-tight">{t("title")}</h1>
-        <p className="bg-honey px-4 py-3 text-sm font-medium text-ink">{t("draftNotice")}</p>
+        <p className={`px-4 py-3 text-sm font-medium ${paperFor(theme).notice}`}>{t("draftNotice")}</p>
         {keys.map((key) => (
           <section key={key} className="flex flex-col gap-2">
             <h2 className="font-display text-2xl font-bold">{t(`${key}Title`)}</h2>

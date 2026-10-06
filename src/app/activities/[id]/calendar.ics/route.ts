@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getActivity } from "@/lib/news";
-import { siteUrl } from "@/lib/env";
+import { getSiteUrl } from "@/lib/site-url";
 
 function stamp(iso: string) {
   return new Date(iso).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
@@ -15,6 +15,7 @@ export async function GET(_request: Request, { params }: RouteContext<"/activiti
   const activity = await getActivity((await params).id);
   if (!activity || !activity.isPublic) notFound();
 
+  const siteUrl = await getSiteUrl();
   const end = activity.endsAt ?? new Date(new Date(activity.startsAt).getTime() + 2 * 3_600_000).toISOString();
   const body = [
     "BEGIN:VCALENDAR",

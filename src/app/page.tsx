@@ -1,13 +1,11 @@
 import { getLocale } from "next-intl/server";
-import { NewsColor } from "@/components/news/news-color";
-import { NewsDark } from "@/components/news/news-dark";
-import { NewsWhite } from "@/components/news/news-white";
+import { NewsPanel } from "@/components/news/news-panel";
 import { getSession } from "@/lib/auth";
 import { hasSupabaseEnv } from "@/lib/env";
 import { getNewsMeta, listActivities, parseFilters } from "@/lib/news";
 import { getTheme } from "@/lib/theme";
 
-// Public news panel (PRD module 1): one page, three layouts.
+// Public news panel (PRD module 1): one newspaper layout on the paper of the chosen theme.
 export default async function HomePage({ searchParams }: PageProps<"/">) {
   const params = await searchParams;
   const filters = parseFilters(params);
@@ -19,9 +17,16 @@ export default async function HomePage({ searchParams }: PageProps<"/">) {
     ? await Promise.all([listActivities("upcoming", filters, 4), listActivities("past", filters, 3), getNewsMeta()])
     : [[], [], empty];
 
-  const props = { theme, locale, upcoming, past, stats: meta.stats, schools: meta.schools, filters, signedIn: session.status === "active" };
-
-  if (theme === "dark") return <NewsDark {...props} />;
-  if (theme === "color") return <NewsColor {...props} />;
-  return <NewsWhite {...props} />;
+  return (
+    <NewsPanel
+      theme={theme}
+      locale={locale}
+      upcoming={upcoming}
+      past={past}
+      stats={meta.stats}
+      schools={meta.schools}
+      filters={filters}
+      signedIn={session.status === "active"}
+    />
+  );
 }

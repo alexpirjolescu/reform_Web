@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Lexend, Outfit, Sour_Gummy } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
+import { AuthLinkHandler } from "@/components/auth-link-handler";
 import { getSession } from "@/lib/auth";
 import { getTheme } from "@/lib/theme";
 import "./globals.css";
@@ -28,6 +29,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="flex min-h-full flex-col font-sans">
         <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <AuthLinkHandler />
       </body>
     </html>
   );

@@ -29,10 +29,11 @@ export function shortDate(iso: string, locale: string) {
   return fmt(locale, { day: "numeric", month: "short" }).format(new Date(iso)).replace(".", "");
 }
 
-export function dateTime(iso: string, locale: string) {
-  return fmt(locale, { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(
-    new Date(iso),
-  );
+/** "vineri, 9 octombrie la 16:00"; the year is added when it is not the current one. */
+export function dateTime(iso: string, locale: string, now = new Date()) {
+  const date = new Date(iso);
+  const year = date.getFullYear() === now.getFullYear() ? undefined : "numeric";
+  return fmt(locale, { weekday: "long", day: "numeric", month: "long", year, hour: "2-digit", minute: "2-digit" }).format(date);
 }
 
 /** "14:02", "ieri" / "yesterday", weekday, or a short date — for message lists. */

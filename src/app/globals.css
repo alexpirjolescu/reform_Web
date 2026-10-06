@@ -18,6 +18,8 @@
   --color-teal-wash: #e4f2ef;
   --color-honey: #e1b345;
   --color-honey-wash: #fbf0d4;
+  --color-honey-muted: #4d3f1f; /* secondary text on honey paper (5.2:1) */
+  --color-honey-line: #b48c34;  /* thin rules on honey paper */
   --color-lavender: #79569a;
   --color-vermilion: #dd6937;
   --color-vermilion-wash: #fbe6dc;

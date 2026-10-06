@@ -195,7 +195,8 @@
       "intro": "At least 10 characters, with letters and numbers.",
       "password": "New password",
       "confirm": "Repeat the password",
-      "submit": "Save password"
+      "submit": "Save password",
+      "checking": "Checking the link from your email…"
     },
     "error": {
       "title": "this link is no longer valid",

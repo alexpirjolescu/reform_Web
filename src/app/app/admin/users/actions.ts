@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import type { ActionState } from "@/components/form";
 import { requireAdmin } from "@/lib/auth";
-import { siteUrl } from "@/lib/env";
+import { getSiteUrl } from "@/lib/site-url";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { appRoles, isStaffRole } from "@/lib/types";
@@ -28,8 +28,10 @@ export async function inviteUser(_prev: ActionState, formData: FormData): Promis
   const { email, fullName, role, schoolId } = parsed.data;
 
   const supabase = createAdminClient();
+  const siteUrl = await getSiteUrl();
 
-  // The invite email links to /auth/confirm (supabase/templates/invite.html), then to /auth/set-password.
+  // With supabase/templates/invite.html the link goes to /auth/confirm; with Supabase's default
+  // template it goes through Supabase and back to /auth/set-password. Both end on "choose a password".
   const { data: invited, error: inviteError } = await supabase.auth.admin.inviteUserByEmail(email, {
     data: { full_name: fullName },
     redirectTo: `${siteUrl}/auth/set-password`,

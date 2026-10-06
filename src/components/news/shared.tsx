@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import type { ActivityCard, NewsFilters } from "@/lib/news";
-import { categoryColor, categoryInk } from "@/lib/news";
+import { categoryColor } from "@/lib/news";
 import { activityCategories } from "@/lib/types";
 import type { Theme } from "@/lib/theme";
 
@@ -67,11 +67,7 @@ export async function CategoryLabel({ category }: { category: ActivityCard["cate
   return <>{t(category)}</>;
 }
 
-export function categoryStyle(category: ActivityCard["category"]) {
-  return { background: categoryColor[category], color: categoryInk[category] };
-}
-
-/** Filter chips as plain links (they work without JavaScript), one style per theme. */
+/** Filter chips as plain links (they work without JavaScript); styles come from the paper (./paper.ts). */
 export async function CategoryChips({
   filters,
   chip,
@@ -148,8 +144,4 @@ export async function SchoolSearchForm({
       </button>
     </form>
   );
-}
-
-export function schoolNames(activity: ActivityCard) {
-  return activity.schools.map((school) => school.name).join(", ");
 }

@@ -4,7 +4,8 @@ import { cookies } from "next/headers";
 /**
  * The three looks from the design canvas (docs/design/README.md):
  *   white = B · White paper, dark = A · Dark studio, color = C · Colour system.
- * Each one has its own layouts, not just its own colours.
+ * The app modules keep a layout per look; the public pages share the white-paper layout,
+ * printed on white, night or honey paper (src/components/news/paper.ts).
  */
 export const themes = ["white", "dark", "color"] as const;
 export type Theme = (typeof themes)[number];

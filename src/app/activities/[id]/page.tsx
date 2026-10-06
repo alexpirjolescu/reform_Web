@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Markdown from "react-markdown";
 import { getLocale, getTranslations } from "next-intl/server";
+import { paperFor } from "@/components/news/paper";
 import { ActivityVisual } from "@/components/news/shared";
 import { PublicFrame } from "@/components/public-frame";
 import { getSession } from "@/lib/auth";
@@ -31,42 +32,40 @@ export default async function ActivityPage({ params }: PageProps<"/activities/[i
     getLocale(),
     getTheme("profile" in session ? session.profile.theme : null),
   ]);
-  const tagClass = theme === "color" ? "rounded-full border-2 border-ink px-3 py-1" : theme === "dark" ? "rounded-[2px] px-3 py-1" : "px-3 py-1";
-  const muted = theme === "dark" ? "text-night-muted" : "text-muted";
-  const link = theme === "dark" ? "text-teal" : theme === "color" ? "border-b-2 border-ink" : "text-teal-text";
+  const p = paperFor(theme);
 
   return (
     <PublicFrame theme={theme} signedIn={session.status === "active"}>
       <article className="mx-auto flex max-w-3xl flex-col gap-6">
         {!activity.isPublic && (
-          <p role="status" className="bg-honey px-4 py-2 text-sm font-medium text-ink">{t("news.draftPreview")}</p>
+          <p role="status" className={`px-4 py-2 text-sm font-medium ${p.notice}`}>{t("news.draftPreview")}</p>
         )}
         <div className="flex flex-wrap items-center gap-3 text-sm">
-          <span className={`${tagClass} font-medium`} style={{ background: categoryColor[activity.category], color: categoryInk[activity.category] }}>
+          <span className={`${p.tag} font-medium`} style={{ background: categoryColor[activity.category], color: categoryInk[activity.category] }}>
             {t(`news.categories.${activity.category}`)}
           </span>
         </div>
         <h1 className="font-display text-4xl leading-[1.05] font-extrabold tracking-tight sm:text-6xl">{activity.title}</h1>
-        <dl className={`grid gap-1 text-[15px] sm:grid-cols-[140px_1fr] ${muted}`}>
+        <dl className={`grid gap-1 text-[15px] sm:grid-cols-[140px_1fr] ${p.muted}`}>
           <dt>{t("news.when")}</dt>
-          <dd className={theme === "dark" ? "text-white" : "text-ink"}>
+          <dd className={p.text}>
             {dateTime(activity.startsAt, locale)}
             {activity.endsAt ? ` – ${timeOfDay(activity.endsAt, locale)}` : ""}
           </dd>
           {activity.location && (
             <>
               <dt>{t("news.where")}</dt>
-              <dd className={theme === "dark" ? "text-white" : "text-ink"}>{activity.location}</dd>
+              <dd className={p.text}>{activity.location}</dd>
             </>
           )}
           {activity.schools.length > 0 && (
             <>
               <dt>{t("news.schools")}</dt>
-              <dd className={theme === "dark" ? "text-white" : "text-ink"}>{activity.schools.map((s) => s.name).join(", ")}</dd>
+              <dd className={p.text}>{activity.schools.map((s) => s.name).join(", ")}</dd>
             </>
           )}
         </dl>
-        <ActivityVisual activity={activity} ratio="16 / 8" rounded={theme === "color" ? "rounded-3xl border-2 border-ink" : ""} />
+        <ActivityVisual activity={activity} ratio="16 / 8" rounded={p.media} />
         {activity.summary && <p className="text-xl leading-relaxed font-light">{activity.summary}</p>}
         {activity.body && (
           <div className="prose-reform text-[17px]">
@@ -80,8 +79,8 @@ export default async function ActivityPage({ params }: PageProps<"/activities/[i
               {activity.photos.map((photo) => (
                 <figure key={photo.id} className="flex flex-col gap-1">
                   {/* eslint-disable-next-line @next/next/no-img-element -- Supabase Storage images */}
-                  <img src={photo.url} alt={photo.caption} className={`aspect-[4/3] w-full object-cover ${theme === "color" ? "rounded-2xl border-2 border-ink" : ""}`} />
-                  {photo.caption && <figcaption className={`text-xs ${muted}`}>{photo.caption}</figcaption>}
+                  <img src={photo.url} alt={photo.caption} className={`aspect-[4/3] w-full object-cover ${p.media}`} />
+                  {photo.caption && <figcaption className={`text-xs ${p.muted}`}>{photo.caption}</figcaption>}
                 </figure>
               ))}
             </div>
@@ -89,9 +88,9 @@ export default async function ActivityPage({ params }: PageProps<"/activities/[i
         )}
         <div className="flex flex-wrap gap-6 font-display font-semibold">
           {new Date(activity.startsAt) > new Date() && (
-            <a href={`/activities/${activity.id}/calendar.ics`} className={link}>{t("news.addToCalendar")}</a>
+            <a href={`/activities/${activity.id}/calendar.ics`} className={p.link}>{t("news.addToCalendar")}</a>
           )}
-          <Link href="/" className={link}>← {t("news.backToNews")}</Link>
+          <Link href="/" className={p.link}>← {t("news.backToNews")}</Link>
         </div>
       </article>
     </PublicFrame>

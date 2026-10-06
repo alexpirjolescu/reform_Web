@@ -214,6 +214,7 @@ M = {
       "password": ("Parola nouă", "New password"),
       "confirm": ("Repetă parola", "Repeat the password"),
       "submit": ("Salvează parola", "Save password"),
+      "checking": ("Verificăm linkul din email…", "Checking the link from your email…"),
     },
     "error": {
       "title": ("linkul nu mai e valabil", "this link is no longer valid"),

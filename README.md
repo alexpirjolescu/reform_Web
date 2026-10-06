@@ -44,14 +44,14 @@ The Supabase project **reform-web** (`jdhxaatosmkedggzuiki`, Frankfurt) already 
    | `NEXT_PUBLIC_SUPABASE_URL` | `https://jdhxaatosmkedggzuiki.supabase.co` |
    | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `sb_publishable_llpsUSV5vkP4jVZmIHhN9Q_oI1-T6rr` (public by design; Supabase → Project Settings → API Keys) |
    | `SUPABASE_SECRET_KEY` | Supabase → API Keys → secret key (`sb_secret_…`). Server only; never share it |
-   | `NEXT_PUBLIC_SITE_URL` | Your Vercel URL, e.g. `https://reform-web.vercel.app` (later your own domain) |
+   | `NEXT_PUBLIC_SITE_URL` | `https://reform-web-nine.vercel.app` (later your own domain). Links in invite and reset emails use it; if it is missing on Vercel, the production address is used |
    | `NEXT_PUBLIC_CONTACT_EMAIL` | The address shown on the About page |
    | `CRON_SECRET` | Any long random string. Vercel Cron sends it to `/api/cron/purge-trash`, which empties the library trash after 30 days |
 
 3. **Deploy.** Then set up Auth in the Supabase dashboard (Authentication):
    - **Sign In / Providers → Email:** keep the email provider *on*, and under **User Signups** turn *off* "Allow new users to sign up" (only invited people get accounts).
-   - **URL Configuration:** Site URL = your `NEXT_PUBLIC_SITE_URL`; add `https://<your-domain>/**` to the redirect URLs.
-   - **Emails → Templates:** paste `supabase/templates/invite.html` into "Invite user" and `supabase/templates/recovery.html` into "Reset password".
+   - **URL Configuration:** Site URL = `https://reform-web-nine.vercel.app` (your `NEXT_PUBLIC_SITE_URL`); under Redirect URLs add `https://reform-web-nine.vercel.app/**` and `http://localhost:3000/**`. While the Site URL still says `http://localhost:3000`, invite emails point to localhost.
+   - **Emails → Templates:** paste `supabase/templates/invite.html` into "Invite user" and `supabase/templates/recovery.html` into "Reset password". (The default templates work too: the app accepts both kinds of link.)
    - **Emails → SMTP:** connect your own email provider before inviting real people; the built-in sender is for testing and sends only a few emails per hour.
 4. **Create the first admin** from your computer (needs the two Supabase values in `.env.local`):
 

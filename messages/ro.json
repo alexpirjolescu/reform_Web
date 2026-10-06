@@ -195,7 +195,8 @@
       "intro": "Cel puțin 10 caractere, cu litere și cifre.",
       "password": "Parola nouă",
       "confirm": "Repetă parola",
-      "submit": "Salvează parola"
+      "submit": "Salvează parola",
+      "checking": "Verificăm linkul din email…"
     },
     "error": {
       "title": "linkul nu mai e valabil",

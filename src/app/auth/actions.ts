@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import type { ActionState } from "@/components/form";
 import { safeNextPath } from "@/lib/auth";
-import { siteUrl } from "@/lib/env";
+import { getSiteUrl } from "@/lib/site-url";
 import { createClient } from "@/lib/supabase/server";
 
 const loginSchema = z.object({
@@ -34,7 +34,7 @@ export async function requestPasswordReset(_prev: ActionState, formData: FormDat
   const supabase = await createClient();
   // The email template links to /auth/confirm with a token hash; redirectTo is the fallback.
   await supabase.auth.resetPasswordForEmail(parsed.data.email, {
-    redirectTo: `${siteUrl}/auth/set-password`,
+    redirectTo: `${await getSiteUrl()}/auth/confirm?next=/auth/set-password`,
   });
 
   // Same answer whether or not the account exists, so emails can't be probed.

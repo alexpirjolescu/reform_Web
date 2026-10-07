@@ -230,6 +230,74 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"board_map_links": {
+                  Row: {
+                    "board_id": string,"created_at": string,"created_by": string | null,"from_node": string,"id": string,"label": string,"to_node": string
+                  }
+                  Insert: {
+                    "board_id": string,"created_at"?: string,"created_by"?: string | null,"from_node": string,"id"?: string,"label"?: string,"to_node": string
+                  }
+                  Update: {
+                    "board_id"?: string,"created_at"?: string,"created_by"?: string | null,"from_node"?: string,"id"?: string,"label"?: string,"to_node"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "board_map_links_board_id_fkey"
+      columns: ["board_id"]
+isOneToOne: false
+      referencedRelation: "boards"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "board_map_links_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "board_map_links_from_node_fkey"
+      columns: ["from_node"]
+isOneToOne: false
+      referencedRelation: "board_map_nodes"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "board_map_links_to_node_fkey"
+      columns: ["to_node"]
+isOneToOne: false
+      referencedRelation: "board_map_nodes"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"board_map_nodes": {
+                  Row: {
+                    "board_id": string,"card_id": string | null,"color": string | null,"created_at": string,"created_by": string | null,"id": string,"kind": string,"label": string,"note": string,"stage": string | null,"updated_at": string,"x": number | null,"y": number | null
+                  }
+                  Insert: {
+                    "board_id": string,"card_id"?: string | null,"color"?: string | null,"created_at"?: string,"created_by"?: string | null,"id"?: string,"kind": string,"label"?: string,"note"?: string,"stage"?: string | null,"updated_at"?: string,"x"?: number | null,"y"?: number | null
+                  }
+                  Update: {
+                    "board_id"?: string,"card_id"?: string | null,"color"?: string | null,"created_at"?: string,"created_by"?: string | null,"id"?: string,"kind"?: string,"label"?: string,"note"?: string,"stage"?: string | null,"updated_at"?: string,"x"?: number | null,"y"?: number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "board_map_nodes_board_id_fkey"
+      columns: ["board_id"]
+isOneToOne: false
+      referencedRelation: "boards"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "board_map_nodes_card_id_fkey"
+      columns: ["card_id"]
+isOneToOne: false
+      referencedRelation: "cards"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "board_map_nodes_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"boards": {
                   Row: {
                     "archived_at": string | null,"created_at": string,"created_by": string | null,"description": string,"due_date": string | null,"id": string,"is_demo": boolean,"name": string,"school_id": string
@@ -313,13 +381,13 @@ isOneToOne: false
                   ]
                 },"card_comments": {
                   Row: {
-                    "author_id": string,"body": string,"card_id": string,"created_at": string,"id": string
+                    "author_id": string,"body": string,"card_id": string,"created_at": string,"id": string,"parent_id": string | null
                   }
                   Insert: {
-                    "author_id"?: string,"body": string,"card_id": string,"created_at"?: string,"id"?: string
+                    "author_id"?: string,"body": string,"card_id": string,"created_at"?: string,"id"?: string,"parent_id"?: string | null
                   }
                   Update: {
-                    "author_id"?: string,"body"?: string,"card_id"?: string,"created_at"?: string,"id"?: string
+                    "author_id"?: string,"body"?: string,"card_id"?: string,"created_at"?: string,"id"?: string,"parent_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -333,6 +401,12 @@ isOneToOne: false
       columns: ["card_id"]
 isOneToOne: false
       referencedRelation: "cards"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "card_comments_parent_id_fkey"
+      columns: ["parent_id"]
+isOneToOne: false
+      referencedRelation: "card_comments"
       referencedColumns: ["id"]
     }
                   ]
@@ -382,13 +456,13 @@ isOneToOne: false
                   ]
                 },"cards": {
                   Row: {
-                    "board_id": string,"column_id": string,"created_at": string,"created_by": string | null,"description": string,"due_date": string | null,"id": string,"position": number,"title": string,"updated_at": string
+                    "board_id": string,"column_id": string,"created_at": string,"created_by": string | null,"description": string,"due_date": string | null,"id": string,"position": number,"stage": string | null,"title": string,"updated_at": string
                   }
                   Insert: {
-                    "board_id": string,"column_id": string,"created_at"?: string,"created_by"?: string | null,"description"?: string,"due_date"?: string | null,"id"?: string,"position"?: number,"title": string,"updated_at"?: string
+                    "board_id": string,"column_id": string,"created_at"?: string,"created_by"?: string | null,"description"?: string,"due_date"?: string | null,"id"?: string,"position"?: number,"stage"?: string | null,"title": string,"updated_at"?: string
                   }
                   Update: {
-                    "board_id"?: string,"column_id"?: string,"created_at"?: string,"created_by"?: string | null,"description"?: string,"due_date"?: string | null,"id"?: string,"position"?: number,"title"?: string,"updated_at"?: string
+                    "board_id"?: string,"column_id"?: string,"created_at"?: string,"created_by"?: string | null,"description"?: string,"due_date"?: string | null,"id"?: string,"position"?: number,"stage"?: string | null,"title"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -411,15 +485,40 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"checklist_items": {
+                },"checklist_item_assignees": {
                   Row: {
-                    "card_id": string,"done": boolean,"id": string,"label": string,"position": number
+                    "item_id": string,"profile_id": string
                   }
                   Insert: {
-                    "card_id": string,"done"?: boolean,"id"?: string,"label": string,"position"?: number
+                    "item_id": string,"profile_id": string
                   }
                   Update: {
-                    "card_id"?: string,"done"?: boolean,"id"?: string,"label"?: string,"position"?: number
+                    "item_id"?: string,"profile_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "checklist_item_assignees_item_id_fkey"
+      columns: ["item_id"]
+isOneToOne: false
+      referencedRelation: "checklist_items"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "checklist_item_assignees_profile_id_fkey"
+      columns: ["profile_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"checklist_items": {
+                  Row: {
+                    "card_id": string,"done": boolean,"done_at": string | null,"done_by": string | null,"id": string,"label": string,"position": number
+                  }
+                  Insert: {
+                    "card_id": string,"done"?: boolean,"done_at"?: string | null,"done_by"?: string | null,"id"?: string,"label": string,"position"?: number
+                  }
+                  Update: {
+                    "card_id"?: string,"done"?: boolean,"done_at"?: string | null,"done_by"?: string | null,"id"?: string,"label"?: string,"position"?: number
                   }
                   Relationships: [
                     {
@@ -427,6 +526,12 @@ isOneToOne: false
       columns: ["card_id"]
 isOneToOne: false
       referencedRelation: "cards"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "checklist_items_done_by_fkey"
+      columns: ["done_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
       referencedColumns: ["id"]
     }
                   ]
@@ -751,6 +856,9 @@ isOneToOne: false
 "can_access_card":
 { Args: { "target": string }; Returns: boolean
                            },
+"can_access_checklist_item":
+{ Args: { "target": string }; Returns: boolean
+                           },
 "can_access_school":
 { Args: { "target_school": string }; Returns: boolean
                            },
@@ -816,6 +924,9 @@ isOneToOne: false
                            },
 "save_attempt_response":
 { Args: { "response_link": string,"response_text": string,"target_attempt": string }; Returns: undefined
+                           },
+"seed_board_map":
+{ Args: { "target": string }; Returns: undefined
                            },
 "start_attempt":
 { Args: { "target": string }; Returns: string

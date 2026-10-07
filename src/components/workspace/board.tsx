@@ -24,9 +24,10 @@ import { createClient } from "@/lib/supabase/client";
 import type { Theme } from "@/lib/theme-shared";
 import { cardSelect, positionBetween, toBoardCard, type BoardCard, type BoardColumn, type BoardData, type Member, type RawCard } from "@/lib/workspace";
 import { CardDetail } from "./card-detail";
+import { ProjectMap } from "./project-map";
 import { CardVisual, type CardState } from "./card-visual";
 
-type View = "board" | "list" | "calendar";
+type View = "board" | "list" | "calendar" | "map";
 
 function todayIso() {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Bucharest" }).format(new Date());
@@ -344,7 +345,11 @@ export function Board({
         </p>
       )}
       <div className="flex min-h-0 flex-1">
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col">{view === "board" ? boardBody : view === "list" ? list : calendar}</div>
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+          {view === "board" ? boardBody : view === "list" ? list : view === "map" ? (
+            <ProjectMap boardId={boardId} cards={cards} columns={columns} members={initial.members} variant={variant} onOpenCard={setSelected} onCardsChanged={() => void reload()} />
+          ) : calendar}
+        </div>
       </div>
       {detail}
     </div>
@@ -532,7 +537,7 @@ function BoardHeader({
 }) {
   const t = useTranslations("workspace");
   const s = styles[variant];
-  const views: View[] = ["board", "calendar", "list"];
+  const views: View[] = ["board", "map", "calendar", "list"];
   const students = members.filter((m) => m.role === "student" || m.role === "core_lead");
   const daysLeft = data.board.due_date
     ? Math.round((Date.parse(`${data.board.due_date}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000)
@@ -570,7 +575,7 @@ function BoardHeader({
               </button>
             ))}
           </div>
-          {mineToggle}
+          {view !== "map" && mineToggle}
         </div>
       </div>
     );
@@ -606,7 +611,7 @@ function BoardHeader({
               {t(`view_${v}`)}
             </button>
           ))}
-          {mineToggle}
+          {view !== "map" && mineToggle}
         </div>
         <button type="button" onClick={onNewTask} className={s.primary}>+ {t("newTask")}</button>
       </div>

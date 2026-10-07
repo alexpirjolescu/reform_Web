@@ -95,6 +95,50 @@ insert into public.checklist_items (id, card_id, label, done, position) values
   ('de000000-0000-4000-8000-000000000265', 'de000000-0000-4000-8000-000000000233', 'logo jos', false, 2)
 on conflict (id) do nothing;
 
+-- The demo project's story map: tasks in their steps, the team's statements, two ideas of its own
+update public.cards set stage = v.stage
+from (values
+  ('de000000-0000-4000-8000-000000000231'::uuid, 'need'),
+  ('de000000-0000-4000-8000-000000000235'::uuid, 'need'),
+  ('de000000-0000-4000-8000-000000000237'::uuid, 'solution'),
+  ('de000000-0000-4000-8000-000000000236'::uuid, 'build'),
+  ('de000000-0000-4000-8000-000000000233'::uuid, 'build'),
+  ('de000000-0000-4000-8000-000000000234'::uuid, 'build'),
+  ('de000000-0000-4000-8000-000000000232'::uuid, 'deliver'),
+  ('de000000-0000-4000-8000-000000000241'::uuid, 'build'),
+  ('de000000-0000-4000-8000-000000000242'::uuid, 'solution'),
+  ('de000000-0000-4000-8000-000000000243'::uuid, 'deliver')
+) as v (id, stage)
+where cards.id = v.id;
+
+update public.board_map_nodes set label = v.label
+from (values
+  ('need', 'Elevii nu au un loc unde să spună ce ar schimba în liceu.'),
+  ('solution', 'O campanie: un sondaj online, afișe și o dezbatere cu direcțiunea.'),
+  ('build', 'Scriem întrebările, facem afișele și formularul, împărțim rolurile.'),
+  ('deliver', 'Dezbaterea din sala festivă, deschisă tuturor elevilor.'),
+  ('impact', 'Cel puțin 200 de răspunsuri și 3 schimbări discutate cu direcțiunea.')
+) as v (stage, label)
+where board_map_nodes.board_id = 'de000000-0000-4000-8000-000000000201' and board_map_nodes.kind = 'stage' and board_map_nodes.stage = v.stage;
+
+insert into public.board_map_nodes (id, board_id, kind, label, note, color, x, y, created_by) values
+  ('de000000-0000-4000-8000-000000000271', 'de000000-0000-4000-8000-000000000201', 'concept', 'răspunsurile la sondaj', 'Le citim împreună și alegem 3 teme pentru dezbatere.', 'lavender', 1230, 420, null),
+  ('de000000-0000-4000-8000-000000000272', 'de000000-0000-4000-8000-000000000201', 'concept', 'direcțiunea liceului', '', 'honey', 380, 470, null)
+on conflict (id) do nothing;
+
+insert into public.board_map_links (id, board_id, from_node, to_node, label, created_by)
+select 'de000000-0000-4000-8000-000000000281', 'de000000-0000-4000-8000-000000000201', n.id, 'de000000-0000-4000-8000-000000000271', 'adună', null
+from public.board_map_nodes n where n.card_id = 'de000000-0000-4000-8000-000000000235' and n.kind = 'card'
+on conflict do nothing;
+insert into public.board_map_links (id, board_id, from_node, to_node, label, created_by)
+select 'de000000-0000-4000-8000-000000000282', 'de000000-0000-4000-8000-000000000201', n.id, 'de000000-0000-4000-8000-000000000272', 'are nevoie de sprijinul', null
+from public.board_map_nodes n where n.card_id = 'de000000-0000-4000-8000-000000000237' and n.kind = 'card'
+on conflict do nothing;
+insert into public.board_map_links (id, board_id, from_node, to_node, label, created_by)
+select 'de000000-0000-4000-8000-000000000283', 'de000000-0000-4000-8000-000000000201', 'de000000-0000-4000-8000-000000000271', n.id, 'măsoară', null
+from public.board_map_nodes n where n.board_id = 'de000000-0000-4000-8000-000000000201' and n.kind = 'stage' and n.stage = 'impact'
+on conflict do nothing;
+
 -- Library: links in the shared re_form library ---------------------------------
 insert into public.library_folders (id, space, school_id, name, is_demo) values
   ('de000000-0000-4000-8000-000000000301', 'shared', null, '[demo] întâlniri 2026', true),

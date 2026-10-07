@@ -113,6 +113,33 @@ select pg_temp.fails($$insert into public.cards (board_id, column_id, title) val
 select pg_temp.fails($$insert into public.boards (school_id, name, created_by) values
   ('10000000-0000-0000-0000-000000000001', 'Mine', 'a0000000-0000-0000-0000-000000000003')$$, 'plain student cannot create boards');
 select pg_temp.fails($$insert into public.card_events (card_id, kind) values ('f0000000-0000-0000-0000-000000000001', 'fake')$$, 'nobody writes card history by hand');
+
+-- Checklist: the database records who ticked an item; owners; comment replies; the story map
+insert into public.checklist_items (id, card_id, label) values ('f1000000-0000-0000-0000-000000000001', 'f0000000-0000-0000-0000-000000000001', 'Item');
+update public.checklist_items set done = true, done_by = 'a0000000-0000-0000-0000-000000000001' where id = 'f1000000-0000-0000-0000-000000000001';
+select pg_temp.check((select done_by from public.checklist_items where id = 'f1000000-0000-0000-0000-000000000001') = 'a0000000-0000-0000-0000-000000000003', 'ticking records who did it (not who the browser claims)');
+update public.checklist_items set done = false where id = 'f1000000-0000-0000-0000-000000000001';
+select pg_temp.check((select done_by is null and done_at is null from public.checklist_items where id = 'f1000000-0000-0000-0000-000000000001'), 'unticking clears it');
+insert into public.checklist_item_assignees (item_id, profile_id) values ('f1000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000004');
+select pg_temp.check((select count(*) from public.checklist_item_assignees) = 1, 'student assigns a checklist item');
+insert into public.card_comments (id, card_id, body) values ('f2000000-0000-0000-0000-000000000001', 'f0000000-0000-0000-0000-000000000001', 'Question?');
+insert into public.card_comments (id, card_id, body, parent_id) values ('f2000000-0000-0000-0000-000000000002', 'f0000000-0000-0000-0000-000000000001', 'Answer', 'f2000000-0000-0000-0000-000000000001');
+select pg_temp.check(true, 'student replies to a comment');
+select pg_temp.fails($$insert into public.card_comments (card_id, body, parent_id) values ('f0000000-0000-0000-0000-000000000001', 'Nested', 'f2000000-0000-0000-0000-000000000002')$$, 'replies are one level deep');
+update public.cards set stage = 'need' where id = 'f0000000-0000-0000-0000-000000000001';
+select pg_temp.check((select count(*) from public.board_map_nodes where board_id = 'd0000000-0000-0000-0000-000000000001') = 6, 'map has the five steps plus the task with a step');
+select pg_temp.check((select count(*) from public.board_map_links where board_id = 'd0000000-0000-0000-0000-000000000001') = 4, 'the five steps start joined into a sentence');
+insert into public.board_map_nodes (id, board_id, kind, label) values ('f3000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000001', 'concept', 'An idea');
+insert into public.board_map_links (board_id, from_node, to_node, label)
+select 'd0000000-0000-0000-0000-000000000001', n.id, 'f3000000-0000-0000-0000-000000000001', 'leads to'
+from public.board_map_nodes n where n.card_id = 'f0000000-0000-0000-0000-000000000001';
+select pg_temp.check(true, 'student adds a concept and links a task to it');
+select pg_temp.fails($$insert into public.board_map_nodes (board_id, kind, stage) values ('d0000000-0000-0000-0000-000000000001', 'stage', 'impact')$$, 'students cannot add steps');
+delete from public.board_map_nodes where board_id = 'd0000000-0000-0000-0000-000000000001' and kind = 'stage';
+select pg_temp.check((select count(*) from public.board_map_nodes where board_id = 'd0000000-0000-0000-0000-000000000001' and kind = 'stage') = 5, 'steps cannot be removed');
+select pg_temp.fails($$update public.board_map_nodes set kind = 'concept' where board_id = 'd0000000-0000-0000-0000-000000000001' and stage = 'need'$$, 'a step cannot be turned into something else');
+select pg_temp.check((select count(*) from public.board_map_nodes where board_id = 'd0000000-0000-0000-0000-000000000002') = 0, 'student cannot see another school''s map');
+select pg_temp.fails($$insert into public.board_map_nodes (board_id, kind, label) values ('d0000000-0000-0000-0000-000000000002', 'concept', 'Sneak')$$, 'student cannot add to another school''s map');
 select pg_temp.as_user('a0000000-0000-0000-0000-000000000004');
 insert into public.boards (school_id, name, created_by) values
   ('10000000-0000-0000-0000-000000000001', 'Lead board', 'a0000000-0000-0000-0000-000000000004');

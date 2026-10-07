@@ -2,10 +2,23 @@ import type { LabelColor } from "@/lib/types";
 
 export type BoardColumn = { id: string; name: string; position: number; is_done: boolean };
 
+export const stages = ["need", "solution", "build", "deliver", "impact"] as const;
+export type Stage = (typeof stages)[number];
+
+/** Each story step has a brand colour (and the text colour that reads on it). */
+export const stageColor: Record<Stage, { bg: string; fg: string }> = {
+  need: { bg: "#dd6937", fg: "#221f20" },
+  solution: { bg: "#e1b345", fg: "#221f20" },
+  build: { bg: "#77bfb2", fg: "#221f20" },
+  deliver: { bg: "#79569a", fg: "#ffffff" },
+  impact: { bg: "#abca54", fg: "#221f20" },
+};
+
 export type BoardCard = {
   id: string;
   column_id: string;
   title: string;
+  stage: Stage | null;
   due_date: string | null;
   position: number;
   labels: { id: string; name: string; color: LabelColor }[];
@@ -37,12 +50,13 @@ export const labelHex: Record<LabelColor, { bg: string; fg: string }> = {
 
 // The same select is used on the server (first render) and in the browser (live refresh).
 export const cardSelect =
-  "id, column_id, title, due_date, position, card_labels(id, name, color), card_assignees(profile_id), checklist_items(done), card_comments(count), card_attachments(count)";
+  "id, column_id, title, stage, due_date, position, card_labels(id, name, color), card_assignees(profile_id), checklist_items(done), card_comments(count), card_attachments(count)";
 
 type RawCard = {
   id: string;
   column_id: string;
   title: string;
+  stage: string | null;
   due_date: string | null;
   position: number;
   card_labels: { id: string; name: string; color: string }[];
@@ -57,6 +71,7 @@ export function toBoardCard(raw: RawCard): BoardCard {
     id: raw.id,
     column_id: raw.column_id,
     title: raw.title,
+    stage: (raw.stage as Stage | null) ?? null,
     due_date: raw.due_date,
     position: raw.position,
     labels: raw.card_labels.map((label) => ({ ...label, color: label.color as LabelColor })),

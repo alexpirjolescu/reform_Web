@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { Avatar } from "@/components/avatar";
 import { CalendarIcon, ChatIcon, CheckIcon, ClipIcon } from "@/components/icons";
 import type { Theme } from "@/lib/theme-shared";
-import { labelHex, type BoardCard, type Member } from "@/lib/workspace";
+import { labelHex, stageColor, type BoardCard, type Member } from "@/lib/workspace";
 
 export type CardState = { late: boolean; today: boolean; done: boolean };
 
@@ -34,13 +34,21 @@ export function CardVisual({
   const t = useTranslations("workspace");
   const due = card.due_date ? (state.today ? t("today") : shortDay(card.due_date, locale)) : null;
   const people = card.assignees.map((id) => members.get(id)).filter((m): m is Member => Boolean(m));
+  // The step of the project story the task serves (see the map view).
+  const step = card.stage ? (
+    <span className="inline-flex items-center gap-1.5 text-[11px] font-medium" title={t("stage")}>
+      <span aria-hidden="true" className="size-2 rounded-full" style={{ background: stageColor[card.stage].bg }} />
+      {t(`stages.${card.stage}.name`)}
+    </span>
+  ) : null;
 
   if (variant !== "color") {
     // Studio (dark and white): a card a step above its column.
     return (
       <div className={`flex flex-col gap-2.5 border border-th-cardline bg-th-high px-3.5 py-3 text-left ${state.done ? "opacity-70" : ""} ${selected ? "outline outline-2 outline-teal" : ""}`}>
-        {card.labels.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
+        {(card.labels.length > 0 || step) && (
+          <div className="flex flex-wrap items-center gap-1.5">
+            {step && <span className="mr-1 text-th-soft">{step}</span>}
             {card.labels.map((label) => (
               <span key={label.id} className="px-2 py-[3px] text-[11px] font-medium" style={{ background: labelHex[label.color].bg, color: labelHex[label.color].fg }}>
                 {label.name}
@@ -70,8 +78,9 @@ export function CardVisual({
   const dueBg = state.done ? "#abca54" : state.late ? "#dd6937" : state.today ? "#e1b345" : "#ffffff";
   return (
     <div className={`flex flex-col gap-2.5 rounded-2xl border-2 border-ink bg-white p-3 text-left ${state.done ? "opacity-70" : ""} ${selected ? "ring-4 ring-honey" : ""}`}>
-      {card.labels.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
+      {(card.labels.length > 0 || step) && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          {step && <span className="mr-1">{step}</span>}
           {card.labels.map((label) => (
             <span key={label.id} className="rounded-full border-[1.5px] border-ink px-[9px] py-0.5 text-[11px] font-medium" style={{ background: labelHex[label.color].bg, color: labelHex[label.color].fg }}>
               {label.name}

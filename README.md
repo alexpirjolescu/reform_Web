@@ -4,6 +4,7 @@ Website and platform for re_form, a non-formal education academy that helps high
 
 - **Public news panel:** past and upcoming academy activities, open to parents, school boards, investors and anyone else. A post can carry photos, videos, audio, documents, links and posts from Instagram, Facebook, YouTube, Vimeo, TikTok, Spotify or Google Drive; players from other sites load only after the reader presses "show".
 - **For students and staff (with an account):** a Trello-style workspace per school, a resource library, assessments (quizzes and hand-ins) and direct messages.
+- **Project boards:** tasks open in a window in the middle of the screen, with comments (and replies) in a column on its right. People are picked by searching the school team; checklist items have their own owners and show who ticked them. Each project also has a **concept map** that tells its story in five steps — need, solution, making it, delivery, impact: every task sits in the lane of its step, and the team adds ideas and links them with phrases (“the survey — measures → the impact”). The same map reads as plain sentences in the “story” view.
 - **Three looks, chosen by each person:** white, dark and colour. The public pages (news panel, calendar, about) use the "white paper" newspaper layout (design B) on white, night or honey paper. Inside the platform, white and dark share the sidebar "studio" layout (design A), and colour keeps its sticker layout (design C). Visitors pick with a cookie; signed-in people keep the choice on their profile.
 
 Product requirements and design directions are in [docs/](docs/).
@@ -90,6 +91,7 @@ npm run dev                           # http://localhost:3000
 | `npm run db:test` | 50 access-rule checks against the local database (rolled back afterwards) |
 | `npm run test:unit` | Link recognition for embedded posts and videos (no database needed) |
 | `node e2e/flows.mjs` | End-to-end flows against `npm start` + the local stack (board, upload, quiz and marking, hand-in, live message, publishing, access rules) |
+| `node e2e/board.mjs` | Task window, people search, checklist owners, replies, the project map (steps, ideas, links, dragging a task to another step, story view) |
 | `node --env-file=.env.local e2e/invite.mjs` | Invitations: links by email and to copy, staff permissions |
 | `node --env-file=.env.local e2e/media.mjs` | News posts with uploaded files and embedded posts |
 | `node e2e/screens.mjs <dir>` | Screenshots of every module in all three themes |

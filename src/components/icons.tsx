@@ -83,3 +83,12 @@ export const MailIcon = (p: IconProps) => (
 export const GridIcon = (p: IconProps) => (
   <svg {...base(p)}><rect x="4" y="4" width="7" height="7" /><rect x="13" y="4" width="7" height="7" /><rect x="4" y="13" width="7" height="7" /><rect x="13" y="13" width="7" height="7" /></svg>
 );
+export const GripIcon = (p: IconProps) => (
+  <svg {...base(p)}><path d="M9 5h.01M15 5h.01M9 12h.01M15 12h.01M9 19h.01M15 19h.01" strokeWidth={(p.strokeWidth as number) ?? 3.5} /></svg>
+);
+export const LinkIcon = (p: IconProps) => (
+  <svg {...base(p)}><path d="M10 14l4-4M8.5 11.5l-2 2a3.5 3.5 0 0 0 5 5l2-2M15.5 12.5l2-2a3.5 3.5 0 0 0-5-5l-2 2" /></svg>
+);
+export const ImageIcon = (p: IconProps) => (
+  <svg {...base(p)}><rect x="3" y="4" width="18" height="16" /><path d="M3 16l5-5 4 4 3-3 6 6" /><circle cx="16" cy="9" r="1.5" /></svg>
+);

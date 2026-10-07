@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { z } from "zod";
 import { ActivityEditor } from "@/components/news/activity-editor";
 import { PageHeader, moduleButtons } from "@/components/page-header";
+import { isStoredLayout } from "@/lib/article";
 import { requireStaff } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { MediaItem } from "@/lib/media";
@@ -22,12 +23,12 @@ export default async function EditActivityPage({ params }: PageProps<"/app/admin
     getSchools(),
     supabase
       .from("activities")
-      .select("id, title, summary, body, category, starts_at, ends_at, location, cover_path, status, publish_at, photo_consent_confirmed, activity_schools(school_id), activity_media(kind, path, url, provider, title, caption, mime_type, size_bytes, position)")
+      .select("id, title, summary, body, layout, category, starts_at, ends_at, location, cover_path, status, publish_at, photo_consent_confirmed, activity_schools(school_id), activity_media(kind, path, url, provider, title, caption, mime_type, size_bytes, position)")
       .eq("id", id)
       .maybeSingle(),
   ]);
   if (!activity) notFound();
-  const { activity_schools, activity_media, ...rest } = activity;
+  const { activity_schools, activity_media, layout, ...rest } = activity;
   const b = moduleButtons[theme];
 
   return (
@@ -39,6 +40,7 @@ export default async function EditActivityPage({ params }: PageProps<"/app/admin
           initial={{
             ...rest,
             status: rest.status as "draft" | "published",
+            layout: isStoredLayout(layout) ? layout : null,
             schoolIds: activity_schools.map((s) => s.school_id),
             media: [...activity_media].sort((a, b) => a.position - b.position).map((item): MediaItem => ({
               kind: item.kind as MediaItem["kind"],
@@ -54,6 +56,7 @@ export default async function EditActivityPage({ params }: PageProps<"/app/admin
           schools={schools}
           defaultStart={defaultStart()}
           mediaBase={mediaBase}
+          theme={theme}
         />
         <details className="self-start">
           <summary className="cursor-pointer text-sm text-th-muted underline underline-offset-4">{t("delete")}</summary>

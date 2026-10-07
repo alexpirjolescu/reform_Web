@@ -13,7 +13,7 @@ export default async function NewActivityPage() {
     <div className="min-h-0 flex-1 overflow-y-auto">
       <PageHeader variant={theme} kicker={<Link href="/app/admin/news" className="hover:underline">← {t("pageTitle")}</Link>} title={t("new")} />
       <div className="px-4 py-6 sm:px-8">
-        <ActivityEditor initial={null} schools={schools} defaultStart={defaultStart()} mediaBase={mediaBase} />
+        <ActivityEditor initial={null} schools={schools} defaultStart={defaultStart()} mediaBase={mediaBase} theme={theme} />
       </div>
     </div>
   );

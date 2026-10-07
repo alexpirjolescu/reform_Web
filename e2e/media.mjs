@@ -28,24 +28,27 @@ try {
   await staff.fill("#act-title", `E2E media ${stamp}`);
   await staff.fill("#act-summary", "Postare cu fotografii, video și linkuri.");
 
-  await staff.setInputFiles("input[type=file][multiple]", [png, mp4, pdf]);
-  await staff.waitForFunction(() => document.querySelectorAll("ol li").length === 3, null, { timeout: 30000 });
+  // A blank article, then a media block added after its text.
+  await staff.locator("section[aria-labelledby=tpl-title] button", { hasText: "pagină goală" }).click();
+  await staff.locator("ol[aria-label='Blocurile articolului'] textarea").fill("Text înainte de media.");
+  await staff.getByRole("button", { name: "Adaugă un bloc aici" }).nth(1).click();
+  await staff.getByRole("menuitem", { name: "fotografii, video, fișiere" }).click();
+  const items = staff.locator("ol[aria-label='Ce conține blocul'] > li");
+  await staff.locator("ol[aria-label='Blocurile articolului'] input[type=file]").setInputFiles([png, mp4, pdf]);
+  await staff.waitForFunction(() => document.querySelectorAll("ol[aria-label='Ce conține blocul'] > li").length === 3, null, { timeout: 30000 });
   check(true, "photo, video and PDF uploaded in the editor");
 
   for (const link of ["https://www.instagram.com/p/DPabc123XYZ/?igsh=x", "https://youtu.be/dQw4w9WgXcQ", "https://reform.ro/despre"]) {
-    await staff.fill("#media-link", link);
+    await staff.locator("ol[aria-label='Blocurile articolului'] input[type=url]").fill(link);
     await staff.click("button:has-text('adaugă linkul')");
   }
-  await staff.waitForFunction(() => document.querySelectorAll("ol li").length === 6);
-  check((await staff.locator("ol li", { hasText: "postare Instagram" }).count()) === 1, "Instagram link recognised");
-  check((await staff.locator("ol li", { hasText: "postare YouTube" }).count()) === 1, "YouTube link recognised");
+  await staff.waitForFunction(() => document.querySelectorAll("ol[aria-label='Ce conține blocul'] > li").length === 6);
+  check((await items.filter({ hasText: "postare Instagram" }).count()) === 1, "Instagram link recognised");
+  check((await items.filter({ hasText: "postare YouTube" }).count()) === 1, "YouTube link recognised");
 
-  // Move the YouTube video to the top.
-  await staff.click("button[aria-label='mută elementul 5 mai sus']");
-  await staff.click("button[aria-label='mută elementul 4 mai sus']");
-  await staff.click("button[aria-label='mută elementul 3 mai sus']");
-  await staff.click("button[aria-label='mută elementul 2 mai sus']");
-  check((await staff.locator("ol li").first().textContent()).includes("YouTube"), "items can be reordered");
+  // Move the YouTube video to the front of the block.
+  for (const n of [4, 3, 2, 1]) await items.nth(n).getByRole("button", { name: "← mai devreme" }).click();
+  check((await items.first().textContent()).includes("YouTube"), "items can be reordered");
 
   await staff.selectOption("#act-status", "published");
   await staff.click("form:has(#act-title) button[type=submit]");
@@ -65,7 +68,7 @@ try {
   check((await visitor.locator("main a[download][href*='.pdf']").count()) === 1, "PDF offered for download");
   check((await visitor.locator("main a[href='https://reform.ro/despre']").count()) === 1, "plain link shown as a card");
   check((await visitor.locator("main iframe").count()) === 0, "no third-party player before a click");
-  const order = await visitor.locator("main section[aria-labelledby=media-title] > div > *").evaluateAll((els) => els.map((e) => e.textContent ?? ""));
+  const order = await visitor.locator("main div.grid > *").evaluateAll((els) => els.map((e) => e.textContent ?? ""));
   check(order[0].includes("YouTube"), "media keep the editor's order");
   await visitor.locator("figure", { hasText: "Instagram" }).locator("button:has-text('Afișează')").click();
   const instagram = await visitor.locator("main iframe").first().getAttribute("src");
@@ -76,7 +79,7 @@ try {
   // Removing the PDF in the editor deletes the file from storage.
   const { data: before } = await admin.from("activity_media").select("path").eq("activity_id", id).eq("kind", "file").single();
   await staff.goto(`${base}/app/admin/news/${id}`);
-  await staff.locator("ol li", { hasText: "document" }).locator("button:has-text('scoate')").click();
+  await staff.locator("ol[aria-label='Ce conține blocul'] > li", { hasText: "document" }).locator("button:has-text('scoate')").click();
   await Promise.all([staff.waitForURL(/saved=/), staff.click("form:has(#act-title) button[type=submit]")]);
   const { data: files } = await admin.storage.from("media").list("activities", { search: before.path.split("/")[1] });
   check(files.length === 0, "removed file deleted from storage");

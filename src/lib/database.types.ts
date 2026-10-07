@@ -25,13 +25,13 @@ export type Database = {
           Tables: {
             "activities": {
                   Row: {
-                    "body": string,"category": Database["public"]['Enums']["activity_category"],"cover_path": string | null,"created_at": string,"created_by": string | null,"ends_at": string | null,"id": string,"is_demo": boolean,"location": string,"photo_consent_confirmed": boolean,"publish_at": string,"starts_at": string,"status": string,"summary": string,"title": string,"updated_at": string
+                    "body": string,"category": Database["public"]['Enums']["activity_category"],"cover_path": string | null,"created_at": string,"created_by": string | null,"ends_at": string | null,"id": string,"is_demo": boolean,"layout": Json | null,"location": string,"photo_consent_confirmed": boolean,"publish_at": string,"starts_at": string,"status": string,"summary": string,"title": string,"updated_at": string
                   }
                   Insert: {
-                    "body"?: string,"category": Database["public"]['Enums']["activity_category"],"cover_path"?: string | null,"created_at"?: string,"created_by"?: string | null,"ends_at"?: string | null,"id"?: string,"is_demo"?: boolean,"location"?: string,"photo_consent_confirmed"?: boolean,"publish_at"?: string,"starts_at": string,"status"?: string,"summary"?: string,"title": string,"updated_at"?: string
+                    "body"?: string,"category": Database["public"]['Enums']["activity_category"],"cover_path"?: string | null,"created_at"?: string,"created_by"?: string | null,"ends_at"?: string | null,"id"?: string,"is_demo"?: boolean,"layout"?: Json | null,"location"?: string,"photo_consent_confirmed"?: boolean,"publish_at"?: string,"starts_at": string,"status"?: string,"summary"?: string,"title": string,"updated_at"?: string
                   }
                   Update: {
-                    "body"?: string,"category"?: Database["public"]['Enums']["activity_category"],"cover_path"?: string | null,"created_at"?: string,"created_by"?: string | null,"ends_at"?: string | null,"id"?: string,"is_demo"?: boolean,"location"?: string,"photo_consent_confirmed"?: boolean,"publish_at"?: string,"starts_at"?: string,"status"?: string,"summary"?: string,"title"?: string,"updated_at"?: string
+                    "body"?: string,"category"?: Database["public"]['Enums']["activity_category"],"cover_path"?: string | null,"created_at"?: string,"created_by"?: string | null,"ends_at"?: string | null,"id"?: string,"is_demo"?: boolean,"layout"?: Json | null,"location"?: string,"photo_consent_confirmed"?: boolean,"publish_at"?: string,"starts_at"?: string,"status"?: string,"summary"?: string,"title"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -232,13 +232,13 @@ isOneToOne: false
                   ]
                 },"board_map_links": {
                   Row: {
-                    "board_id": string,"created_at": string,"created_by": string | null,"from_node": string,"id": string,"label": string,"to_node": string
+                    "board_id": string,"created_at": string,"created_by": string | null,"from_node": string,"id": string,"label": string,"label_bg": string | null,"label_fg": string | null,"to_node": string
                   }
                   Insert: {
-                    "board_id": string,"created_at"?: string,"created_by"?: string | null,"from_node": string,"id"?: string,"label"?: string,"to_node": string
+                    "board_id": string,"created_at"?: string,"created_by"?: string | null,"from_node": string,"id"?: string,"label"?: string,"label_bg"?: string | null,"label_fg"?: string | null,"to_node": string
                   }
                   Update: {
-                    "board_id"?: string,"created_at"?: string,"created_by"?: string | null,"from_node"?: string,"id"?: string,"label"?: string,"to_node"?: string
+                    "board_id"?: string,"created_at"?: string,"created_by"?: string | null,"from_node"?: string,"id"?: string,"label"?: string,"label_bg"?: string | null,"label_fg"?: string | null,"to_node"?: string
                   }
                   Relationships: [
                     {

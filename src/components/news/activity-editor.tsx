@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useMemo, useRef, useState } from "react";
+import { useActionState, useCallback, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { saveActivity } from "@/app/app/admin/news/actions";
 import {
@@ -11,16 +11,17 @@ import {
   SubmitButton,
   TextAreaField,
   ghostButtonClass,
-  inputClass,
   type ActionState,
 } from "@/components/form";
-import { PlusIcon, TrashIcon, UploadIcon } from "@/components/icons";
-import { parseLink, providerNames } from "@/lib/embeds";
-import { fileSize, fromLocalInput, toLocalInput } from "@/lib/format";
+import { TrashIcon, UploadIcon } from "@/components/icons";
+import { toEditor, toStored, type EditorBlock, type StoredLayout } from "@/lib/article";
+import { fromLocalInput, toLocalInput } from "@/lib/format";
 import { storageSafeName } from "@/lib/library";
-import { acceptedMediaTypes, fileLabel, kindOfMime, maxImageBytes, maxMediaBytes, needsConsent, type MediaItem } from "@/lib/media";
+import { kindOfMime, maxImageBytes, maxMediaBytes, needsConsent, type MediaItem } from "@/lib/media";
 import { createClient } from "@/lib/supabase/client";
+import type { Theme } from "@/lib/theme-shared";
 import { activityCategories, type ActivityCategory } from "@/lib/types";
+import { BlockEditor } from "./block-editor";
 
 export type ActivityInitial = {
   id: string;
@@ -37,22 +38,30 @@ export type ActivityInitial = {
   photo_consent_confirmed: boolean;
   schoolIds: string[];
   media: MediaItem[];
+  layout: StoredLayout | null;
 };
 
 const imageTypes = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"];
 
-/** Staff editor for news panel activities: text, dates, schools, cover, media (files, links, social posts) and photo consent. */
+/**
+ * Staff editor for news panel activities: title and summary, the article in movable blocks (text,
+ * photos, videos, files, links, social posts placed anywhere on the paper), dates, schools, cover
+ * and photo consent.
+ */
 export function ActivityEditor({
   initial,
   schools,
   defaultStart,
   mediaBase,
+  theme,
 }: {
   initial: ActivityInitial | null;
   schools: { id: string; name: string }[];
   defaultStart: string;
   /** Public URL prefix of the "media" bucket, for previews. */
   mediaBase: string;
+  /** The editor's own theme: the preview is printed on the matching paper. */
+  theme: Theme;
 }) {
   const t = useTranslations();
   const locale = useLocale();
@@ -60,7 +69,6 @@ export function ActivityEditor({
   const [state, action] = useActionState<ActionState, FormData>(saveActivity, {});
   const [title, setTitle] = useState(initial?.title ?? "");
   const [summary, setSummary] = useState(initial?.summary ?? "");
-  const [body, setBody] = useState(initial?.body ?? "");
   const [category, setCategory] = useState<ActivityCategory>(initial?.category ?? "workshop");
   const [startsAt, setStartsAt] = useState(toLocalInput(initial?.starts_at ?? defaultStart));
   const [endsAt, setEndsAt] = useState(initial?.ends_at ? toLocalInput(initial.ends_at) : "");
@@ -70,14 +78,12 @@ export function ActivityEditor({
   const [publishAt, setPublishAt] = useState(initial?.publish_at ? toLocalInput(initial.publish_at) : "");
   const [consent, setConsent] = useState(initial?.photo_consent_confirmed ?? false);
   const [schoolIds, setSchoolIds] = useState<string[]>(initial?.schoolIds ?? []);
-  const [media, setMedia] = useState<MediaItem[]>(initial?.media ?? []);
+  const [blocks, setBlockState] = useState<EditorBlock[]>(() => (initial ? toEditor(initial.layout, initial.body, initial.media) : []));
+  const setBlocks = useCallback((update: (prev: EditorBlock[]) => EditorBlock[]) => setBlockState(update), []);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [link, setLink] = useState("");
-  const [linkNote, setLinkNote] = useState<string | null>(null);
   const coverInput = useRef<HTMLInputElement>(null);
-  const mediaInput = useRef<HTMLInputElement>(null);
 
   async function store(file: File) {
     const path = `activities/${crypto.randomUUID()}-${storageSafeName(file.name)}`;
@@ -107,10 +113,11 @@ export function ActivityEditor({
   }
 
   /** Photos, videos, audio and documents, one after the other; a file that fails doesn't stop the rest. */
-  async function onFiles(files: File[]) {
+  async function uploadFiles(files: File[]): Promise<MediaItem[]> {
     setUploading(true);
     setUploadError(null);
     const problems: string[] = [];
+    const added: MediaItem[] = [];
     for (const [index, file] of files.entries()) {
       setProgress(t("adminNews.media.uploadingCount", { current: index + 1, total: files.length, name: file.name }));
       const kind = kindOfMime(file.type);
@@ -125,7 +132,7 @@ export function ActivityEditor({
       }
       try {
         const path = await store(file);
-        setMedia((prev) => [...prev, { kind, path, title: file.name, caption: "", mime_type: file.type, size_bytes: file.size }]);
+        added.push({ kind, path, title: file.name, caption: "", mime_type: file.type, size_bytes: file.size });
       } catch (error) {
         problems.push(`${file.name}: ${(error as Error).message}`);
       }
@@ -133,38 +140,17 @@ export function ActivityEditor({
     setUploadError(problems.length ? problems.join(" ") : null);
     setProgress(null);
     setUploading(false);
-    if (mediaInput.current) mediaInput.current.value = "";
+    return added;
   }
 
-  function addLink() {
-    const parsed = parseLink(link);
-    if (!parsed) {
-      setLinkNote(t("adminNews.media.badLink"));
-      return;
-    }
-    const item: MediaItem =
-      parsed.kind === "embed"
-        ? { kind: "embed", url: parsed.url, provider: parsed.provider, title: "", caption: "" }
-        : { kind: "link", url: parsed.url, title: new URL(parsed.url).hostname.replace(/^www\./, ""), caption: "" };
-    setMedia((prev) => [...prev, item]);
-    setLink("");
-    setLinkNote(parsed.kind === "embed" ? t("adminNews.media.recognised", { provider: providerNames[parsed.provider] }) : t("adminNews.media.plainLink"));
-  }
-
-  function move(index: number, by: number) {
-    setMedia((prev) => {
-      const next = [...prev];
-      const [item] = next.splice(index, 1);
-      next.splice(index + by, 0, item);
-      return next;
-    });
-  }
-
+  const stored = toStored(blocks);
+  const media = stored.media;
   const payload = JSON.stringify({
     id: initial?.id ?? null,
     title,
     summary,
-    body,
+    body: stored.body,
+    layout: stored.layout,
     category,
     starts_at: fromLocalInput(startsAt),
     ends_at: endsAt ? fromLocalInput(endsAt) : null,
@@ -189,10 +175,29 @@ export function ActivityEditor({
         <Field id="act-title" label={t("adminNews.title")} value={title} onChange={(e) => setTitle(e.target.value)} required minLength={3} maxLength={160} />
         <TextAreaField id="act-summary" label={t("adminNews.summary")} hint={t("adminNews.summaryHint", { count: 400 - summary.length })} rows={2} maxLength={400}
           value={summary} onChange={(e) => setSummary(e.target.value)} />
-        <TextAreaField id="act-body" label={t("adminNews.body")} hint={t("adminNews.markdownHint")} rows={10} value={body} onChange={(e) => setBody(e.target.value)} />
         <SelectField id="act-category" label={t("adminNews.category")} value={category} onChange={(e) => setCategory(e.target.value as ActivityCategory)}>
           {activityCategories.map((c) => <option key={c} value={c}>{t(`news.categories.${c}`)}</option>)}
         </SelectField>
+      </section>
+
+      <section className={card} aria-labelledby="act-article">
+        <div>
+          <h2 id="act-article" className="font-display text-xl font-bold">{t("adminNews.article")}</h2>
+          <p className="text-sm text-th-muted">{t("adminNews.articleHint")}</p>
+        </div>
+        <BlockEditor
+          blocks={blocks}
+          setBlocks={setBlocks}
+          upload={uploadFiles}
+          uploading={uploading}
+          mediaBase={mediaBase}
+          theme={theme}
+          locale={locale}
+          header={{ title, summary, coverUrl: cover ? `${mediaBase}/${cover}` : null }}
+        />
+        {progress && <p role="status" className="text-sm text-th-muted">{progress}</p>}
+        {uploadError && <FormAlert tone="error">{uploadError}</FormAlert>}
+        <p className="text-xs text-th-muted">{t("adminNews.media.uploadHint")}</p>
       </section>
 
       <section className={card} aria-labelledby="act-when">
@@ -214,7 +219,7 @@ export function ActivityEditor({
       </section>
 
       <section className={card} aria-labelledby="act-photos">
-        <h2 id="act-photos" className="font-display text-xl font-bold">{t("adminNews.photos")}</h2>
+        <h2 id="act-photos" className="font-display text-xl font-bold">{t("adminNews.coverAndConsent")}</h2>
         <div className="flex flex-col gap-2">
           <span className="text-sm text-th-muted">{t("adminNews.cover")}</span>
           {cover ? (
@@ -230,65 +235,6 @@ export function ActivityEditor({
           )}
           <input ref={coverInput} type="file" accept={imageTypes.join(",")} className="sr-only" tabIndex={-1} aria-hidden="true" onChange={(e) => void onCover(e.target.files?.[0])} />
         </div>
-        <div className="flex flex-col gap-3">
-          <span className="text-sm text-th-muted">{t("adminNews.media.title")}</span>
-          {media.length > 0 && (
-            <ol className="flex flex-col gap-2">
-              {media.map((item, index) => (
-                <li key={`${item.path ?? item.url}-${index}`} className="flex gap-3 rounded-th border-th p-2">
-                  <MediaThumb item={item} mediaBase={mediaBase} />
-                  <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                    <span className="truncate text-sm font-medium">
-                      {item.kind === "embed" && item.provider ? t("adminNews.media.embedOf", { provider: providerNames[item.provider] }) : t(`adminNews.media.kinds.${item.kind}`)}
-                      <span className="font-normal text-th-muted">
-                        {[item.url ? item.url.replace(/^https:\/\/(www\.)?/, "") : item.title, item.size_bytes ? fileSize(item.size_bytes, locale) : ""]
-                          .filter(Boolean)
-                          .map((part) => ` · ${part}`)
-                          .join("")}
-                      </span>
-                    </span>
-                    <label className="sr-only" htmlFor={`media-caption-${index}`}>{t("adminNews.media.caption")}</label>
-                    <input id={`media-caption-${index}`} value={item.caption} maxLength={300} placeholder={t("adminNews.media.caption")}
-                      onChange={(e) => setMedia((prev) => prev.map((m, i) => (i === index ? { ...m, caption: e.target.value } : m)))}
-                      className={`${inputClass} min-h-10 text-sm`} />
-                    <div className="flex flex-wrap gap-x-4 text-xs">
-                      <button type="button" disabled={index === 0} onClick={() => move(index, -1)} className="min-h-8 text-th-link underline disabled:opacity-40" aria-label={t("adminNews.media.moveUpLabel", { n: index + 1 })}>
-                        ↑ {t("adminNews.media.moveUp")}
-                      </button>
-                      <button type="button" disabled={index === media.length - 1} onClick={() => move(index, 1)} className="min-h-8 text-th-link underline disabled:opacity-40" aria-label={t("adminNews.media.moveDownLabel", { n: index + 1 })}>
-                        ↓ {t("adminNews.media.moveDown")}
-                      </button>
-                      <button type="button" onClick={() => setMedia((prev) => prev.filter((_, i) => i !== index))} className="min-h-8 text-th-link underline">
-                        {t("adminNews.media.remove")}
-                      </button>
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          )}
-          <div className="flex flex-wrap items-center gap-3">
-            <button type="button" disabled={uploading} onClick={() => mediaInput.current?.click()} className={ghostButtonClass}>
-              <UploadIcon size={14} /> {uploading ? t("adminNews.uploading") : t("adminNews.media.upload")}
-            </button>
-            {progress && <span role="status" className="text-sm text-th-muted">{progress}</span>}
-          </div>
-          <p className="text-xs text-th-muted">{t("adminNews.media.uploadHint")}</p>
-          <input ref={mediaInput} type="file" multiple accept={acceptedMediaTypes.join(",")} className="sr-only" tabIndex={-1} aria-hidden="true"
-            onChange={(e) => void onFiles(Array.from(e.target.files ?? []))} />
-          <div className="flex flex-wrap items-end gap-2">
-            <label htmlFor="media-link" className="flex min-w-0 flex-[1_1_320px] flex-col gap-1.5 text-sm text-th-muted">
-              {t("adminNews.media.linkLabel")}
-              <input id="media-link" type="url" inputMode="url" value={link} placeholder="https://www.instagram.com/p/…"
-                onChange={(e) => { setLink(e.target.value); setLinkNote(null); }}
-                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addLink(); } }}
-                className={inputClass} />
-            </label>
-            <button type="button" onClick={addLink} disabled={!link.trim()} className={ghostButtonClass}><PlusIcon size={14} /> {t("adminNews.media.addLink")}</button>
-          </div>
-          <p role="status" className="text-xs text-th-muted">{linkNote ?? t("adminNews.media.linkHint")}</p>
-        </div>
-        {uploadError && <FormAlert tone="error">{uploadError}</FormAlert>}
         <CheckboxField id="act-consent" checked={consent} onChange={(e) => setConsent(e.target.checked)}
           label={<><strong>{t("adminNews.consent")}</strong> {hasPhotos && !consent ? t("adminNews.consentNeeded") : ""}</>} />
       </section>
@@ -308,19 +254,4 @@ export function ActivityEditor({
       </section>
     </form>
   );
-}
-
-/** A small preview in the editor list: the image itself, a muted video frame, or a labelled tile. */
-function MediaThumb({ item, mediaBase }: { item: MediaItem; mediaBase: string }) {
-  const box = "grid size-20 shrink-0 place-items-center overflow-hidden rounded-th font-display text-xs font-bold";
-  if (item.kind === "image" && item.path) {
-    // eslint-disable-next-line @next/next/no-img-element -- preview of an uploaded image
-    return <img src={`${mediaBase}/${item.path}`} alt="" className="size-20 shrink-0 rounded-th object-cover" />;
-  }
-  if (item.kind === "video" && item.path) {
-    return <video src={`${mediaBase}/${item.path}#t=0.5`} muted preload="metadata" className="size-20 shrink-0 rounded-th bg-ink object-cover" />;
-  }
-  const label = item.kind === "embed" && item.provider ? providerNames[item.provider] : item.kind === "link" ? "LINK" : item.kind === "audio" ? "AUDIO" : fileLabel(item);
-  const color = item.kind === "embed" ? "bg-lavender text-white" : item.kind === "link" ? "bg-teal text-ink" : item.kind === "audio" ? "bg-honey text-ink" : "bg-vermilion text-ink";
-  return <span aria-hidden="true" className={`${box} ${color} px-1 text-center leading-tight`}>{label}</span>;
 }

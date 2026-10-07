@@ -138,15 +138,38 @@ try {
   await label.press("Enter");
   const idea = lead.locator(`[data-node][aria-label='Idee: sondajul ${stamp}']`);
   await idea.waitFor();
-  await lead.getByRole("button", { name: "↗ leagă de…" }).click();
-  await lead.locator("[role=status]", { hasText: "Alege ce legi de" }).waitFor();
+  // Keyboard: with the idea selected, L starts a link from it; the phrase is typed right on the map.
+  await idea.click();
+  await lead.keyboard.press("l");
+  await lead.locator("[role=status]", { hasText: "Acum apasă pe conceptul unde ajunge" }).waitFor();
   await lead.locator("[data-node][aria-label^='Impactul:']").click();
-  const phrase = lead.getByLabel("Cuvintele de legătură");
+  const phrase = lead.getByLabel(`Cuvintele de legătură dintre „sondajul ${stamp}” și „Impactul”`);
   await phrase.waitFor();
+  check(await phrase.evaluate((el) => el === document.activeElement), "after linking, the phrase box waits for typing");
   await phrase.fill("măsoară");
   await phrase.press("Enter");
-  await lead.getByRole("button", { name: `Legătură: sondajul ${stamp} măsoară Impactul` }).waitFor();
-  check(true, "idea linked to a step with a phrase");
+  const linkLabel = lead.getByRole("button", { name: `Legătură: sondajul ${stamp} măsoară Impactul` });
+  await linkLabel.waitFor();
+  check(true, "idea linked to a step with a phrase (L key)");
+
+  // The phrase box takes a background and a text colour.
+  await linkLabel.click();
+  await inspector.locator("fieldset", { hasText: "Fundalul textului" }).getByRole("button", { name: "galben" }).click();
+  await inspector.locator("fieldset", { hasText: "Culoarea textului" }).getByRole("button", { name: "lavandă" }).click();
+  await lead.waitForFunction((name) => {
+    const el = document.querySelector(`button[aria-label="${name}"]`);
+    return el && getComputedStyle(el).backgroundColor === "rgb(225, 179, 69)" && getComputedStyle(el).color === "rgb(121, 86, 154)";
+  }, `Legătură: sondajul ${stamp} măsoară Impactul`, { timeout: 5000 });
+  check(true, "link phrase colours change");
+
+  // Toolbar: "new link", then two clicks.
+  await lead.getByRole("button", { name: /legătură nouă/ }).click();
+  await lead.locator("[role=status]", { hasText: "Legătură nouă: apasă pe conceptul de unde pleacă" }).waitFor();
+  await idea.click();
+  await lead.locator("[data-node][aria-label^='Livrarea:']").click();
+  await lead.getByLabel(`Cuvintele de legătură dintre „sondajul ${stamp}” și „Livrarea”`).press("Escape");
+  await lead.getByRole("button", { name: `Legătură: sondajul ${stamp} → Livrarea` }).waitFor();
+  check(true, "new link from the toolbar button");
 
   // Drag a task to another lane: it moves to that step.
   await lead.evaluate(() => document.querySelector("[data-node]").closest(".overflow-auto").scrollTo(0, 0));

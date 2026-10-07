@@ -43,6 +43,26 @@ const mediaSchema = z
     return { kind: item.kind, path: item.path, title: item.title, caption: item.caption, mime_type: item.mime_type ?? null, size_bytes: item.size_bytes ?? null };
   });
 
+const httpsUrl = z.string().trim().max(2000).regex(/^https:\/\/[^\s]+$/);
+const hint = z.string().max(300).optional();
+
+// The article's blocks (src/lib/article.ts). Media blocks point at media items by position.
+const blockSchema = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("heading"), text: z.string().max(200), hint }),
+  z.object({ type: z.literal("text"), body: z.string().max(20000), style: z.enum(["normal", "lead", "quote", "note"]), hint }),
+  z.object({
+    type: z.literal("media"),
+    items: z.array(z.number().int().min(1)).max(60),
+    place: z.enum(["full", "left", "right", "row"]),
+    width: z.enum(["s", "m", "l"]),
+    hint,
+  }),
+  z.object({ type: z.literal("divider") }),
+  z.object({ type: z.literal("button"), label: z.string().trim().max(60), url: z.union([z.literal(""), httpsUrl]), hint }),
+]);
+
+const layoutSchema = z.object({ v: z.literal(1), blocks: z.array(blockSchema).max(120) });
+
 const activitySchema = z
   .object({
     id: z.uuid().nullable(),
@@ -59,8 +79,18 @@ const activitySchema = z
     photo_consent_confirmed: z.boolean(),
     school_ids: z.array(z.uuid()).max(100),
     media: z.array(mediaSchema).max(60),
+    layout: layoutSchema.nullable().default(null),
   })
   .refine((a) => !a.ends_at || Date.parse(a.ends_at) >= Date.parse(a.starts_at), { message: "dates" })
+  // Every media item sits in exactly one block, and blocks only point at items that exist.
+  .refine(
+    (a) => {
+      if (!a.layout) return true;
+      const used = a.layout.blocks.flatMap((b) => (b.type === "media" ? b.items : []));
+      return new Set(used).size === used.length && used.every((n) => n <= a.media.length) && used.length === a.media.length;
+    },
+    { message: "media" },
+  )
   .refine((a) => a.status === "draft" || (!a.cover_path && !needsConsent(a.media)) || a.photo_consent_confirmed, { message: "consent" });
 
 /** Files of an activity in the "media" bucket: its cover and its uploaded media. */
@@ -88,7 +118,8 @@ export async function saveActivity(_prev: ActionState, formData: FormData): Prom
   }
   const supabase = await createClient();
   const before = parsed.data.id ? await storedPaths(supabase, parsed.data.id) : [];
-  const { data: id, error } = await supabase.rpc("save_activity", { payload: parsed.data });
+  const { layout, ...activity } = parsed.data;
+  const { data: id, error } = await supabase.rpc("save_activity", { payload: activity });
   if (error || !id) return { error: "adminNews.errors.saveFailed", errorValues: { detail: error?.message ?? "" } };
 
   // The database must have stored every media item (it won't if its save_activity is out of date).
@@ -96,6 +127,10 @@ export async function saveActivity(_prev: ActionState, formData: FormData): Prom
   if ((count ?? 0) !== parsed.data.media.length) {
     return { error: "adminNews.errors.saveFailed", errorValues: { detail: `media ${count ?? 0}/${parsed.data.media.length}` } };
   }
+
+  // The layout is saved next to the activity (save_activity keeps its media in the same order).
+  const { error: layoutError } = await supabase.from("activities").update({ layout }).eq("id", id);
+  if (layoutError) return { error: "adminNews.errors.saveFailed", errorValues: { detail: layoutError.message } };
 
   // Files removed in the editor are deleted from storage once the save went through.
   const kept = new Set(await storedPaths(supabase, id));

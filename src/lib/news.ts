@@ -1,4 +1,5 @@
 import "server-only";
+import { isStoredLayout } from "@/lib/article";
 import type { EmbedProvider, MediaKind } from "@/lib/media";
 import { createClient } from "@/lib/supabase/server";
 import { activityCategories, type ActivityCategory } from "@/lib/types";
@@ -102,12 +103,13 @@ export async function getActivity(id: string) {
   const supabase = await createClient();
   const { data } = await supabase
     .from("activities")
-    .select(`${selectColumns}, body, status, publish_at, activity_media(id, kind, path, url, provider, title, caption, mime_type, size_bytes, position)`)
+    .select(`${selectColumns}, body, layout, status, publish_at, activity_media(id, kind, path, url, provider, title, caption, mime_type, size_bytes, position)`)
     .eq("id", id)
     .maybeSingle()
     .overrideTypes<
       | (Raw & {
           body: string;
+          layout: unknown;
           status: string;
           publish_at: string;
           activity_media: RawMedia[];
@@ -120,6 +122,7 @@ export async function getActivity(id: string) {
   return {
     ...toCard(data, supabase),
     body: data.body,
+    layout: isStoredLayout(data.layout) ? data.layout : null,
     isPublic,
     media: [...data.activity_media]
       .sort((a, b) => a.position - b.position)

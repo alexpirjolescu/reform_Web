@@ -19,7 +19,13 @@ type MapNode = {
   x: number | null;
   y: number | null;
 };
-type MapLink = { id: string; from_node: string; to_node: string; label: string };
+type LinkColor = LabelColor | "ink" | "white";
+type MapLink = { id: string; from_node: string; to_node: string; label: string; label_bg: LinkColor | null; label_fg: LinkColor | null };
+/** Colours a linking phrase can take: the brand palette plus ink and white. */
+const linkColors: LinkColor[] = [...labelColors, "ink", "white"];
+const linkHex = (color: LinkColor) => (color === "ink" ? "#221f20" : color === "white" ? "#ffffff" : labelHex[color].bg);
+/** A text colour that reads on a background, for when only the background was picked. */
+const inkOn = (color: LinkColor) => (color === "ink" || color === "lavender" ? "#ffffff" : "#221f20");
 type Selection = { type: "node" | "link"; id: string } | null;
 type Point = { x: number; y: number };
 
@@ -102,7 +108,11 @@ export function ProjectMap({
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Selection>(null);
-  const [connectFrom, setConnectFrom] = useState<string | null>(null);
+  // Drawing a new link: first the concept it leaves from (null until picked), then the one it reaches.
+  const [linking, setLinking] = useState<{ from: string | null } | null>(null);
+  const connectFrom = linking?.from ?? null;
+  // The link whose phrase is being typed right on the map.
+  const [editingLink, setEditingLink] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
   const [viewHeight, setViewHeight] = useState(0);
   const [mode, setMode] = useState<"map" | "story">("map");
@@ -121,14 +131,14 @@ export function ProjectMap({
     if (drag.current) return;
     const [n, l] = await Promise.all([
       supabase.from("board_map_nodes").select("id, kind, stage, card_id, label, note, color, x, y").eq("board_id", boardId),
-      supabase.from("board_map_links").select("id, from_node, to_node, label").eq("board_id", boardId),
+      supabase.from("board_map_links").select("id, from_node, to_node, label, label_bg, label_fg").eq("board_id", boardId),
     ]);
     if (n.error || l.error) {
       setError(n.error?.message ?? l.error?.message ?? "");
       return;
     }
     setNodes((n.data ?? []) as MapNode[]);
-    setLinks(l.data ?? []);
+    setLinks((l.data ?? []) as MapLink[]);
     setLoaded(true);
   }, [boardId, supabase]);
 
@@ -282,9 +292,16 @@ export function ProjectMap({
   }
 
   async function clickNode(node: MapNode) {
-    if (connectFrom && connectFrom !== node.id) {
-      const from = connectFrom;
-      setConnectFrom(null);
+    if (linking && !linking.from) {
+      // New link, first click: where it starts.
+      setLinking({ from: node.id });
+      setSelected({ type: "node", id: node.id });
+      return;
+    }
+    if (linking?.from && linking.from !== node.id) {
+      // Second click: where it ends. Then the phrase box opens on the map, ready for typing.
+      const from = linking.from;
+      setLinking(null);
       const { data, error: linkError } = await supabase
         .from("board_map_links")
         .insert({ board_id: boardId, from_node: from, to_node: node.id, label: "" })
@@ -292,11 +309,26 @@ export function ProjectMap({
         .single();
       if (linkError) setError(linkError.code === "23505" ? t("map.linkExists") : linkError.message);
       await load();
-      if (data) setSelected({ type: "link", id: data.id });
+      if (data) {
+        setSelected({ type: "link", id: data.id });
+        setEditingLink(data.id);
+      }
       return;
     }
-    setConnectFrom(null);
+    setLinking(null);
     setSelected({ type: "node", id: node.id });
+  }
+
+  /** Starts a new link: from the given concept, or the next click picks where it starts. */
+  const startLinking = useCallback((from?: string | null) => {
+    setEditingLink(null);
+    setMode("map");
+    setLinking({ from: from ?? null });
+  }, []);
+
+  async function saveLinkLabel(link: MapLink, value: string) {
+    setEditingLink(null);
+    if (value.trim() !== link.label) await run(supabase.from("board_map_links").update({ label: value.trim() }).eq("id", link.id));
   }
 
   function nudge(event: React.KeyboardEvent, node: MapNode) {
@@ -313,15 +345,25 @@ export function ProjectMap({
     void run(supabase.from("board_map_nodes").update({ x: Math.max(0, p.x + move[0]), y: Math.max(HEAD, p.y + move[1]) }).eq("id", node.id));
   }
 
+  // Keyboard: L starts a new link (from the selected concept, if any); Escape cancels it.
+  const selectedNodeId = selected?.type === "node" ? selected.id : null;
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        setConnectFrom(null);
+        setLinking(null);
+        setEditingLink(null);
+        return;
       }
+      const target = event.target as HTMLElement | null;
+      const typing = target?.closest("input, textarea, select, [contenteditable=true]");
+      if (typing || event.ctrlKey || event.metaKey || event.altKey || event.key.toLowerCase() !== "l") return;
+      if (document.querySelector("[role=dialog]")) return; // a task window is open on top
+      event.preventDefault();
+      startLinking(selectedNodeId);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  }, [selectedNodeId, startLinking]);
 
   // A new idea goes under everything else in the lane in the middle of the screen, then comes into view.
   async function addIdea() {
@@ -445,6 +487,12 @@ export function ProjectMap({
   };
   const drawn = links.map(linkView).filter((v): v is NonNullable<ReturnType<typeof linkView>> => Boolean(v));
 
+  /** The phrase box's own colours, when the team picked some. */
+  const linkLook = (link: MapLink): React.CSSProperties => ({
+    ...(link.label_bg && { background: linkHex(link.label_bg), borderColor: variant === "color" ? "#221f20" : linkHex(link.label_bg) }),
+    ...((link.label_fg || link.label_bg) && { color: link.label_fg ? linkHex(link.label_fg) : inkOn(link.label_bg!) }),
+  });
+
   const canvas = (
     <div style={{ width: width * zoom, height: height * zoom }}>
       <div className="relative origin-top-left" style={{ width, height, transform: `scale(${zoom})` }}>
@@ -468,18 +516,44 @@ export function ProjectMap({
         </svg>
         {visible.map(nodeView)}
         {/* Linking phrases sit on top: they are what turns two concepts into a sentence. */}
-        {drawn.map(({ link, mid }) => (
-          <button
-            key={link.id}
-            type="button"
-            onClick={() => setSelected({ type: "link", id: link.id })}
-            aria-label={`${t("map.link")}: ${labelOf(nodeById.get(link.from_node))} ${link.label || "→"} ${labelOf(nodeById.get(link.to_node))}`}
-            className={`absolute max-w-24 -translate-x-1/2 -translate-y-1/2 px-1.5 py-0.5 text-center text-[11px] leading-tight ${s.linkLabel} ${selected?.id === link.id ? "outline outline-2 outline-teal" : ""} ${link.label ? "" : "opacity-60"}`}
-            style={{ left: mid.x, top: mid.y }}
-          >
-            {link.label || "…"}
-          </button>
-        ))}
+        {drawn.map(({ link, mid }) => {
+          const look = linkLook(link);
+          if (editingLink === link.id) {
+            return (
+              <input
+                key={link.id}
+                autoFocus
+                defaultValue={link.label}
+                maxLength={80}
+                aria-label={t("map.linkPhraseFor", { from: labelOf(nodeById.get(link.from_node)), to: labelOf(nodeById.get(link.to_node)) })}
+                placeholder={t("map.linkPlaceholderShort")}
+                onBlur={(e) => void saveLinkLabel(link, e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+                  if (e.key === "Escape") {
+                    e.stopPropagation();
+                    setEditingLink(null);
+                  }
+                }}
+                className={`absolute w-40 -translate-x-1/2 -translate-y-1/2 px-2 py-1 text-center text-xs outline outline-2 outline-teal ${s.linkLabel}`}
+                style={{ left: mid.x, top: mid.y, ...look }}
+              />
+            );
+          }
+          return (
+            <button
+              key={link.id}
+              type="button"
+              onClick={() => setSelected({ type: "link", id: link.id })}
+              onDoubleClick={() => setEditingLink(link.id)}
+              aria-label={`${t("map.link")}: ${labelOf(nodeById.get(link.from_node))} ${link.label || "→"} ${labelOf(nodeById.get(link.to_node))}`}
+              className={`absolute max-w-24 -translate-x-1/2 -translate-y-1/2 px-1.5 py-0.5 text-center text-[11px] leading-tight ${s.linkLabel} ${selected?.id === link.id ? "outline outline-2 outline-teal" : ""} ${link.label ? "" : "opacity-60"}`}
+              style={{ left: mid.x, top: mid.y, ...look }}
+            >
+              {link.label || "…"}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
@@ -487,7 +561,29 @@ export function ProjectMap({
   // ---- inspector ------------------------------------------------------------
 
   const startLink = (id: string) => (
-    <button type="button" onClick={() => setConnectFrom(id)} className={s.ghost}>↗ {t("map.connect")}</button>
+    <button type="button" onClick={() => startLinking(id)} className={s.ghost}>↗ {t("map.connect")}</button>
+  );
+
+  const paint = (field: "label_bg" | "label_fg", color: LinkColor | null) =>
+    run(supabase.from("board_map_links").update(field === "label_bg" ? { label_bg: color } : { label_fg: color }).eq("id", selectedLink!.id));
+
+  const swatches = (legend: string, value: LinkColor | null, field: "label_bg" | "label_fg") => (
+    <fieldset className="flex flex-col gap-1.5">
+      <legend className={`mb-1 text-sm ${s.muted}`}>{legend}</legend>
+      <div className="flex flex-wrap gap-1.5">
+        <button type="button" aria-pressed={value === null} aria-label={t("map.colorDefault")} title={t("map.colorDefault")}
+          onClick={() => paint(field, null)}
+          className={`grid size-8 place-items-center rounded-full border-2 text-xs ${value === null ? "border-current" : `border-dashed ${s.frame}`}`}>
+          ⌀
+        </button>
+        {linkColors.map((color) => (
+          <button key={color} type="button" aria-pressed={value === color} aria-label={t(`map.colors.${color}`)} title={t(`map.colors.${color}`)}
+            onClick={() => paint(field, color)}
+            className={`size-8 rounded-full border-2 ${value === color ? "border-current outline outline-2 outline-offset-1 outline-teal" : "border-th-line"}`}
+            style={{ background: linkHex(color) }} />
+        ))}
+      </div>
+    </fieldset>
   );
 
   let inspector: React.ReactNode;
@@ -500,11 +596,13 @@ export function ProjectMap({
         <p className="text-sm"><strong>{labelOf(from)}</strong></p>
         <label className="flex flex-col gap-1 text-sm">
           <span className={s.muted}>{t("map.linkPhrase")}</span>
-          <input key={selectedLink.id} autoFocus defaultValue={selectedLink.label} maxLength={80} placeholder={t("map.linkPlaceholder")} className={s.input}
-            onBlur={(e) => e.target.value !== selectedLink.label && run(supabase.from("board_map_links").update({ label: e.target.value.trim() }).eq("id", selectedLink.id))}
+          <input key={`${selectedLink.id}-${selectedLink.label}`} defaultValue={selectedLink.label} maxLength={80} placeholder={t("map.linkPlaceholder")} className={s.input}
+            onBlur={(e) => e.target.value.trim() !== selectedLink.label && run(supabase.from("board_map_links").update({ label: e.target.value.trim() }).eq("id", selectedLink.id))}
             onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()} />
         </label>
         <p className="text-sm">→ <strong>{labelOf(to)}</strong></p>
+        {swatches(t("map.linkBackground"), selectedLink.label_bg, "label_bg")}
+        {swatches(t("map.linkText"), selectedLink.label_fg, "label_fg")}
         <div className="flex flex-wrap gap-2">
           <button type="button" className={s.ghost} onClick={() => run(supabase.from("board_map_links").update({ from_node: selectedLink.to_node, to_node: selectedLink.from_node }).eq("id", selectedLink.id))}>
             ⇄ {t("map.reverse")}
@@ -675,6 +773,10 @@ export function ProjectMap({
         {mode === "map" && (
           <>
             <button type="button" onClick={addIdea} className={s.button}>+ {t("map.addIdea")}</button>
+            <button type="button" onClick={() => (linking ? setLinking(null) : startLinking(selectedNodeId))} aria-pressed={Boolean(linking)} aria-keyshortcuts="L"
+              title={t("map.newLinkHint")} className={`${s.ghost} ${linking ? "border-th-fg font-semibold" : ""}`}>
+              ↗ {t("map.newLink")} <kbd className={`ml-1 rounded border px-1 text-[11px] ${s.frame} ${s.muted}`}>L</kbd>
+            </button>
             <div className="ml-auto flex items-center gap-1" aria-label={t("map.zoom")}>
               <button type="button" className={`${s.ghost} w-10`} aria-label={t("map.zoomOut")} onClick={() => setZoom((z) => Math.max(0.5, Math.round((z - 0.1) * 10) / 10))}>−</button>
               <span className="w-12 text-center text-sm tabular-nums">{Math.round(zoom * 100)}%</span>
@@ -683,10 +785,10 @@ export function ProjectMap({
           </>
         )}
       </div>
-      {connectFrom && (
+      {linking && (
         <p role="status" className="shrink-0 bg-teal/30 px-4 py-2 text-sm sm:px-8">
-          {t("map.connecting", { name: labelOf(nodeById.get(connectFrom)) })}{" "}
-          <button type="button" onClick={() => setConnectFrom(null)} className="underline">{t("cancel")}</button>
+          {connectFrom ? t("map.connecting", { name: labelOf(nodeById.get(connectFrom)) }) : t("map.pickStart")}{" "}
+          <button type="button" onClick={() => setLinking(null)} className="underline">{t("cancel")}</button>
         </p>
       )}
       {error && (
@@ -700,9 +802,9 @@ export function ProjectMap({
         <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
           <div ref={scroller} className="min-h-[60vh] flex-1 overflow-auto lg:min-h-0" onClick={(e) => {
             // A click on empty space clears the selection (and a link in progress).
-            if (!(e.target as HTMLElement).closest("[data-node], button")) {
+            if (!(e.target as HTMLElement).closest("[data-node], button, input")) {
               setSelected(null);
-              setConnectFrom(null);
+              setLinking(null);
             }
           }}>
             {loaded ? canvas : <p className={`p-6 ${s.muted}`}>{t("loading")}</p>}

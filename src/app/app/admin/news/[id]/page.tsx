@@ -6,6 +6,7 @@ import { ActivityEditor } from "@/components/news/activity-editor";
 import { PageHeader, moduleButtons } from "@/components/page-header";
 import { requireStaff } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import type { MediaItem } from "@/lib/media";
 import { getTheme } from "@/lib/theme";
 import { deleteActivity } from "../actions";
 import { defaultStart, getSchools, mediaBase } from "../editor-data";
@@ -21,12 +22,12 @@ export default async function EditActivityPage({ params }: PageProps<"/app/admin
     getSchools(),
     supabase
       .from("activities")
-      .select("id, title, summary, body, category, starts_at, ends_at, location, cover_path, status, publish_at, photo_consent_confirmed, activity_schools(school_id), activity_photos(path, caption, position)")
+      .select("id, title, summary, body, category, starts_at, ends_at, location, cover_path, status, publish_at, photo_consent_confirmed, activity_schools(school_id), activity_media(kind, path, url, provider, title, caption, mime_type, size_bytes, position)")
       .eq("id", id)
       .maybeSingle(),
   ]);
   if (!activity) notFound();
-  const { activity_schools, activity_photos, ...rest } = activity;
+  const { activity_schools, activity_media, ...rest } = activity;
   const b = moduleButtons[theme];
 
   return (
@@ -39,7 +40,16 @@ export default async function EditActivityPage({ params }: PageProps<"/app/admin
             ...rest,
             status: rest.status as "draft" | "published",
             schoolIds: activity_schools.map((s) => s.school_id),
-            photos: [...activity_photos].sort((a, b) => a.position - b.position).map(({ path, caption }) => ({ path, caption })),
+            media: [...activity_media].sort((a, b) => a.position - b.position).map((item): MediaItem => ({
+              kind: item.kind as MediaItem["kind"],
+              path: item.path,
+              url: item.url,
+              provider: item.provider as MediaItem["provider"],
+              title: item.title,
+              caption: item.caption,
+              mime_type: item.mime_type,
+              size_bytes: item.size_bytes,
+            })),
           }}
           schools={schools}
           defaultStart={defaultStart()}

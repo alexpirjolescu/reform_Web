@@ -46,6 +46,8 @@ export type Paper = {
   tag: string;
   /** Status banners (draft preview, draft privacy notice). */
   notice: string;
+  /** Boxes inside an article: file and link cards, audio, social posts before they load. No padding. */
+  panel: string;
 };
 
 const white: Paper = {
@@ -81,6 +83,7 @@ const white: Paper = {
   listItem: "border-b border-line",
   tag: "px-3 py-1",
   notice: "bg-honey text-ink",
+  panel: "border border-line bg-sand",
 };
 
 const dark: Paper = {
@@ -116,6 +119,7 @@ const dark: Paper = {
   listItem: "border-b border-night-line",
   tag: "px-3 py-1",
   notice: "bg-honey text-ink",
+  panel: "border border-night-line bg-night-3",
 };
 
 const color: Paper = {
@@ -152,6 +156,7 @@ const color: Paper = {
   listItem: "rounded-2xl border-2 border-ink",
   tag: "rounded-full border-2 border-ink px-3 py-1",
   notice: "border-2 border-ink bg-white text-ink",
+  panel: "rounded-3xl border-2 border-ink bg-white",
 };
 
 const papers: Record<Theme, Paper> = { white, dark, color };

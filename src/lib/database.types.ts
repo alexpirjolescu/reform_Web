@@ -42,19 +42,19 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"activity_photos": {
+                },"activity_media": {
                   Row: {
-                    "activity_id": string,"caption": string,"created_at": string,"id": string,"path": string,"position": number
+                    "activity_id": string,"caption": string,"created_at": string,"id": string,"kind": string,"mime_type": string | null,"path": string | null,"position": number,"provider": string | null,"size_bytes": number | null,"title": string,"url": string | null
                   }
                   Insert: {
-                    "activity_id": string,"caption"?: string,"created_at"?: string,"id"?: string,"path": string,"position"?: number
+                    "activity_id": string,"caption"?: string,"created_at"?: string,"id"?: string,"kind": string,"mime_type"?: string | null,"path"?: string | null,"position"?: number,"provider"?: string | null,"size_bytes"?: number | null,"title"?: string,"url"?: string | null
                   }
                   Update: {
-                    "activity_id"?: string,"caption"?: string,"created_at"?: string,"id"?: string,"path"?: string,"position"?: number
+                    "activity_id"?: string,"caption"?: string,"created_at"?: string,"id"?: string,"kind"?: string,"mime_type"?: string | null,"path"?: string | null,"position"?: number,"provider"?: string | null,"size_bytes"?: number | null,"title"?: string,"url"?: string | null
                   }
                   Relationships: [
                     {
-      foreignKeyName: "activity_photos_activity_id_fkey"
+      foreignKeyName: "activity_media_activity_id_fkey"
       columns: ["activity_id"]
 isOneToOne: false
       referencedRelation: "activities"

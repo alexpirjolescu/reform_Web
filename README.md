@@ -2,7 +2,7 @@
 
 Website and platform for re_form, a non-formal education academy that helps high school students communicate, plan and carry out projects.
 
-- **Public news panel:** past and upcoming academy activities, open to parents, school boards, investors and anyone else.
+- **Public news panel:** past and upcoming academy activities, open to parents, school boards, investors and anyone else. A post can carry photos, videos, audio, documents, links and posts from Instagram, Facebook, YouTube, Vimeo, TikTok, Spotify or Google Drive; players from other sites load only after the reader presses "show".
 - **For students and staff (with an account):** a Trello-style workspace per school, a resource library, assessments (quizzes and hand-ins) and direct messages.
 - **Three looks, chosen by each person:** white, dark and colour. The public pages (news panel, calendar, about) use the "white paper" newspaper layout (design B) on white, night or honey paper. Inside the platform, white and dark share the sidebar "studio" layout (design A), and colour keeps its sticker layout (design C). Visitors pick with a cookie; signed-in people keep the choice on their profile.
 
@@ -32,9 +32,9 @@ Product requirements and design directions are in [docs/](docs/).
 
 ## Launch on Vercel
 
-The Supabase project **reform-web** (`jdhxaatosmkedggzuiki`, Frankfurt) already has the migrations in `supabase/migrations/` and the demo content from `supabase/demo.sql`, except three functions that need a one-time paste:
+The Supabase project **reform-web** (`jdhxaatosmkedggzuiki`, Frankfurt) already has the migrations in `supabase/migrations/` and the demo content from `supabase/demo.sql`.
 
-0. **Finish the database (once).** Open Supabase → SQL Editor → New query, paste the whole of `supabase/remote-pending.sql` and press Run. It adds the functions behind the assessment editor, the news editor and "remove demo content". (The Supabase connector asks for a confirmation on any SQL that mentions `DELETE`, so these could not be applied automatically.)
+0. **Database.** The migrations in `supabase/migrations/` are applied to the reform-web project. If `supabase/remote-pending.sql` exists, paste it once into Supabase → SQL Editor and run it: it holds the parts the Supabase connector can't apply without a confirmation (SQL with `DELETE` or `DROP`). For another Supabase project: `npx supabase@2.119.0 link --project-ref <ref>` then `npx supabase@2.119.0 db push`.
 
 1. **Import the repository** in Vercel (Add New → Project → `alexpirjolescu/reform_Web`). Framework: Next.js; keep the default build settings.
 2. **Environment variables** (Settings → Environment Variables, for Production and Preview):
@@ -87,8 +87,11 @@ npm run dev                           # http://localhost:3000
 | `npm run lint` / `npm run typecheck` | ESLint; route types plus TypeScript |
 | `npm run i18n:build` / `npm run i18n:check` | Rebuild `messages/*.json` from `scripts/messages-source.py`; check that every key used in the code exists |
 | `npm run db:types` | Regenerate `src/lib/database.types.ts` from the local database |
-| `npm run db:test` | 45 access-rule checks against the local database (rolled back afterwards) |
+| `npm run db:test` | 50 access-rule checks against the local database (rolled back afterwards) |
+| `npm run test:unit` | Link recognition for embedded posts and videos (no database needed) |
 | `node e2e/flows.mjs` | End-to-end flows against `npm start` + the local stack (board, upload, quiz and marking, hand-in, live message, publishing, access rules) |
+| `node --env-file=.env.local e2e/invite.mjs` | Invitations: links by email and to copy, staff permissions |
+| `node --env-file=.env.local e2e/media.mjs` | News posts with uploaded files and embedded posts |
 | `node e2e/screens.mjs <dir>` | Screenshots of every module in all three themes |
 | `npm run admin:bootstrap -- <email> "<name>"` | Invites the first admin (refuses if one exists) |
 

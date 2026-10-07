@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Markdown from "react-markdown";
 import { getLocale, getTranslations } from "next-intl/server";
 import { paperFor } from "@/components/news/paper";
+import { ActivityMediaList } from "@/components/news/activity-media";
 import { ActivityVisual } from "@/components/news/shared";
 import { PublicFrame } from "@/components/public-frame";
 import { getSession } from "@/lib/auth";
@@ -16,7 +17,11 @@ export async function generateMetadata({ params }: PageProps<"/activities/[id]">
   return {
     title: activity.title,
     description: activity.summary,
-    openGraph: { title: activity.title, description: activity.summary, images: activity.coverUrl ? [activity.coverUrl] : [] },
+    openGraph: {
+      title: activity.title,
+      description: activity.summary,
+      images: [activity.coverUrl ?? activity.media.find((m) => m.kind === "image")?.url].filter((url): url is string => Boolean(url)),
+    },
   };
 }
 
@@ -72,18 +77,12 @@ export default async function ActivityPage({ params }: PageProps<"/activities/[i
             <Markdown>{activity.body}</Markdown>
           </div>
         )}
-        {activity.photos.length > 0 && (
-          <section aria-labelledby="gallery-title" className="flex flex-col gap-4">
-            <h2 id="gallery-title" className="font-display text-2xl font-bold">{t("news.gallery")}</h2>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {activity.photos.map((photo) => (
-                <figure key={photo.id} className="flex flex-col gap-1">
-                  {/* eslint-disable-next-line @next/next/no-img-element -- Supabase Storage images */}
-                  <img src={photo.url} alt={photo.caption} className={`aspect-[4/3] w-full object-cover ${p.media}`} />
-                  {photo.caption && <figcaption className={`text-xs ${p.muted}`}>{photo.caption}</figcaption>}
-                </figure>
-              ))}
-            </div>
+        {activity.media.length > 0 && (
+          <section aria-labelledby="media-title" className="flex flex-col gap-4">
+            <h2 id="media-title" className="font-display text-2xl font-bold">
+              {activity.media.every((m) => m.kind === "image") ? t("news.gallery") : t("news.media")}
+            </h2>
+            <ActivityMediaList media={activity.media} theme={theme} locale={locale} />
           </section>
         )}
         <div className="flex flex-wrap gap-6 font-display font-semibold">

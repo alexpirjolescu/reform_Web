@@ -51,8 +51,15 @@ insert into public.activities (id, title, category, starts_at, status, publish_a
   ('b0000000-0000-0000-0000-000000000001', 'Published', 'workshop', now() + interval '3 days', 'published', now() - interval '1 hour'),
   ('b0000000-0000-0000-0000-000000000002', 'Draft one', 'event', now() + interval '3 days', 'draft', now()),
   ('b0000000-0000-0000-0000-000000000003', 'Scheduled', 'event', now() + interval '9 days', 'published', now() + interval '1 day');
+insert into public.activity_media (activity_id, kind, url, provider) values
+  ('b0000000-0000-0000-0000-000000000001', 'embed', 'https://www.instagram.com/p/ABC/', 'instagram'),
+  ('b0000000-0000-0000-0000-000000000002', 'link', 'https://example.org/', null);
+select pg_temp.fails($$insert into public.activity_media (activity_id, kind, url) values ('b0000000-0000-0000-0000-000000000001', 'link', 'javascript:alert(1)')$$, 'media links must be https');
+select pg_temp.fails($$insert into public.activity_media (activity_id, kind, path) values ('b0000000-0000-0000-0000-000000000001', 'image', 'library/../x.png')$$, 'media files must live under activities/');
 set local role anon;
 select pg_temp.check((select count(*) from public.activities where id::text like 'b0000000-%') = 1, 'visitor sees only the published, already-live activity');
+select pg_temp.check((select count(*) from public.activity_media where activity_id::text like 'b0000000-%') = 1, 'visitor sees media of published activities only');
+select pg_temp.fails($$insert into public.activity_media (activity_id, kind, url) values ('b0000000-0000-0000-0000-000000000001', 'link', 'https://spam.example/')$$, 'visitor cannot add media');
 select pg_temp.check((select count(*) from public.schools) >= 2, 'visitor can list partner schools');
 select pg_temp.check(((public.public_stats())->>'activities')::int >= 1, 'visitor gets public stats');
 select pg_temp.fails($$insert into public.newsletter_subscribers (email) values ('x@y.ro')$$, 'visitor cannot write the subscriber table directly');
@@ -62,6 +69,7 @@ reset role;
 select pg_temp.as_user('a0000000-0000-0000-0000-000000000003');
 select pg_temp.check((select count(*) from public.activities where id::text like 'b0000000-%') = 1, 'student sees only published activities');
 select pg_temp.fails($$insert into public.activities (title, category, starts_at) values ('Hack', 'event', now())$$, 'student cannot create activities');
+select pg_temp.fails($$insert into public.activity_media (activity_id, kind, url) values ('b0000000-0000-0000-0000-000000000001', 'link', 'https://spam.example/')$$, 'student cannot add media');
 select pg_temp.as_user('a0000000-0000-0000-0000-000000000002');
 select pg_temp.check((select count(*) from public.activities where id::text like 'b0000000-%') = 3, 'staff sees drafts and scheduled posts');
 insert into public.activities (title, category, starts_at) values ('Staff draft', 'meeting', now());

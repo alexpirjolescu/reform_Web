@@ -1,4 +1,5 @@
 import "server-only";
+import type { EmbedProvider, MediaKind } from "@/lib/media";
 import { createClient } from "@/lib/supabase/server";
 import { activityCategories, type ActivityCategory } from "@/lib/types";
 
@@ -101,7 +102,7 @@ export async function getActivity(id: string) {
   const supabase = await createClient();
   const { data } = await supabase
     .from("activities")
-    .select(`${selectColumns}, body, status, publish_at, activity_photos(id, path, caption, position)`)
+    .select(`${selectColumns}, body, status, publish_at, activity_media(id, kind, path, url, provider, title, caption, mime_type, size_bytes, position)`)
     .eq("id", id)
     .maybeSingle()
     .overrideTypes<
@@ -109,7 +110,7 @@ export async function getActivity(id: string) {
           body: string;
           status: string;
           publish_at: string;
-          activity_photos: { id: string; path: string; caption: string; position: number }[];
+          activity_media: RawMedia[];
         })
       | null,
       { merge: false }
@@ -120,15 +121,45 @@ export async function getActivity(id: string) {
     ...toCard(data, supabase),
     body: data.body,
     isPublic,
-    photos: [...data.activity_photos]
+    media: [...data.activity_media]
       .sort((a, b) => a.position - b.position)
-      .map((photo) => ({
-        id: photo.id,
-        caption: photo.caption,
-        url: supabase.storage.from("media").getPublicUrl(photo.path).data.publicUrl,
+      .map((item): ActivityMedia => ({
+        id: item.id,
+        kind: item.kind,
+        // Uploaded files: their public address in the "media" bucket. Embeds and links: the original address.
+        url: item.path ? supabase.storage.from("media").getPublicUrl(item.path).data.publicUrl : item.url ?? "",
+        provider: item.provider,
+        title: item.title,
+        caption: item.caption,
+        mimeType: item.mime_type,
+        sizeBytes: item.size_bytes,
       })),
   };
 }
+
+type RawMedia = {
+  id: string;
+  kind: MediaKind;
+  path: string | null;
+  url: string | null;
+  provider: EmbedProvider | null;
+  title: string;
+  caption: string;
+  mime_type: string | null;
+  size_bytes: number | null;
+  position: number;
+};
+
+export type ActivityMedia = {
+  id: string;
+  kind: MediaKind;
+  url: string;
+  provider: EmbedProvider | null;
+  title: string;
+  caption: string;
+  mimeType: string | null;
+  sizeBytes: number | null;
+};
 
 export async function getNewsMeta() {
   const supabase = await createClient();

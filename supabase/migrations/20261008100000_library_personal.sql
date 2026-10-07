@@ -187,8 +187,10 @@ $$;
 
 revoke all on function public.personal_usage(uuid, text), public.folder_ancestors(uuid), public.can_upload_to_folder(uuid),
   public.can_read_library_object(text), public.owns_personal_item(uuid, uuid) from public, anon;
-grant execute on function public.personal_quota(), public.personal_usage(uuid, text), public.folder_ancestors(uuid),
-  public.can_upload_to_folder(uuid), public.can_read_library_object(text), public.owns_personal_item(uuid, uuid) to authenticated;
+grant execute on function public.personal_quota(), public.can_upload_to_folder(uuid), public.can_read_library_object(text),
+  public.owns_personal_item(uuid, uuid) to authenticated;
+-- Only the database's own functions use these two: nobody asks for someone else's usage or folder tree.
+revoke execute on function public.personal_usage(uuid, text), public.folder_ancestors(uuid) from authenticated;
 
 -- What the signed-in person uses of their own space.
 create function public.my_personal_storage()
@@ -318,6 +320,7 @@ $$;
 
 revoke all on function public.move_library_folder(uuid, uuid) from public, anon;
 grant execute on function public.move_library_folder(uuid, uuid) to authenticated;
+revoke execute on function public.check_library_folder(), public.check_library_file() from public, anon, authenticated;
 
 -- Space, school and owner change only through move_library_folder; sizes and paths never change.
 revoke update on public.library_folders from authenticated;

@@ -13,7 +13,7 @@
     "db:test": "psql postgresql://postgres:postgres@127.0.0.1:54322/postgres -v ON_ERROR_STOP=1 -q -f supabase/tests/rls_test.sql",
     "i18n:check": "node scripts/check-messages.mjs",
     "i18n:build": "python3 scripts/messages-source.py",
-    "test:unit": "node --experimental-strip-types --no-warnings tests/embeds.test.ts"
+    "test:unit": "node --experimental-strip-types --no-warnings tests/embeds.test.ts && node --experimental-strip-types --no-warnings tests/article.test.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

@@ -4,6 +4,9 @@ Website and platform for re_form, a non-formal education academy that helps high
 
 - **Public news panel:** past and upcoming academy activities, open to parents, school boards, investors and anyone else. A post can carry photos, videos, audio, documents, links and posts from Instagram, Facebook, YouTube, Vimeo, TikTok, Spotify or Google Drive; players from other sites load only after the reader presses "show".
 - **For students and staff (with an account):** a Trello-style workspace per school, a resource library, assessments (quizzes and hand-ins) and direct messages.
+- **Resources:** a personal space for every account (200 MB, private until shared), folders inside folders, drag and drop (files from the computer onto a folder upload there; files and folders dragged onto a folder move into it), and sharing personal files and folders with people from the team.
+- **Messages:** one-to-one chats and WhatsApp-style groups (photo, name, description, admins, adding and removing people, admins-only settings, leaving), polls, replies, reactions, pinned messages, a re_form sticker pack, GIFs from GIPHY (G-rated; needs `GIPHY_API_KEY`), files sent from the resource library, and YouTube, Vimeo, TikTok and Instagram links playing inside the chat.
+- **News articles in blocks:** text, headings, quotes, boxes, buttons and media placed across the page, beside the text or side by side, in any order (drag and drop), with a preview and five starter templates.
 - **Project boards:** tasks open in a window in the middle of the screen, with comments (and replies) in a column on its right. People are picked by searching the school team; checklist items have their own owners and show who ticked them. Each project also has a **concept map** that tells its story in five steps — need, solution, making it, delivery, impact: every task sits in the lane of its step, and the team adds ideas and links them with phrases (“the survey — measures → the impact”). The same map reads as plain sentences in the “story” view.
 - **Three looks, chosen by each person:** white, dark and colour. The public pages (news panel, calendar, about) use the "white paper" newspaper layout (design B) on white, night or honey paper. Inside the platform, white and dark share the sidebar "studio" layout (design A), and colour keeps its sticker layout (design C). Visitors pick with a cookie; signed-in people keep the choice on their profile.
 
@@ -48,6 +51,7 @@ The Supabase project **reform-web** (`jdhxaatosmkedggzuiki`, Frankfurt) already 
    | `NEXT_PUBLIC_SITE_URL` | `https://reform-web-nine.vercel.app` (later your own domain). Links in invite and reset emails use it; if it is missing on Vercel, the production address is used |
    | `NEXT_PUBLIC_CONTACT_EMAIL` | The address shown on the About page |
    | `CRON_SECRET` | Any long random string. Vercel Cron sends it to `/api/cron/purge-trash`, which empties the library trash after 30 days |
+   | `GIPHY_API_KEY` | Optional. A free key from developers.giphy.com (create an app, choose "API"). Switches on GIF search in messages; only G-rated GIFs are shown. Server only |
 
 3. **Deploy.** Then set up Auth in the Supabase dashboard (Authentication):
    - **Sign In / Providers → Email:** keep the email provider *on*, and under **User Signups** turn *off* "Allow new users to sign up" (only invited people get accounts).
@@ -92,6 +96,9 @@ npm run dev                           # http://localhost:3000
 | `npm run test:unit` | Link recognition for embedded posts and videos (no database needed) |
 | `node e2e/flows.mjs` | End-to-end flows against `npm start` + the local stack (board, upload, quiz and marking, hand-in, live message, publishing, access rules) |
 | `node e2e/board.mjs` | Task window, people search, checklist owners, replies, the project map (steps, ideas, links, dragging a task to another step, story view) |
+| `node --env-file=.env.local e2e/article.mjs` | Article editor: templates, blocks in any order, media beside the text, preview, public page |
+| `node --env-file=.env.local e2e/library.mjs` | Personal space, folders in folders, drag and drop, sharing, moving a folder into the team's space |
+| `node --env-file=.env.local e2e/messages.mjs` | Groups, polls, replies, reactions, pins, stickers, GIFs, files from resources, videos in the chat |
 | `node --env-file=.env.local e2e/invite.mjs` | Invitations: links by email and to copy, staff permissions |
 | `node --env-file=.env.local e2e/media.mjs` | News posts with uploaded files and embedded posts |
 | `node e2e/screens.mjs <dir>` | Screenshots of every module in all three themes |

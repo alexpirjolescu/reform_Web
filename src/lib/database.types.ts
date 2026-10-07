@@ -556,13 +556,13 @@ isOneToOne: true
                   ]
                 },"conversation_participants": {
                   Row: {
-                    "conversation_id": string,"last_read_at": string,"profile_id": string
+                    "conversation_id": string,"joined_at": string,"last_read_at": string,"muted": boolean,"profile_id": string,"role": string
                   }
                   Insert: {
-                    "conversation_id": string,"last_read_at"?: string,"profile_id": string
+                    "conversation_id": string,"joined_at"?: string,"last_read_at"?: string,"muted"?: boolean,"profile_id": string,"role"?: string
                   }
                   Update: {
-                    "conversation_id"?: string,"last_read_at"?: string,"profile_id"?: string
+                    "conversation_id"?: string,"joined_at"?: string,"last_read_at"?: string,"muted"?: boolean,"profile_id"?: string,"role"?: string
                   }
                   Relationships: [
                     {
@@ -581,16 +581,22 @@ isOneToOne: false
                   ]
                 },"conversations": {
                   Row: {
-                    "created_at": string,"id": string,"last_message_at": string
+                    "created_at": string,"created_by": string | null,"description": string,"id": string,"kind": string,"last_message_at": string,"only_admins_edit": boolean,"only_admins_send": boolean,"photo_path": string | null,"title": string | null
                   }
                   Insert: {
-                    "created_at"?: string,"id"?: string,"last_message_at"?: string
+                    "created_at"?: string,"created_by"?: string | null,"description"?: string,"id"?: string,"kind"?: string,"last_message_at"?: string,"only_admins_edit"?: boolean,"only_admins_send"?: boolean,"photo_path"?: string | null,"title"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"id"?: string,"last_message_at"?: string
+                    "created_at"?: string,"created_by"?: string | null,"description"?: string,"id"?: string,"kind"?: string,"last_message_at"?: string,"only_admins_edit"?: boolean,"only_admins_send"?: boolean,"photo_path"?: string | null,"title"?: string | null
                   }
                   Relationships: [
-                    
+                    {
+      foreignKeyName: "conversations_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"library_files": {
                   Row: {
@@ -691,6 +697,31 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"message_reactions": {
+                  Row: {
+                    "created_at": string,"emoji": string,"message_id": string,"profile_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"emoji": string,"message_id": string,"profile_id"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"emoji"?: string,"message_id"?: string,"profile_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "message_reactions_message_id_fkey"
+      columns: ["message_id"]
+isOneToOne: false
+      referencedRelation: "messages"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "message_reactions_profile_id_fkey"
+      columns: ["profile_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"message_reports": {
                   Row: {
                     "conversation_id": string,"created_at": string,"id": string,"message_id": string | null,"reason": string,"reporter_id": string,"reviewed_at": string | null,"reviewed_by": string | null,"status": string
@@ -730,13 +761,13 @@ isOneToOne: false
                   ]
                 },"messages": {
                   Row: {
-                    "attachment_name": string | null,"attachment_path": string | null,"body": string,"conversation_id": string,"created_at": string,"deleted_at": string | null,"edited_at": string | null,"id": string,"sender_id": string
+                    "attachment_name": string | null,"attachment_path": string | null,"body": string,"conversation_id": string,"created_at": string,"deleted_at": string | null,"edited_at": string | null,"gif": Json | null,"id": string,"kind": string,"library_file_id": string | null,"pinned_at": string | null,"pinned_by": string | null,"reply_to": string | null,"sender_id": string,"sticker": string | null,"system": Json | null
                   }
                   Insert: {
-                    "attachment_name"?: string | null,"attachment_path"?: string | null,"body"?: string,"conversation_id": string,"created_at"?: string,"deleted_at"?: string | null,"edited_at"?: string | null,"id"?: string,"sender_id"?: string
+                    "attachment_name"?: string | null,"attachment_path"?: string | null,"body"?: string,"conversation_id": string,"created_at"?: string,"deleted_at"?: string | null,"edited_at"?: string | null,"gif"?: Json | null,"id"?: string,"kind"?: string,"library_file_id"?: string | null,"pinned_at"?: string | null,"pinned_by"?: string | null,"reply_to"?: string | null,"sender_id"?: string,"sticker"?: string | null,"system"?: Json | null
                   }
                   Update: {
-                    "attachment_name"?: string | null,"attachment_path"?: string | null,"body"?: string,"conversation_id"?: string,"created_at"?: string,"deleted_at"?: string | null,"edited_at"?: string | null,"id"?: string,"sender_id"?: string
+                    "attachment_name"?: string | null,"attachment_path"?: string | null,"body"?: string,"conversation_id"?: string,"created_at"?: string,"deleted_at"?: string | null,"edited_at"?: string | null,"gif"?: Json | null,"id"?: string,"kind"?: string,"library_file_id"?: string | null,"pinned_at"?: string | null,"pinned_by"?: string | null,"reply_to"?: string | null,"sender_id"?: string,"sticker"?: string | null,"system"?: Json | null
                   }
                   Relationships: [
                     {
@@ -744,6 +775,24 @@ isOneToOne: false
       columns: ["conversation_id"]
 isOneToOne: false
       referencedRelation: "conversations"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "messages_library_file_id_fkey"
+      columns: ["library_file_id"]
+isOneToOne: false
+      referencedRelation: "library_files"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "messages_pinned_by_fkey"
+      columns: ["pinned_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "messages_reply_to_fkey"
+      columns: ["reply_to"]
+isOneToOne: false
+      referencedRelation: "messages"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "messages_sender_id_fkey"
@@ -765,6 +814,87 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"poll_options": {
+                  Row: {
+                    "id": string,"label": string,"poll_id": string,"position": number
+                  }
+                  Insert: {
+                    "id"?: string,"label": string,"poll_id": string,"position"?: number
+                  }
+                  Update: {
+                    "id"?: string,"label"?: string,"poll_id"?: string,"position"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "poll_options_poll_id_fkey"
+      columns: ["poll_id"]
+isOneToOne: false
+      referencedRelation: "polls"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"poll_votes": {
+                  Row: {
+                    "created_at": string,"option_id": string,"poll_id": string,"profile_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"option_id": string,"poll_id": string,"profile_id"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"option_id"?: string,"poll_id"?: string,"profile_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "poll_votes_option_id_fkey"
+      columns: ["option_id"]
+isOneToOne: false
+      referencedRelation: "poll_options"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "poll_votes_poll_id_fkey"
+      columns: ["poll_id"]
+isOneToOne: false
+      referencedRelation: "polls"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "poll_votes_profile_id_fkey"
+      columns: ["profile_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"polls": {
+                  Row: {
+                    "closed_at": string | null,"conversation_id": string,"created_at": string,"created_by": string | null,"id": string,"message_id": string,"multiple": boolean,"question": string
+                  }
+                  Insert: {
+                    "closed_at"?: string | null,"conversation_id": string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"message_id": string,"multiple"?: boolean,"question": string
+                  }
+                  Update: {
+                    "closed_at"?: string | null,"conversation_id"?: string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"message_id"?: string,"multiple"?: boolean,"question"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "polls_conversation_id_fkey"
+      columns: ["conversation_id"]
+isOneToOne: false
+      referencedRelation: "conversations"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "polls_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "polls_message_id_fkey"
+      columns: ["message_id"]
+isOneToOne: true
+      referencedRelation: "messages"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"profiles": {
                   Row: {
@@ -889,6 +1019,9 @@ isOneToOne: false
             "activity_is_public":
 { Args: { "target": string }; Returns: boolean
                            },
+"add_group_members":
+{ Args: { "members": (string)[],"target": string }; Returns: undefined
+                           },
 "admin_read_reported_conversation":
 { Args: { "target_report": string }; Returns: {
               "attachment_name": string,"body": string,"created_at": string,"deleted_at": string,"id": string,"sender_id": string
@@ -910,6 +1043,9 @@ isOneToOne: false
                            },
 "can_access_school":
 { Args: { "target_school": string }; Returns: boolean
+                           },
+"can_edit_group":
+{ Args: { "target": string }; Returns: boolean
                            },
 "can_manage_boards":
 { Args: { "target_school": string }; Returns: boolean
@@ -938,6 +1074,15 @@ isOneToOne: false
 "can_write_folder":
 { Args: { "target": string }; Returns: boolean
                            },
+"close_poll":
+{ Args: { "target_poll": string }; Returns: undefined
+                           },
+"create_group":
+{ Args: { "group_description"?: string,"group_title": string,"members": (string)[] }; Returns: string
+                           },
+"create_poll":
+{ Args: { "allow_multiple": boolean,"poll_options": (string)[],"poll_question": string,"target": string }; Returns: string
+                           },
 "current_app_role":
 { Args: Record<PropertyKey, never>; Returns: Database["public"]['Enums']["app_role"]
                            },
@@ -950,11 +1095,17 @@ isOneToOne: false
 "is_admin":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
+"is_group_admin":
+{ Args: { "target": string }; Returns: boolean
+                           },
 "is_participant":
 { Args: { "target": string }; Returns: boolean
                            },
 "is_staff":
 { Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"leave_group":
+{ Args: { "target": string }; Returns: undefined
                            },
 "mark_conversation_read":
 { Args: { "target": string }; Returns: undefined
@@ -979,11 +1130,20 @@ isOneToOne: false
 "personal_usage":
 { Args: { "except_path"?: string,"who": string }; Returns: number
                            },
+"pin_message":
+{ Args: { "pin": boolean,"target": string }; Returns: undefined
+                           },
+"post_group_event":
+{ Args: { "payload": Json,"target": string }; Returns: undefined
+                           },
 "public_stats":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
 "remove_demo_content":
 { Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"remove_group_member":
+{ Args: { "member": string,"target": string }; Returns: undefined
                            },
 "review_attempt":
 { Args: { "feedback_text": string,"open_points": Json,"score": number,"target_attempt": string }; Returns: undefined
@@ -1002,6 +1162,12 @@ isOneToOne: false
                            },
 "seed_board_map":
 { Args: { "target": string }; Returns: undefined
+                           },
+"send_resource":
+{ Args: { "answer"?: string,"file": string,"note"?: string,"target": string }; Returns: string
+                           },
+"set_group_admin":
+{ Args: { "make_admin": boolean,"member": string,"target": string }; Returns: undefined
                            },
 "start_attempt":
 { Args: { "target": string }; Returns: string
@@ -1022,6 +1188,12 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: {
               "conversation_id": string,"unread": number
             }[]
+                           },
+"update_group":
+{ Args: { "patch": Json,"target": string }; Returns: undefined
+                           },
+"vote_poll":
+{ Args: { "choices": (string)[],"target_poll": string }; Returns: undefined
                            }
           }
           Enums: {

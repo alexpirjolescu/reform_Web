@@ -87,15 +87,25 @@ export function legacyBlocks(body: string, kinds: MediaItem["kind"][]): StoredBl
   return out;
 }
 
+/** The positions a block may show: existing ones, each only once in the whole article. */
+function claim(positions: number[], used: Set<number>, count: number) {
+  const out: number[] = [];
+  for (const n of positions) {
+    if (Number.isInteger(n) && n >= 1 && n <= count && !used.has(n)) {
+      used.add(n);
+      out.push(n);
+    }
+  }
+  return out;
+}
+
 /** Stored layout → editor blocks (media items looked up by position). Unplaced media go at the end. */
 export function toEditor(layout: StoredLayout | null, body: string, media: MediaItem[]): EditorBlock[] {
   const blocks = layout?.blocks ?? legacyBlocks(body, media.map((m) => m.kind));
   const used = new Set<number>();
   const out = blocks.map((block): EditorBlock => {
     if (block.type !== "media") return { ...block, key: newKey() } as EditorBlock;
-    const items = block.items.filter((n) => media[n - 1] && !used.has(n));
-    items.forEach((n) => used.add(n));
-    return { ...block, key: newKey(), items: items.map((n) => media[n - 1]) };
+    return { ...block, key: newKey(), items: claim(block.items, used, media.length).map((n) => media[n - 1]) };
   });
   media.forEach((item, index) => {
     if (!used.has(index + 1)) out.push({ key: newKey(), type: "media", items: [item], place: "full", width: "l" });
@@ -112,9 +122,7 @@ export function resolveLayout<M>(layout: StoredLayout | null, body: string, medi
   const used = new Set<number>();
   const out: Resolved[] = blocks.map((block) => {
     if (block.type !== "media") return block;
-    const items = block.items.filter((n) => media[n - 1] && !used.has(n));
-    items.forEach((n) => used.add(n));
-    return { type: "media", place: block.place, width: block.width, items: items.map((n) => media[n - 1]) };
+    return { type: "media", place: block.place, width: block.width, items: claim(block.items, used, media.length).map((n) => media[n - 1]) };
   });
   media.forEach((item, index) => {
     if (!used.has(index + 1)) out.push({ type: "media", place: "full", width: "l", items: [item] });

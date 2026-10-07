@@ -16,6 +16,7 @@ export function EmbedFrame({
   labels,
   boxClass,
   buttonClass,
+  autoLoad = false,
 }: {
   player: EmbedPlayer;
   provider: string;
@@ -24,8 +25,10 @@ export function EmbedFrame({
   labels: { load: string; open: string; notice: string };
   boxClass: string;
   buttonClass: string;
+  /** Load at once (players that set no cookies until played, inside the private platform). */
+  autoLoad?: boolean;
 }) {
-  const [loaded, setLoaded] = useState(false);
+  const [loaded, setLoaded] = useState(autoLoad);
   const [height, setHeight] = useState(player.height);
   const frame = useRef<HTMLIFrameElement>(null);
 

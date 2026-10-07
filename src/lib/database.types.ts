@@ -619,13 +619,13 @@ isOneToOne: false
                   ]
                 },"library_folders": {
                   Row: {
-                    "created_at": string,"created_by": string | null,"id": string,"is_demo": boolean,"name": string,"school_id": string | null,"space": string
+                    "created_at": string,"created_by": string | null,"id": string,"is_demo": boolean,"name": string,"owner_id": string | null,"parent_id": string | null,"school_id": string | null,"space": string
                   }
                   Insert: {
-                    "created_at"?: string,"created_by"?: string | null,"id"?: string,"is_demo"?: boolean,"name": string,"school_id"?: string | null,"space": string
+                    "created_at"?: string,"created_by"?: string | null,"id"?: string,"is_demo"?: boolean,"name": string,"owner_id"?: string | null,"parent_id"?: string | null,"school_id"?: string | null,"space": string
                   }
                   Update: {
-                    "created_at"?: string,"created_by"?: string | null,"id"?: string,"is_demo"?: boolean,"name"?: string,"school_id"?: string | null,"space"?: string
+                    "created_at"?: string,"created_by"?: string | null,"id"?: string,"is_demo"?: boolean,"name"?: string,"owner_id"?: string | null,"parent_id"?: string | null,"school_id"?: string | null,"space"?: string
                   }
                   Relationships: [
                     {
@@ -635,10 +635,59 @@ isOneToOne: false
       referencedRelation: "profiles"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "library_folders_owner_id_fkey"
+      columns: ["owner_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "library_folders_parent_id_fkey"
+      columns: ["parent_id"]
+isOneToOne: false
+      referencedRelation: "library_folders"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "library_folders_school_id_fkey"
       columns: ["school_id"]
 isOneToOne: false
       referencedRelation: "schools"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"library_shares": {
+                  Row: {
+                    "created_at": string,"file_id": string | null,"folder_id": string | null,"id": string,"profile_id": string,"shared_by": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"file_id"?: string | null,"folder_id"?: string | null,"id"?: string,"profile_id": string,"shared_by"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"file_id"?: string | null,"folder_id"?: string | null,"id"?: string,"profile_id"?: string,"shared_by"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "library_shares_file_id_fkey"
+      columns: ["file_id"]
+isOneToOne: false
+      referencedRelation: "library_files"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "library_shares_folder_id_fkey"
+      columns: ["folder_id"]
+isOneToOne: false
+      referencedRelation: "library_folders"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "library_shares_profile_id_fkey"
+      columns: ["profile_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "library_shares_shared_by_fkey"
+      columns: ["shared_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
       referencedColumns: ["id"]
     }
                   ]
@@ -874,10 +923,16 @@ isOneToOne: false
 "can_read_folder":
 { Args: { "target": string }; Returns: boolean
                            },
+"can_read_library_object":
+{ Args: { "object_name": string }; Returns: boolean
+                           },
 "can_see_assessment":
 { Args: { "target": string }; Returns: boolean
                            },
 "can_see_questions":
+{ Args: { "target": string }; Returns: boolean
+                           },
+"can_upload_to_folder":
 { Args: { "target": string }; Returns: boolean
                            },
 "can_write_folder":
@@ -888,6 +943,9 @@ isOneToOne: false
                            },
 "current_school_id":
 { Args: Record<PropertyKey, never>; Returns: string
+                           },
+"folder_ancestors":
+{ Args: { "target": string }; Returns: string[]
                            },
 "is_admin":
 { Args: Record<PropertyKey, never>; Returns: boolean
@@ -901,8 +959,25 @@ isOneToOne: false
 "mark_conversation_read":
 { Args: { "target": string }; Returns: undefined
                            },
+"move_library_folder":
+{ Args: { "new_parent": string,"target": string }; Returns: undefined
+                           },
+"my_personal_storage":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "quota": number,"used": number
+            }[]
+                           },
 "owns_attempt":
 { Args: { "target": string }; Returns: boolean
+                           },
+"owns_personal_item":
+{ Args: { "target_file": string,"target_folder": string }; Returns: boolean
+                           },
+"personal_quota":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
+"personal_usage":
+{ Args: { "except_path"?: string,"who": string }; Returns: number
                            },
 "public_stats":
 { Args: Record<PropertyKey, never>; Returns: Json

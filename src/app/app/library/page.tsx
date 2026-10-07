@@ -12,7 +12,7 @@ export async function generateMetadata() {
 export default async function LibraryPage({ searchParams }: PageProps<"/app/library">) {
   const profile = await requireProfile();
   const [params, theme, locale, t] = await Promise.all([searchParams, getTheme(profile.theme), getLocale(), getTranslations("library")]);
-  const data = await getLibrary(profile, parseLibraryQuery(params), t("shared"));
+  const data = await getLibrary(profile, parseLibraryQuery(params), { shared: t("shared"), mine: t("mySpace"), sharedWithMe: t("sharedWithMe") });
 
   if (theme === "color") return <LibraryColor data={data} locale={locale} />;
   return <LibraryStudio data={data} locale={locale} variant={theme} />;

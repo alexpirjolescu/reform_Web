@@ -81,7 +81,8 @@ insert into public.library_folders (id, space, school_id, name) values
   ('c0000000-0000-0000-0000-000000000002', 'school', '10000000-0000-0000-0000-000000000001', 'School 1'),
   ('c0000000-0000-0000-0000-000000000003', 'school', '10000000-0000-0000-0000-000000000002', 'School 2');
 select pg_temp.as_user('a0000000-0000-0000-0000-000000000003');
-select pg_temp.check((select count(*) from public.library_folders) = 2, 'student sees the shared library and own school folder only');
+select pg_temp.check((select count(*) from public.library_folders where space <> 'personal') = 2, 'student sees the shared library and own school folder only');
+select pg_temp.check((select count(*) from public.library_folders where space = 'personal') = 1, 'everyone starts with one personal folder of their own');
 insert into public.library_files (folder_id, name, storage_path, uploaded_by)
 values ('c0000000-0000-0000-0000-000000000002', 'plan.pdf', 'c0000000-0000-0000-0000-000000000002/x-plan.pdf', 'a0000000-0000-0000-0000-000000000003');
 select pg_temp.fails($$insert into public.library_files (folder_id, name, storage_path, uploaded_by)
@@ -218,6 +219,60 @@ select pg_temp.check((select count(*) from public.audit_log where action = 'conv
 select pg_temp.as_user('a0000000-0000-0000-0000-000000000005');
 select pg_temp.check((select count(*) from public.messages) = 0, 'outsider sees no messages');
 
+
+-- ===== Personal storage, folders in folders, sharing =====
+select pg_temp.as_user('a0000000-0000-0000-0000-000000000003');
+insert into public.library_folders (id, space, owner_id, name, created_by) values
+  ('c1000000-0000-0000-0000-000000000001', 'personal', 'a0000000-0000-0000-0000-000000000003', 'Mine', 'a0000000-0000-0000-0000-000000000003');
+insert into public.library_folders (id, space, school_id, parent_id, name, created_by) values
+  ('c1000000-0000-0000-0000-000000000002', 'school', '10000000-0000-0000-0000-000000000001', 'c1000000-0000-0000-0000-000000000001', 'Inside', 'a0000000-0000-0000-0000-000000000003');
+select pg_temp.check((select space = 'personal' and owner_id = 'a0000000-0000-0000-0000-000000000003' from public.library_folders where id = 'c1000000-0000-0000-0000-000000000002'), 'a folder takes its space from the folder it sits in');
+select pg_temp.fails($$insert into public.library_folders (space, owner_id, name, created_by) values ('personal', 'a0000000-0000-0000-0000-000000000004', 'Not mine', 'a0000000-0000-0000-0000-000000000003')$$, 'nobody makes folders in someone else''s personal space');
+select pg_temp.as_admin_db();
+insert into storage.objects (bucket_id, name, owner_id, metadata) values
+  ('library', 'c1000000-0000-0000-0000-000000000001/big.pdf', 'a0000000-0000-0000-0000-000000000003', '{"size": 157286400}');
+select pg_temp.as_user('a0000000-0000-0000-0000-000000000003');
+insert into public.library_files (id, folder_id, name, storage_path, size_bytes, mime_type, uploaded_by) values
+  ('c1100000-0000-0000-0000-000000000001', 'c1000000-0000-0000-0000-000000000001', 'big.pdf', 'c1000000-0000-0000-0000-000000000001/big.pdf', 1, 'application/pdf', 'a0000000-0000-0000-0000-000000000003');
+select pg_temp.check((select size_bytes from public.library_files where id = 'c1100000-0000-0000-0000-000000000001') = 157286400, 'file size comes from storage, not from the browser');
+select pg_temp.as_admin_db();
+insert into storage.objects (bucket_id, name, owner_id, metadata) values
+  ('library', 'c1000000-0000-0000-0000-000000000001/more.pdf', 'a0000000-0000-0000-0000-000000000003', '{"size": 62914560}');
+select pg_temp.as_user('a0000000-0000-0000-0000-000000000003');
+select pg_temp.fails($$insert into public.library_files (folder_id, name, storage_path, mime_type, uploaded_by) values ('c1000000-0000-0000-0000-000000000001', 'more.pdf', 'c1000000-0000-0000-0000-000000000001/more.pdf', 'application/pdf', 'a0000000-0000-0000-0000-000000000003')$$, 'personal space stops at 200 MB');
+select pg_temp.check(not public.can_upload_to_folder('c1000000-0000-0000-0000-000000000001'), 'no more uploads once the space is full (failed uploads count too)');
+select pg_temp.check((select used from public.my_personal_storage()) = 220200960, 'usage counts files and leftover uploads');
+select pg_temp.as_user('a0000000-0000-0000-0000-000000000004');
+select pg_temp.check((select count(*) from public.library_folders where space = 'personal' and owner_id = 'a0000000-0000-0000-0000-000000000003') = 0, 'a teammate cannot see someone''s personal space');
+select pg_temp.check(not public.can_read_library_object('c1000000-0000-0000-0000-000000000001/big.pdf'), 'nor open its files');
+select pg_temp.as_user('a0000000-0000-0000-0000-000000000002');
+select pg_temp.check((select count(*) from public.library_folders where space = 'personal' and owner_id = 'a0000000-0000-0000-0000-000000000003') = 0, 'staff cannot see personal spaces either');
+select pg_temp.as_user('a0000000-0000-0000-0000-000000000003');
+insert into public.library_shares (file_id, profile_id) values ('c1100000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000002');
+select pg_temp.fails($$insert into public.library_shares (file_id, profile_id) values ('c1100000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000005')$$, 'sharing only with people one can message');
+select pg_temp.fails($$insert into public.library_shares (folder_id, profile_id) values ('c0000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000002')$$, 'only personal items are shared this way');
+-- (staff can be messaged by everyone; the core lead blocked this student in the messages tests above)
+select pg_temp.as_user('a0000000-0000-0000-0000-000000000002');
+select pg_temp.check((select count(*) from public.library_files where id = 'c1100000-0000-0000-0000-000000000001') = 1, 'a shared file shows for the person it was shared with');
+select pg_temp.check(public.can_read_library_object('c1000000-0000-0000-0000-000000000001/big.pdf'), 'and they can open it');
+select pg_temp.check((select count(*) from public.library_folders where space = 'personal' and owner_id = 'a0000000-0000-0000-0000-000000000003') = 0, 'but not the folder around it');
+select pg_temp.as_user('a0000000-0000-0000-0000-000000000003');
+insert into public.library_shares (folder_id, profile_id) values ('c1000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000002');
+select pg_temp.as_user('a0000000-0000-0000-0000-000000000002');
+select pg_temp.check((select count(*) from public.library_folders where space = 'personal' and owner_id = 'a0000000-0000-0000-0000-000000000003') = 2, 'a shared folder brings the folders inside it');
+select pg_temp.fails($$insert into public.library_folders (space, parent_id, owner_id, name, created_by) values ('personal', 'c1000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000003', 'Sneaky', 'a0000000-0000-0000-0000-000000000002')$$, 'shared folders are read-only');
+select pg_temp.as_user('a0000000-0000-0000-0000-000000000003');
+select pg_temp.fails($$update public.library_folders set parent_id = 'c1000000-0000-0000-0000-000000000002' where id = 'c1000000-0000-0000-0000-000000000001'$$, 'a folder cannot go inside itself');
+select pg_temp.fails($$update public.library_folders set space = 'shared', owner_id = null where id = 'c1000000-0000-0000-0000-000000000002'$$, 'the space changes only through the move function');
+select public.move_library_folder('c1000000-0000-0000-0000-000000000002', 'c0000000-0000-0000-0000-000000000002');
+select pg_temp.check((select space = 'school' and owner_id is null and parent_id = 'c0000000-0000-0000-0000-000000000002' from public.library_folders where id = 'c1000000-0000-0000-0000-000000000002'), 'a personal folder moves into the school space');
+update public.library_files set folder_id = 'c1000000-0000-0000-0000-000000000002' where id = 'c1100000-0000-0000-0000-000000000001';
+select pg_temp.as_user('a0000000-0000-0000-0000-000000000004');
+select pg_temp.check(public.can_read_library_object('c1000000-0000-0000-0000-000000000001/big.pdf'), 'a moved file opens for its new folder''s readers');
+select pg_temp.fails($$select public.move_library_folder('c1000000-0000-0000-0000-000000000002', null)$$, 'only the creator or staff move a folder');
+select pg_temp.as_user('a0000000-0000-0000-0000-000000000005');
+select pg_temp.check(not public.can_read_library_object('c1000000-0000-0000-0000-000000000001/big.pdf'), 'other schools still cannot open it');
+select pg_temp.as_admin_db();
 
 -- ===== Assessment editor and function privileges =====
 select pg_temp.as_user('a0000000-0000-0000-0000-000000000003');

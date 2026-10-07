@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { UploadIcon } from "@/components/icons";
 import { moduleButtons } from "@/components/page-header";
-import { acceptedTypes, maxUploadBytes, storageSafeName } from "@/lib/library";
+import { acceptedTypes } from "@/lib/library";
+import { uploadToLibrary } from "@/lib/library-upload";
 import { createClient } from "@/lib/supabase/client";
 import type { Theme } from "@/lib/theme-shared";
 
@@ -41,35 +42,9 @@ export function Uploader({
     if (!target || !list.length) return;
     setBusy(true);
     setProblems([]);
-    const failed: string[] = [];
-    let saved = 0;
-    for (const [index, file] of list.entries()) {
-      setStatus(t("uploadingCount", { current: index + 1, total: list.length }));
-      if (file.size > maxUploadBytes) {
-        failed.push(t("tooLarge", { name: file.name }));
-        continue;
-      }
-      if (!acceptedTypes.includes(file.type)) {
-        failed.push(t("badType", { name: file.name }));
-        continue;
-      }
-      const path = `${target}/${crypto.randomUUID()}-${storageSafeName(file.name)}`;
-      const stored = await supabase.storage.from("library").upload(path, file, { contentType: file.type });
-      if (stored.error) {
-        failed.push(`${file.name}: ${stored.error.message}`);
-        continue;
-      }
-      const row = await supabase.from("library_files").insert({
-        folder_id: target,
-        name: file.name,
-        mime_type: file.type,
-        size_bytes: file.size,
-        storage_path: path,
-        uploaded_by: profileId,
-      });
-      if (row.error) failed.push(`${file.name}: ${row.error.message}`);
-      else saved += 1;
-    }
+    const { saved, problems: failed } = await uploadToLibrary(supabase, target, list, profileId, t, (current, total) =>
+      setStatus(t("uploadingCount", { current, total })),
+    );
     setBusy(false);
     setProblems(failed);
     setStatus(saved ? t("uploaded", { count: saved }) : null);

@@ -1,12 +1,15 @@
 "use client";
 
 import { useActionState, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { addLink, createFolder, updateFile } from "@/app/app/library/actions";
+import { addLink, createFolder, moveItemForm, shareItem, unshareItem, updateFile } from "@/app/app/library/actions";
 import { Field, FormAlert, SelectField, SubmitButton, TextAreaField, type ActionState } from "@/components/form";
 import { moduleButtons } from "@/components/page-header";
+import { PeoplePicker } from "@/components/workspace/people-picker";
 import { createClient } from "@/lib/supabase/client";
 import type { Theme } from "@/lib/theme-shared";
+import type { Member } from "@/lib/workspace";
 
 function useResetOnDone(state: ActionState) {
   const form = useRef<HTMLFormElement>(null);
@@ -23,19 +26,40 @@ function Feedback({ state }: { state: ActionState }) {
   return null;
 }
 
-export function NewFolderForm({ schools, isStaff }: { schools: { id: string; name: string }[]; isStaff: boolean }) {
+export function NewFolderForm({
+  schools,
+  isStaff,
+  parent,
+}: {
+  schools: { id: string; name: string }[];
+  isStaff: boolean;
+  /** The open folder, when the new folder goes inside it. */
+  parent: { id: string; name: string } | null;
+}) {
   const t = useTranslations();
   const [state, action] = useActionState<ActionState, FormData>(createFolder, {});
   const form = useResetOnDone(state);
   return (
     <form ref={form} action={action} className="flex flex-col gap-3">
       <Field id="folder-name" name="name" label={t("library.folderName")} required maxLength={80} />
-      {isStaff && (
-        <SelectField id="folder-target" name="target" label={t("library.space")} defaultValue="shared">
-          <option value="shared">{t("library.shared")}</option>
-          {schools.map((school) => (
-            <option key={school.id} value={school.id}>{school.name}</option>
-          ))}
+      {parent ? (
+        <>
+          <input type="hidden" name="parent" value={parent.id} />
+          <p className="text-[13px]">{t("library.insideFolder", { name: parent.name })}</p>
+        </>
+      ) : (
+        <SelectField id="folder-target" name="target" label={t("library.space")} defaultValue="personal">
+          <option value="personal">{t("library.mySpace")}</option>
+          {isStaff ? (
+            <>
+              <option value="shared">{t("library.shared")}</option>
+              {schools.map((school) => (
+                <option key={school.id} value={school.id}>{school.name}</option>
+              ))}
+            </>
+          ) : (
+            <option value="school">{t("library.mySchool")}</option>
+          )}
         </SelectField>
       )}
       <Feedback state={state} />
@@ -168,6 +192,136 @@ export function AttachToCard({ fileId, variant, className }: { fileId: string; v
           <button type="button" onClick={() => setOpen(false)} className={b.ghost}>{t("close")}</button>
         </div>
       )}
+    </div>
+  );
+}
+
+/** "Move to…": the keyboard-friendly twin of dragging a file or folder onto another folder. */
+export function MoveForm({
+  kind,
+  id,
+  targets,
+  current,
+  variant,
+}: {
+  kind: "file" | "folder";
+  id: string;
+  targets: { id: string; label: string }[];
+  current: string | null;
+  variant: Theme;
+}) {
+  const t = useTranslations();
+  const [state, action] = useActionState<ActionState, FormData>(moveItemForm, {});
+  const b = moduleButtons[variant];
+  const field = variant === "color" ? "rounded-xl border-2 border-ink bg-white" : "rounded-th border border-th-edge bg-th-bg text-th-fg";
+  return (
+    <form action={action} className="flex flex-col gap-2">
+      <input type="hidden" name="kind" value={kind} />
+      <input type="hidden" name="id" value={id} />
+      <label className="flex flex-col gap-1.5 text-sm">
+        {kind === "file" ? t("library.moveFileTo") : t("library.moveFolderTo")}
+        <select name="to" defaultValue="" required className={`min-h-11 px-3 text-sm ${field}`}>
+          <option value="" disabled>{t("library.pickFolder")}</option>
+          {kind === "folder" && <option value="root">{t("library.toTop")}</option>}
+          {targets.filter((f) => f.id !== current && f.id !== id).map((f) => (
+            <option key={f.id} value={f.id}>{f.label}</option>
+          ))}
+        </select>
+      </label>
+      <Feedback state={state} />
+      <SubmitButton pendingLabel={t("common.sending")} className={b.ghost}>{t("library.move")}</SubmitButton>
+    </form>
+  );
+}
+
+/** Share a file or folder of one's personal space with people from the team (read-only for them). */
+export function SharePanel({
+  kind,
+  id,
+  shares,
+  variant,
+  meId,
+}: {
+  kind: "file" | "folder";
+  id: string;
+  shares: { id: string; profileId: string; name: string }[];
+  variant: Theme;
+  meId: string;
+}) {
+  const t = useTranslations();
+  const supabase = useMemo(() => createClient(), []);
+  const router = useRouter();
+  const [people, setPeople] = useState<Member[] | null>(null);
+  const [picked, setPicked] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const b = moduleButtons[variant];
+
+  useEffect(() => {
+    let live = true;
+    void supabase
+      .from("profiles")
+      .select("id, full_name, role")
+      .is("deactivated_at", null)
+      .neq("id", meId)
+      .order("full_name")
+      .limit(500)
+      .then(({ data }) => live && setPeople((data ?? []) as Member[]));
+    return () => {
+      live = false;
+    };
+  }, [supabase, meId]);
+
+  const already = new Set(shares.map((s) => s.profileId));
+  const styles =
+    variant === "color"
+      ? { input: "w-full rounded-xl border-2 border-ink bg-white px-3", muted: "text-muted", popover: "rounded-[18px] border-2 border-ink bg-white", chip: "rounded-full border-[1.5px] border-ink bg-white" }
+      : { input: "w-full rounded-th border border-th-edge bg-th-bg px-3 text-th-fg", muted: "text-th-muted", popover: "border border-th-cardline bg-th-raised text-th-fg", chip: "rounded-th-pill bg-th-sunk" };
+
+  async function share() {
+    if (!picked.length) return;
+    setBusy(true);
+    setError(null);
+    const result = await shareItem({ kind, id, people: picked });
+    setBusy(false);
+    if (result.error) setError(t(result.error));
+    else {
+      setPicked([]);
+      router.refresh();
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      <p className="text-[13px]">{kind === "file" ? t("library.shareFileHint") : t("library.shareFolderHint")}</p>
+      {shares.length > 0 && (
+        <ul className="flex flex-col gap-1" aria-label={t("library.sharedWith")}>
+          {shares.map((s) => (
+            <li key={s.id} className="flex items-center justify-between gap-2 text-sm">
+              <span>{s.name}</span>
+              <form action={unshareItem}>
+                <input type="hidden" name="id" value={s.id} />
+                <button type="submit" className="min-h-9 px-2 text-xs underline underline-offset-4" aria-label={t("library.unshare", { name: s.name })}>{t("library.stopSharing")}</button>
+              </form>
+            </li>
+          ))}
+        </ul>
+      )}
+      {people === null ? (
+        <p className="text-sm">{t("library.loading")}</p>
+      ) : (
+        <PeoplePicker
+          members={people.filter((p) => !already.has(p.id))}
+          selected={picked}
+          onToggle={(pid, on) => setPicked((prev) => (on ? [...prev, pid] : prev.filter((x) => x !== pid)))}
+          label={t("library.shareWith")}
+          styles={styles}
+        />
+      )}
+      {error && <FormAlert tone="error">{error}</FormAlert>}
+      <button type="button" disabled={busy || !picked.length} onClick={() => void share()} className={b.primary}>
+        {t("library.share")}
+      </button>
     </div>
   );
 }

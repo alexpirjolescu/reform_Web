@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { deleteFileForever, deleteFolder, restoreFile, trashFile } from "@/app/app/library/actions";
-import { PlayIcon, SearchIcon } from "@/components/icons";
+import { FolderIcon, PlayIcon, SearchIcon } from "@/components/icons";
 import { Logo } from "@/components/logo";
 import { moduleButtons } from "@/components/page-header";
 import { fileSize, fullDate, shortDate } from "@/lib/format";
 import { badgeOf, fileKinds, kindOf, youtubeEmbed, type LibraryFile } from "@/lib/library";
-import { libraryHref, type LibraryData } from "@/lib/library-server";
+import { libraryHref, type FolderSummary, type LibraryData } from "@/lib/library-server";
 import type { Theme } from "@/lib/theme-shared";
-import { AddLinkForm, AttachToCard, CopyLinkButton, EditFileForm, NewFolderForm } from "./library-forms";
+import { Draggable, DropStatus, DropTarget, FolderItem } from "./library-dnd";
+import { AddLinkForm, AttachToCard, CopyLinkButton, EditFileForm, MoveForm, NewFolderForm, SharePanel } from "./library-forms";
 import { Uploader } from "./uploader";
 
 type ViewProps = { data: LibraryData; locale: string };
@@ -37,6 +38,14 @@ function FileBadge({ file, variant, size = "row" }: { file: LibraryFile; variant
     <span className="w-11 shrink-0 py-[5px] text-center font-display text-[11px] font-bold" style={{ background: badge.bg, color: badge.fg }}>
       {badge.label.slice(0, 5)}
     </span>
+  );
+}
+
+function FolderBadge({ variant }: { variant: Theme }) {
+  return variant === "color" ? (
+    <span aria-hidden="true" className="grid size-12 shrink-0 place-items-center rounded-[14px] border-2 border-ink bg-sand"><FolderIcon size={20} /></span>
+  ) : (
+    <span aria-hidden="true" className="grid w-11 shrink-0 place-items-center py-[3px] text-th-muted"><FolderIcon size={18} /></span>
   );
 }
 
@@ -82,30 +91,67 @@ function TypeFilter({ data, variant, t }: { data: LibraryData; variant: Theme; t
   );
 }
 
+/** How much of the 200 MB personal space is used. */
+function UsageBar({ data, variant, t, locale }: { data: LibraryData; variant: Theme; t: T; locale: string }) {
+  const pct = Math.min(100, Math.round((100 * data.usage.used) / data.usage.quota));
+  const full = pct >= 95;
+  return (
+    <div className="flex flex-col gap-1 px-2">
+      <span className={`text-xs ${full ? "font-medium text-vermilion" : muted[variant]}`}>
+        {t("usage", { used: fileSize(data.usage.used, locale) || "0 MB", quota: fileSize(data.usage.quota, locale) })}
+      </span>
+      <span
+        role="meter"
+        aria-label={t("usageLabel")}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={pct}
+        className={`block h-1.5 overflow-hidden ${variant === "color" ? "rounded-full border-[1.5px] border-ink" : "bg-th-sunk"}`}
+      >
+        <span className={`block h-full ${full ? "bg-vermilion" : variant === "color" ? "bg-pink" : "bg-teal"}`} style={{ width: `${pct}%` }} />
+      </span>
+    </div>
+  );
+}
+
 function FolderTools({ data, variant, t }: { data: LibraryData; variant: Theme; t: T }) {
   const b = moduleButtons[variant];
-  const canMakeFolder = data.isStaff || data.writable.some((f) => f.space === "school") || data.folders.length === 0;
   const panel = variant === "color" ? "rounded-[18px] border-2 border-ink p-4" : "bg-th-sunk p-4";
+  const current = data.query.trash || data.query.shared ? null : data.current;
+  const inside = current?.canWrite ? { id: current.id, name: current.name } : null;
   return (
     <div className="flex flex-col gap-2">
-      {canMakeFolder && (
-        <details>
-          <summary className={`${b.ghost} cursor-pointer list-none`}>+ {t("newFolder")}</summary>
-          <div className={`mt-2 ${panel}`}><NewFolderForm schools={data.schools} isStaff={data.isStaff} /></div>
-        </details>
-      )}
-      {data.current?.canWrite && (
+      <details>
+        <summary className={`${b.ghost} cursor-pointer list-none`}>+ {inside ? t("newSubfolder") : t("newFolder")}</summary>
+        <div className={`mt-2 ${panel}`}><NewFolderForm schools={data.schools} isStaff={data.isStaff} parent={inside} /></div>
+      </details>
+      {current?.canWrite && (
         <details>
           <summary className={`${b.ghost} cursor-pointer list-none`}>+ {t("addLink")}</summary>
           <div className={`mt-2 ${panel}`}>
             <p className="mb-3 text-[13px]">{t("linkHint")}</p>
-            <AddLinkForm folderId={data.current.id} />
+            <AddLinkForm folderId={current.id} />
           </div>
         </details>
       )}
-      {data.isStaff && data.current && data.current.count === 0 && (
+      {current?.mine && (
+        <details>
+          <summary className={`${b.ghost} cursor-pointer list-none`}>{t("shareFolder")}{data.currentShares.length ? ` · ${data.currentShares.length}` : ""}</summary>
+          <div className={`mt-2 ${panel}`}><SharePanel kind="folder" id={current.id} shares={data.currentShares} variant={variant} meId={data.profileId} /></div>
+        </details>
+      )}
+      {current?.canManage && (
+        <details>
+          <summary className={`${b.ghost} cursor-pointer list-none`}>{t("moveFolder")}</summary>
+          <div className={`mt-2 ${panel}`}>
+            <MoveForm kind="folder" id={current.id} current={current.parentId} variant={variant}
+              targets={data.moveTargets.filter((f) => current.space === "personal" ? f.space !== "personal" || data.folders.find((x) => x.id === f.id)?.mine : f.space === current.space)} />
+          </div>
+        </details>
+      )}
+      {current?.canManage && current.count === 0 && data.subfolders.length === 0 && (
         <form action={deleteFolder}>
-          <input type="hidden" name="id" value={data.current.id} />
+          <input type="hidden" name="id" value={current.id} />
           <button type="submit" className={`min-h-11 text-[13px] underline underline-offset-4 ${muted[variant]}`}>{t("deleteFolder")}</button>
         </form>
       )}
@@ -114,7 +160,10 @@ function FolderTools({ data, variant, t }: { data: LibraryData; variant: Theme; 
 }
 
 function uploaderFolders(data: LibraryData) {
-  return data.writable.map((f) => ({ id: f.id, name: f.name, group: f.space === "shared" ? data.groups[0]?.label ?? "" : f.schoolName }));
+  return data.moveTargets.map((f) => {
+    const [group, ...rest] = f.label.split(" / ");
+    return { id: f.id, name: rest.join(" / ") || group, group };
+  });
 }
 
 function UploadButton({ data, variant }: { data: LibraryData; variant: Theme }) {
@@ -123,7 +172,7 @@ function UploadButton({ data, variant }: { data: LibraryData; variant: Theme }) 
     <Uploader
       variant={variant}
       folders={uploaderFolders(data)}
-      currentFolderId={data.current?.canWrite ? data.current.id : null}
+      currentFolderId={data.current?.canWrite && !data.query.shared ? data.current.id : null}
       profileId={data.profileId}
     />
   );
@@ -134,19 +183,12 @@ function PreviewMedia({ data, variant, t }: { data: LibraryData; variant: Theme;
   if (!file) return null;
   const kind = kindOf(file);
   const badge = badgeOf(file);
-  const frame =
-    variant === "color" ? "rounded-2xl border-2 border-ink overflow-hidden" : "";
+  const frame = variant === "color" ? "rounded-2xl border-2 border-ink overflow-hidden" : "";
   const youtube = file.external_url ? youtubeEmbed(file.external_url) : null;
 
   if (youtube) {
     return (
-      <iframe
-        src={youtube}
-        title={file.name}
-        className={`aspect-video w-full ${frame}`}
-        allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
-        allowFullScreen
-      />
+      <iframe src={youtube} title={file.name} className={`aspect-video w-full ${frame}`} allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
     );
   }
   if (kind === "video" && file.url) {
@@ -156,25 +198,14 @@ function PreviewMedia({ data, variant, t }: { data: LibraryData; variant: Theme;
     // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL from private storage
     return <img src={file.url} alt={file.description || file.name} className={`max-h-72 w-full object-contain ${variant === "color" ? "bg-sand" : "bg-th-sunk"} ${frame}`} />;
   }
-  const playButton =
-    variant === "color"
-      ? "size-[60px] rounded-full border-2 border-ink bg-honey text-ink"
-      : "size-14 rounded-full bg-white text-ink";
+  const playButton = variant === "color" ? "size-[60px] rounded-full border-2 border-ink bg-honey text-ink" : "size-14 rounded-full bg-white text-ink";
   return (
     <div className="flex flex-col gap-2">
       <div className={`relative grid aspect-video place-items-center ${frame}`} style={{ background: badge.bg }}>
-        <a
-          href={`/app/library/file/${file.id}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label={t("open", { name: file.name })}
-          className={`grid place-items-center ${playButton}`}
-        >
+        <a href={`/app/library/file/${file.id}`} target="_blank" rel="noopener noreferrer" aria-label={t("open", { name: file.name })} className={`grid place-items-center ${playButton}`}>
           <PlayIcon size={22} />
         </a>
-        <span className={`absolute bottom-2 left-2 px-2 text-xs ${variant === "color" ? "rounded-full border-[1.5px] border-ink bg-white" : "bg-ink text-white"}`}>
-          {badge.label}
-        </span>
+        <span className={`absolute bottom-2 left-2 px-2 text-xs ${variant === "color" ? "rounded-full border-[1.5px] border-ink bg-white" : "bg-ink text-white"}`}>{badge.label}</span>
       </div>
       {kind === "audio" && file.url && <audio controls preload="metadata" src={file.url} className="w-full" />}
     </div>
@@ -186,6 +217,7 @@ function PreviewActions({ data, variant, t }: { data: LibraryData; variant: Them
   if (!file) return null;
   const b = moduleButtons[variant];
   const ghost = `${b.ghost} w-full justify-center`;
+  const panel = variant === "color" ? "mt-3" : "mt-3 bg-th-sunk p-3";
   return (
     <div className={`flex flex-col gap-2 ${variant === "color" ? "" : "mt-auto"}`}>
       <a
@@ -196,8 +228,20 @@ function PreviewActions({ data, variant, t }: { data: LibraryData; variant: Them
       >
         {file.external_url ? t("openLink") : t("download")}
       </a>
+      {file.canShare && (
+        <details>
+          <summary className={`${ghost} cursor-pointer list-none`}>{t("share")}{file.shares.length ? ` · ${file.shares.length}` : ""}</summary>
+          <div className={panel}><SharePanel kind="file" id={file.id} shares={file.shares} variant={variant} meId={data.profileId} /></div>
+        </details>
+      )}
       <AttachToCard fileId={file.id} variant={variant} className={ghost} />
       <CopyLinkButton fileId={file.id} className={ghost} />
+      {file.canEdit && (
+        <details>
+          <summary className={`${ghost} cursor-pointer list-none`}>{t("moveTo")}</summary>
+          <div className={panel}><MoveForm kind="file" id={file.id} current={file.folder_id} targets={data.moveTargets} variant={variant} /></div>
+        </details>
+      )}
       {file.canEdit && (
         <details>
           <summary className={`${ghost} cursor-pointer list-none`}>{t("edit")}</summary>
@@ -247,8 +291,12 @@ function PreviewMeta({ data, variant, t, locale }: { data: LibraryData; variant:
             <dd>{fileSize(file.size_bytes, locale)}</dd>
           </>
         )}
-        <dt className={muted[variant]}>{t("folder")}</dt>
-        <dd>{file.folderName}</dd>
+        {file.folderName && (
+          <>
+            <dt className={muted[variant]}>{t("folder")}</dt>
+            <dd>{file.folderName}</dd>
+          </>
+        )}
         {file.tags.length > 0 && (
           <>
             <dt className={muted[variant]}>{t("tags")}</dt>
@@ -264,6 +312,7 @@ function PreviewMeta({ data, variant, t, locale }: { data: LibraryData; variant:
 function TrashList({ data, variant, t, locale }: ViewProps & { variant: Theme; t: T }) {
   const b = moduleButtons[variant];
   if (!data.files.length) return <p className={muted[variant]}>{t("trashEmpty")}</p>;
+  const mine = new Set(data.folders.filter((f) => f.mine).map((f) => f.id));
   return (
     <ul className="flex flex-col">
       {data.files.map((file) => (
@@ -277,7 +326,7 @@ function TrashList({ data, variant, t, locale }: ViewProps & { variant: Theme; t
             <input type="hidden" name="id" value={file.id} />
             <button type="submit" className={b.ghost}>{t("restore")}</button>
           </form>
-          {data.isStaff && (
+          {(data.isStaff || mine.has(file.folder_id)) && (
             <form action={deleteFileForever}>
               <input type="hidden" name="id" value={file.id} />
               <button type="submit" className={b.danger}>{t("deleteForever")}</button>
@@ -289,27 +338,55 @@ function TrashList({ data, variant, t, locale }: ViewProps & { variant: Theme; t
   );
 }
 
-/** Studio folder column (dark and white); the colour design shows folder stickers instead. */
-function FolderNav({ data, variant, t }: { data: LibraryData; variant: Theme; t: T }) {
+const resetView = { file: null, trash: null, shared: null, type: null, q: null } as const;
+
+/** Studio folder column (dark and white): spaces as indented trees; folders take drops. */
+function FolderNav({ data, variant, t, locale }: { data: LibraryData; variant: Theme; t: T; locale: string }) {
   return (
     <nav aria-label={t("foldersNav")} className="flex flex-col gap-6">
       {data.groups.map((group) => (
         <div key={group.key} className="flex flex-col">
           <span className="px-2 pb-1.5 text-xs text-th-muted">{group.label}</span>
-          {group.folders.map((folder) => {
-            const active = data.current?.id === folder.id;
-            return (
-              <Link key={folder.id} href={libraryHref(data.query, { folder: folder.id, file: null, trash: null, type: null, q: null })} aria-current={active ? "true" : undefined}
-                className={`flex justify-between gap-2 px-2 py-[9px] ${active ? "bg-th-raised font-medium" : "hover:text-th-link"}`}>
-                <span>{folder.name}</span>
-                <span className="text-th-muted">{folder.count}</span>
-              </Link>
-            );
-          })}
+          {group.key === "mine" && <div className="pb-2"><UsageBar data={data} variant={variant} t={t} locale={locale} /></div>}
+          <ul className="flex flex-col">
+            {group.tree.map(({ folder, depth }) => {
+              const active = data.current?.id === folder.id && !data.query.shared;
+              return (
+                <FolderItem key={folder.id} as="li" id={folder.id} name={folder.name} canDrag={folder.canManage} canDrop={folder.canWrite} canUpload={folder.canWrite} profileId={data.profileId}>
+                  <Link href={libraryHref(data.query, { folder: folder.id, ...resetView })} aria-current={active ? "true" : undefined} draggable={false}
+                    className={`flex justify-between gap-2 py-[9px] pr-2 ${active ? "bg-th-raised font-medium" : "hover:text-th-link"}`} style={{ paddingLeft: 8 + depth * 14 }}>
+                    <span className="flex min-w-0 items-center gap-1.5">
+                      {depth > 0 && <span aria-hidden="true" className="text-th-muted">└</span>}
+                      <span className="truncate">{folder.name}</span>
+                    </span>
+                    <span className="text-th-muted">{folder.count}</span>
+                  </Link>
+                </FolderItem>
+              );
+            })}
+          </ul>
+          {group.key === "mine" && group.tree.length === 0 && <p className="px-2 text-xs text-th-muted">{t("mySpaceEmpty")}</p>}
+          {group.key === "sharedWithMe" && data.sharedFileCount > 0 && (
+            <Link href={libraryHref(data.query, { ...resetView, folder: null, shared: "1" })} aria-current={data.query.shared ? "true" : undefined}
+              className={`flex justify-between gap-2 px-2 py-[9px] ${data.query.shared ? "bg-th-raised font-medium" : "hover:text-th-link"}`}>
+              <span>{t("receivedFiles")}</span>
+              <span className="text-th-muted">{data.sharedFileCount}</span>
+            </Link>
+          )}
         </div>
       ))}
+      {data.sharedFileCount > 0 && !data.groups.some((g) => g.key === "sharedWithMe") && (
+        <div className="flex flex-col">
+          <span className="px-2 pb-1.5 text-xs text-th-muted">{t("sharedWithMe")}</span>
+          <Link href={libraryHref(data.query, { ...resetView, folder: null, shared: "1" })} aria-current={data.query.shared ? "true" : undefined}
+            className={`flex justify-between gap-2 px-2 py-[9px] ${data.query.shared ? "bg-th-raised font-medium" : "hover:text-th-link"}`}>
+            <span>{t("receivedFiles")}</span>
+            <span className="text-th-muted">{data.sharedFileCount}</span>
+          </Link>
+        </div>
+      )}
       <Link
-        href={libraryHref(data.query, { trash: data.query.trash ? null : "1", folder: null, file: null, type: null, q: null })}
+        href={libraryHref(data.query, { ...resetView, trash: data.query.trash ? null : "1", folder: null })}
         aria-current={data.query.trash ? "true" : undefined}
         className={`px-2 py-[9px] text-th-muted hover:text-th-fg ${data.query.trash ? "font-medium underline" : ""}`}
       >
@@ -322,19 +399,43 @@ function FolderNav({ data, variant, t }: { data: LibraryData; variant: Theme; t:
 
 function Breadcrumb({ data, t }: { data: LibraryData; t: T }) {
   if (data.query.trash) return <>{t("trash")}</>;
+  if (data.query.shared) return <>{t("sharedWithMe")} / <span className="text-current">{t("receivedFiles")}</span></>;
   if (!data.current) return <>{data.query.q ? t("results", { q: data.query.q }) : t("recent")}</>;
+  const group = data.groups.find((g) => g.folders.some((f) => f.id === data.current?.id));
   return (
-    <>
-      {data.current.space === "shared" ? data.groups[0]?.label : data.current.schoolName} / <span className="text-current">{data.current.name}</span>
-    </>
+    <nav aria-label={t("pathLabel")}>
+      <ol className="flex flex-wrap items-center gap-1">
+        <li>{group?.label} /</li>
+        {data.path.map((folder, index) => (
+          <li key={folder.id}>
+            {index === data.path.length - 1 ? (
+              <span className="text-current" aria-current="page">{folder.name}</span>
+            ) : (
+              <><Link href={libraryHref(data.query, { folder: folder.id, ...resetView })} className="underline-offset-4 hover:underline">{folder.name}</Link> /</>
+            )}
+          </li>
+        ))}
+      </ol>
+    </nav>
   );
 }
 
 function Empty({ data, variant, t }: { data: LibraryData; variant: Theme; t: T }) {
   return (
     <p className={`py-6 ${muted[variant]}`}>
-      {data.folders.length === 0 ? t("noFolders") : data.query.q ? t("noResults") : t("emptyFolder")}
+      {data.query.shared ? t("noReceived") : data.query.q ? t("noResults") : data.current?.canWrite ? t("emptyFolderDrop") : t("emptyFolder")}
     </p>
+  );
+}
+
+/** Wraps the open folder's list so files from the computer (and library items) can be dropped on it. */
+function ListDrop({ data, children, className }: { data: LibraryData; children: React.ReactNode; className?: string }) {
+  const current = data.current;
+  if (!current || !current.canWrite || data.query.trash || data.query.shared) return <div className={className}>{children}</div>;
+  return (
+    <DropTarget folderId={current.id} folderName={current.name} canUpload profileId={data.profileId} as="section" className={className}>
+      {children}
+    </DropTarget>
   );
 }
 
@@ -343,6 +444,7 @@ function Empty({ data, variant, t }: { data: LibraryData; variant: Theme; t: T }
 // ---------------------------------------------------------------------------
 export async function LibraryStudio({ data, locale, variant: v }: ViewProps & { variant: "dark" | "white" }) {
   const t = await getTranslations("library");
+  const showList = !data.query.trash;
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex shrink-0 flex-wrap items-end justify-between gap-5 border-b border-th-line px-4 pt-[26px] pb-5 sm:px-7">
@@ -353,17 +455,18 @@ export async function LibraryStudio({ data, locale, variant: v }: ViewProps & { 
         </div>
       </div>
       <div className="flex min-h-0 flex-1 flex-col md:flex-row">
-        <div className="shrink-0 overflow-auto border-b border-th-line px-3.5 py-5 text-sm md:w-[210px] md:border-r md:border-b-0">
-          <FolderNav data={data} variant={v} t={t} />
+        <div className="shrink-0 overflow-auto border-b border-th-line px-3.5 py-5 text-sm md:w-[230px] md:border-r md:border-b-0">
+          <FolderNav data={data} variant={v} t={t} locale={locale} />
         </div>
-        <div className="min-w-0 flex-1 overflow-auto px-4 py-[18px] sm:px-6">
+        <ListDrop data={data} className="min-w-0 flex-1 overflow-auto px-4 py-[18px] sm:px-6">
           <div className="mb-3.5 flex flex-wrap items-center justify-between gap-3">
             <div className="text-[13px] text-th-muted"><Breadcrumb data={data} t={t} /></div>
-            {!data.query.trash && <TypeFilter data={data} variant={v} t={t} />}
+            {showList && <TypeFilter data={data} variant={v} t={t} />}
           </div>
+          <DropStatus className="mb-3 text-sm" />
           {data.query.trash ? (
             <TrashList data={data} variant={v} t={t} locale={locale} />
-          ) : data.files.length === 0 ? (
+          ) : data.files.length === 0 && data.subfolders.length === 0 ? (
             <Empty data={data} variant={v} t={t} />
           ) : (
             <table className="w-full border-collapse text-sm">
@@ -375,22 +478,35 @@ export async function LibraryStudio({ data, locale, variant: v }: ViewProps & { 
                 </tr>
               </thead>
               <tbody>
-                {data.files.map((file) => (
-                  <tr key={file.id} className={data.preview?.id === file.id ? "bg-th-raised" : ""}>
+                {data.subfolders.map((folder) => (
+                  <FolderItem key={folder.id} as="tr" id={folder.id} name={folder.name} canDrag={folder.canManage} canDrop={folder.canWrite} canUpload={folder.canWrite} profileId={data.profileId}>
                     <td className="border-b border-th-rule px-2 py-3">
-                      <Link href={libraryHref(data.query, { file: file.id })} scroll={false} className="flex items-center gap-3 hover:text-th-link">
+                      <Link href={libraryHref(data.query, { folder: folder.id, ...resetView })} draggable={false} className="flex items-center gap-3 font-medium hover:text-th-link">
+                        <FolderBadge variant={v} />
+                        <span className="leading-snug">{folder.name}</span>
+                      </Link>
+                    </td>
+                    <td className="hidden border-b border-th-rule px-2 py-3 whitespace-nowrap text-th-soft sm:table-cell">{t("itemsCount", { count: folder.count })}</td>
+                    <td className="border-b border-th-rule px-2 py-3 text-th-soft">—</td>
+                  </FolderItem>
+                ))}
+                {data.files.map((file) => (
+                  <Draggable key={file.id} as="tr" kind="file" id={file.id} name={file.name} className={data.preview?.id === file.id ? "bg-th-raised" : ""}>
+                    <td className="border-b border-th-rule px-2 py-3">
+                      <Link href={libraryHref(data.query, { file: file.id })} scroll={false} draggable={false} className="flex items-center gap-3 hover:text-th-link">
                         <FileBadge file={file} variant={v} />
                         <span className="leading-snug">{file.name}</span>
                       </Link>
                     </td>
                     <td className="hidden border-b border-th-rule px-2 py-3 whitespace-nowrap text-th-soft sm:table-cell">{file.size_bytes ? fileSize(file.size_bytes, locale) : "—"}</td>
                     <td className="border-b border-th-rule px-2 py-3 whitespace-nowrap text-th-soft">{shortDate(file.created_at, locale)}</td>
-                  </tr>
+                  </Draggable>
                 ))}
               </tbody>
             </table>
           )}
-        </div>
+          {data.current?.canWrite && showList && !data.query.shared && <p className="mt-4 text-xs text-th-muted">{t("dropHintFolder")}</p>}
+        </ListDrop>
         {data.preview && !data.query.trash && (
           <aside aria-label={t("preview")} className="flex shrink-0 flex-col gap-4 overflow-auto border-t border-th-line p-5 md:w-[300px] md:border-t-0 md:border-l">
             <PreviewMedia data={data} variant={v} t={t} />
@@ -415,10 +531,37 @@ const tileColors = [
   { bg: "#dd6937", fg: "#221f20" },
 ];
 
+function Sticker({ folder, data, index, label }: { folder: FolderSummary; data: LibraryData; index: number; label: string }) {
+  const color = tileColors[index % tileColors.length];
+  const active = data.current?.id === folder.id;
+  return (
+    <FolderItem id={folder.id} name={folder.name} canDrag={folder.canManage} canDrop={folder.canWrite} canUpload={folder.canWrite} profileId={data.profileId} className="rounded-[22px]">
+      <Link href={libraryHref(data.query, { folder: folder.id, ...resetView })} aria-current={active ? "true" : undefined} draggable={false}
+        className={`flex h-full flex-col gap-1.5 rounded-[22px] border-2 border-ink px-[18px] py-4 ${active ? "ring-4 ring-ink ring-offset-2" : ""}`}
+        style={{ background: color.bg, color: color.fg }}>
+        <span className="font-fun text-[40px] leading-none font-bold">{folder.count}</span>
+        <span className="font-display text-[17px] font-bold">{folder.name}</span>
+        <span className="text-xs">{label}</span>
+      </Link>
+    </FolderItem>
+  );
+}
+
 export async function LibraryColor({ data, locale }: ViewProps) {
   const t = await getTranslations("library");
   const v: Theme = "color";
-  const listTitle: string = data.query.trash ? t("trash") : data.current ? data.current.name : data.query.q ? t("results", { q: data.query.q }) : t("recentlyAdded");
+  const listTitle: string = data.query.trash
+    ? t("trash")
+    : data.query.shared
+      ? t("receivedFiles")
+      : data.current
+        ? data.current.name
+        : data.query.q
+          ? t("results", { q: data.query.q })
+          : t("recentlyAdded");
+  // Inside a folder: its subfolders. Otherwise: the top folders of every space.
+  const stickers = data.current && !data.query.shared ? data.subfolders : data.groups.flatMap((g) => g.tree.filter((n) => n.depth === 0).map((n) => n.folder));
+  const groupOf = (folder: FolderSummary) => data.groups.find((g) => g.folders.some((f) => f.id === folder.id))?.label ?? "";
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-[22px] overflow-auto px-4 pt-6 pb-7 sm:px-7">
       <div className="flex flex-wrap items-center justify-between gap-5">
@@ -432,36 +575,47 @@ export async function LibraryColor({ data, locale }: ViewProps) {
         </div>
       </div>
 
+      {data.current && !data.query.shared && (
+        <div className="flex flex-wrap items-center gap-3 text-sm">
+          <Link href={libraryHref(data.query, { ...resetView, folder: data.current.parentId })} className="rounded-full border-2 border-ink px-3 py-1 font-medium">← {t("back")}</Link>
+          <span className="text-muted"><Breadcrumb data={data} t={t} /></span>
+        </div>
+      )}
+
       <nav aria-label={t("foldersNav")} className="grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-3.5">
-        {data.folders.map((folder, index) => {
-          const color = tileColors[index % tileColors.length];
-          const active = data.current?.id === folder.id;
-          return (
-            <Link key={folder.id} href={libraryHref(data.query, { folder: active ? null : folder.id, file: null, trash: null, type: null, q: null })}
-              aria-current={active ? "true" : undefined}
-              className={`flex flex-col gap-1.5 rounded-[22px] border-2 border-ink px-[18px] py-4 ${active ? "ring-4 ring-ink ring-offset-2" : ""}`}
-              style={{ background: color.bg, color: color.fg }}>
-              <span className="font-fun text-[40px] leading-none font-bold">{folder.count}</span>
-              <span className="font-display text-[17px] font-bold">{folder.name}</span>
-              <span className="text-xs">{folder.space === "shared" ? data.groups[0]?.label : folder.schoolName}</span>
-            </Link>
-          );
-        })}
-        <Link href={libraryHref(data.query, { trash: data.query.trash ? null : "1", folder: null, file: null, type: null, q: null })}
-          aria-current={data.query.trash ? "true" : undefined}
-          className={`flex flex-col justify-end gap-1.5 rounded-[22px] border-2 border-dashed border-ink px-[18px] py-4 ${data.query.trash ? "bg-sand" : ""}`}>
-          <span className="font-fun text-[40px] leading-none font-bold">{data.trashCount}</span>
-          <span className="font-display text-[17px] font-bold">{t("trash")}</span>
-          <span className="text-xs">{t("trashHint")}</span>
-        </Link>
+        {!data.current && (
+          <div className="flex flex-col justify-between gap-2 rounded-[22px] border-2 border-ink bg-white px-[18px] py-4">
+            <span className="font-display text-[17px] font-bold">{t("mySpace")}</span>
+            <UsageBar data={data} variant={v} t={t} locale={locale} />
+          </div>
+        )}
+        {stickers.map((folder, index) => <Sticker key={folder.id} folder={folder} data={data} index={index} label={groupOf(folder)} />)}
+        {!data.current && data.sharedFileCount > 0 && (
+          <Link href={libraryHref(data.query, { ...resetView, folder: null, shared: "1" })} aria-current={data.query.shared ? "true" : undefined}
+            className="flex flex-col justify-end gap-1.5 rounded-[22px] border-2 border-ink bg-white px-[18px] py-4">
+            <span className="font-fun text-[40px] leading-none font-bold">{data.sharedFileCount}</span>
+            <span className="font-display text-[17px] font-bold">{t("receivedFiles")}</span>
+            <span className="text-xs">{t("sharedWithMe")}</span>
+          </Link>
+        )}
+        {!data.current && (
+          <Link href={libraryHref(data.query, { ...resetView, trash: data.query.trash ? null : "1", folder: null })}
+            aria-current={data.query.trash ? "true" : undefined}
+            className={`flex flex-col justify-end gap-1.5 rounded-[22px] border-2 border-dashed border-ink px-[18px] py-4 ${data.query.trash ? "bg-sand" : ""}`}>
+            <span className="font-fun text-[40px] leading-none font-bold">{data.trashCount}</span>
+            <span className="font-display text-[17px] font-bold">{t("trash")}</span>
+            <span className="text-xs">{t("trashHint")}</span>
+          </Link>
+        )}
       </nav>
 
       <div className="flex flex-wrap items-start gap-5">
-        <section aria-label={listTitle} className="flex min-w-0 flex-[1_1_460px] flex-col gap-3">
+        <ListDrop data={data} className="flex min-w-0 flex-[1_1_460px] flex-col gap-3 rounded-[22px]">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="font-display text-2xl font-extrabold">{listTitle}</h2>
             {!data.query.trash && <TypeFilter data={data} variant={v} t={t} />}
           </div>
+          <DropStatus className="text-sm" />
           {data.query.trash ? (
             <TrashList data={data} variant={v} t={t} locale={locale} />
           ) : data.files.length === 0 ? (
@@ -471,8 +625,8 @@ export async function LibraryColor({ data, locale }: ViewProps) {
               {data.files.map((file) => {
                 const selected = data.preview?.id === file.id;
                 return (
-                  <li key={file.id}>
-                    <Link href={libraryHref(data.query, { file: file.id })} scroll={false}
+                  <Draggable key={file.id} as="li" kind="file" id={file.id} name={file.name}>
+                    <Link href={libraryHref(data.query, { file: file.id })} scroll={false} draggable={false}
                       className={`flex items-center gap-3.5 rounded-[18px] border-2 py-2.5 pr-3.5 pl-2.5 ${selected ? "border-ink bg-[#fbf3dc]" : "border-transparent hover:border-line"}`}>
                       <FileBadge file={file} variant={v} />
                       <span className="flex min-w-0 flex-col gap-0.5">
@@ -482,13 +636,14 @@ export async function LibraryColor({ data, locale }: ViewProps) {
                         </span>
                       </span>
                     </Link>
-                  </li>
+                  </Draggable>
                 );
               })}
             </ul>
           )}
+          {data.current?.canWrite && !data.query.trash && !data.query.shared && <p className="text-xs text-muted">{t("dropHintFolder")}</p>}
           <FolderTools data={data} variant={v} t={t} />
-        </section>
+        </ListDrop>
         {data.preview && !data.query.trash && (
           <aside aria-label={t("preview")} className="flex flex-[0_1_300px] flex-col gap-3 rounded-3xl border-2 border-ink p-3.5">
             <PreviewMedia data={data} variant={v} t={t} />

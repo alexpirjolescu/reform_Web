@@ -32,9 +32,9 @@ export function CopyLink({ link }: { link: string }) {
           readOnly
           value={link}
           onFocus={(e) => e.currentTarget.select()}
-          className="min-h-11 min-w-0 flex-1 rounded-th border-th bg-th-card px-3 font-mono text-xs text-th-fg"
+          className="ui-field ui-sm min-w-0 flex-1 bg-th-card font-mono text-xs"
         />
-        <button type="button" onClick={copy} className={ghostButtonClass}>
+        <button type="button" onClick={copy} className="ui-btn ui-tinted ui-sm">
           {copied ? t("copied") : t("copy")}
         </button>
       </div>
@@ -104,13 +104,13 @@ export function PendingActions({ id, email }: { id: string; email: string }) {
   const [mailState, mailAction, mailPending] = useActionState<ActionState, FormData>(resendInvite, {});
   const [cancelState, cancelAction, cancelPending] = useActionState<ActionState, FormData>(cancelInvite, {});
   const [confirming, setConfirming] = useState(false);
-  const small = "min-h-11 text-sm text-th-link underline underline-offset-4 disabled:opacity-60";
+  const small = "ui-btn ui-plain ui-sm";
   const latest = [linkState, mailState, cancelState].sort((a, b) => (b.done ?? 0) - (a.done ?? 0))[0];
   const error = linkState.error ?? mailState.error ?? cancelState.error;
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap items-center gap-x-4">
+      <div className="-ml-2 flex flex-wrap items-center gap-1">
         <form action={linkAction}>
           <input type="hidden" name="id" value={id} />
           <button type="submit" disabled={linkPending} className={small}>{t("admin.invites.newLink")}</button>
@@ -122,13 +122,13 @@ export function PendingActions({ id, email }: { id: string; email: string }) {
         {confirming ? (
           <form action={cancelAction} className="flex items-center gap-2">
             <input type="hidden" name="id" value={id} />
-            <button type="submit" disabled={cancelPending} className="min-h-11 text-sm font-medium text-vermilion underline underline-offset-4">
+            <button type="submit" disabled={cancelPending} className="ui-btn ui-filled ui-danger ui-sm">
               {t("admin.invites.cancelConfirm", { email })}
             </button>
-            <button type="button" onClick={() => setConfirming(false)} className="min-h-11 text-sm text-th-muted">{t("admin.invites.keep")}</button>
+            <button type="button" onClick={() => setConfirming(false)} className="ui-btn ui-gray ui-neutral ui-sm">{t("admin.invites.keep")}</button>
           </form>
         ) : (
-          <button type="button" onClick={() => setConfirming(true)} className="min-h-11 text-sm text-th-muted underline underline-offset-4">
+          <button type="button" onClick={() => setConfirming(true)} className="ui-btn ui-plain ui-sm ui-danger">
             {t("admin.invites.cancel")}
           </button>
         )}

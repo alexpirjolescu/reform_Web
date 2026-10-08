@@ -1,5 +1,4 @@
 import { getTranslations } from "next-intl/server";
-import { buttonClass } from "@/components/form";
 import { acceptLink } from "@/app/auth/actions";
 import { getSession } from "@/lib/auth";
 
@@ -36,7 +35,7 @@ export default async function AcceptPage({ searchParams }: PageProps<"/auth/acce
       <form action={acceptLink}>
         <input type="hidden" name="token_hash" value={tokenHash} />
         <input type="hidden" name="type" value={kind} />
-        <button type="submit" className={buttonClass}>{t(`${kind}Submit`)}</button>
+        <button type="submit" className="ui-btn ui-filled ui-lg w-full">{t(`${kind}Submit`)}</button>
       </form>
     </div>
   );

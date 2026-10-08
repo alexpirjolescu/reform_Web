@@ -14,7 +14,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/auth/login
     <div className="flex flex-col gap-8">
       <h1 className="font-display text-5xl font-extrabold tracking-tight">{t("title")}</h1>
       <LoginForm next={typeof next === "string" ? next : undefined} />
-      <Link href="/auth/forgot-password" className="text-th-link underline underline-offset-4">
+      <Link href="/auth/forgot-password" className="ui-btn ui-plain -ml-2.5 self-start">
         {t("forgot")}
       </Link>
       <p className="text-sm leading-relaxed text-th-muted">{t("noAccount")}</p>

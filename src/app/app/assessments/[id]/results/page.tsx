@@ -113,7 +113,7 @@ export default async function ResultsPage({ params }: PageProps<"/app/assessment
                       </td>
                       <td className="py-3">
                         {latest && latest.status !== "in_progress" && (
-                          <Link href={`/app/assessments/${id}/review/${latest.id}`} className="font-medium text-th-link underline underline-offset-4">
+                          <Link href={`/app/assessments/${id}/review/${latest.id}`} className="ui-btn ui-plain ui-sm -my-1.5">
                             {latest.status === "submitted" ? t("review.open") : t("review.see")}
                           </Link>
                         )}
@@ -145,11 +145,11 @@ export default async function ResultsPage({ params }: PageProps<"/app/assessment
         )}
 
         <details className="self-start">
-          <summary className="cursor-pointer text-sm text-th-muted underline underline-offset-4">{t("deleteAssessment")}</summary>
+          <summary className="ui-btn ui-plain ui-sm ui-danger -ml-2 cursor-pointer list-none">{t("deleteAssessment")}</summary>
           <form action={deleteAssessment} className="mt-3 flex flex-col items-start gap-2">
             <input type="hidden" name="id" value={id} />
             <p className="text-sm">{t("deleteWarning")}</p>
-            <button type="submit" className={b.danger}>{t("deleteConfirm")}</button>
+            <button type="submit" className="ui-btn ui-filled ui-danger">{t("deleteConfirm")}</button>
           </form>
         </details>
       </div>

@@ -106,13 +106,10 @@ export function AssignmentRunner({
   }
 
   const studio = variant !== "color";
+  // File rows stay the design's own boxes; the controls are the iOS kit in every theme.
   const box = studio ? "rounded-th border border-th-edge bg-th-sunk text-th-fg" : "rounded-[18px] border-2 border-ink bg-white";
-  const primary = studio
-    ? "min-h-12 rounded-th bg-teal px-6 font-display font-semibold text-ink disabled:opacity-60"
-    : "min-h-12 rounded-full border-2 border-ink bg-lavender px-6 font-display font-bold text-white disabled:opacity-60";
-  const ghost = studio
-    ? "inline-flex min-h-11 items-center gap-2 rounded-th border border-th-edge px-4 text-sm hover:border-th-fg"
-    : "inline-flex min-h-11 items-center gap-2 rounded-full border-2 border-ink bg-honey px-4 text-sm font-medium";
+  const primary = "ui-btn ui-filled ui-lg";
+  const ghost = "ui-btn ui-tinted";
   const muted = studio ? "text-th-muted" : "text-muted";
 
   return (
@@ -125,7 +122,7 @@ export function AssignmentRunner({
             {files.map((file) => (
               <li key={file.id} className={`flex items-center gap-3 px-3 py-2 text-sm ${box}`}>
                 <span className="min-w-0 flex-1 truncate">{file.name}</span>
-                <button type="button" onClick={() => void remove(file)} aria-label={t("removeFile", { name: file.name })} className="grid size-11 place-items-center">
+                <button type="button" onClick={() => void remove(file)} aria-label={t("removeFile", { name: file.name })} className="ui-btn ui-plain ui-icon ui-neutral">
                   <TrashIcon size={16} />
                 </button>
               </li>
@@ -150,7 +147,7 @@ export function AssignmentRunner({
             setLink(e.target.value);
             schedule({ text, link: e.target.value });
           }}
-          className={`min-h-12 px-3 text-base ${box}`}
+          className="ui-field"
         />
       </label>
       <label className="flex flex-col gap-2">
@@ -163,7 +160,7 @@ export function AssignmentRunner({
             setText(e.target.value);
             schedule({ text: e.target.value, link });
           }}
-          className={`p-3 text-base leading-relaxed ${box}`}
+          className="ui-field leading-relaxed"
         />
       </label>
       {error && <p role="alert" className="bg-vermilion/20 px-3 py-2 text-sm">{error}</p>}

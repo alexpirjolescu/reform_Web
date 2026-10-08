@@ -10,7 +10,6 @@ import {
   SelectField,
   SubmitButton,
   TextAreaField,
-  ghostButtonClass,
   type ActionState,
 } from "@/components/form";
 import { TrashIcon, UploadIcon } from "@/components/icons";
@@ -226,10 +225,10 @@ export function ActivityEditor({
             <div className="flex flex-wrap items-end gap-3">
               {/* eslint-disable-next-line @next/next/no-img-element -- preview of a just-uploaded image */}
               <img src={`${mediaBase}/${cover}`} alt="" className="h-32 w-auto rounded-th border-th object-cover" />
-              <button type="button" onClick={() => setCover(null)} className={ghostButtonClass}><TrashIcon size={14} /> {t("adminNews.removeCover")}</button>
+              <button type="button" onClick={() => setCover(null)} className="ui-btn ui-tinted ui-danger"><TrashIcon size={14} /> {t("adminNews.removeCover")}</button>
             </div>
           ) : (
-            <button type="button" disabled={uploading} onClick={() => coverInput.current?.click()} className={`${ghostButtonClass} self-start`}>
+            <button type="button" disabled={uploading} onClick={() => coverInput.current?.click()} className="ui-btn ui-tinted self-start">
               <UploadIcon size={14} /> {t("adminNews.addCover")}
             </button>
           )}

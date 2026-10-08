@@ -34,11 +34,11 @@ export default async function ActivitiesPage({ searchParams }: PageProps<"/activ
         <h1 className={`font-display text-5xl font-extrabold tracking-tight ${p.heading}`}>
           {t("news.calendarTitle")}
         </h1>
-        <div className="flex flex-wrap gap-4 text-[15px]">
-          <Link href={`/activities?${new URLSearchParams({ ...(filters.category ? { type: filters.category } : {}) })}`} className={when === "upcoming" ? p.activeTab : p.tab}>
+        <div className="ui-seg ui-lg self-start">
+          <Link href={`/activities?${new URLSearchParams({ ...(filters.category ? { type: filters.category } : {}) })}`} aria-current={when === "upcoming" ? "page" : undefined}>
             {t("home.upcoming")}
           </Link>
-          <Link href={`/activities?when=past${filters.category ? `&type=${filters.category}` : ""}`} className={when === "past" ? p.activeTab : p.tab}>
+          <Link href={`/activities?when=past${filters.category ? `&type=${filters.category}` : ""}`} aria-current={when === "past" ? "page" : undefined}>
             {t("home.past")}
           </Link>
         </div>

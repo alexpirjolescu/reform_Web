@@ -17,7 +17,7 @@ export default async function BlockedPage() {
         {session.status === "deactivated" ? t("auth.deactivated") : t("auth.noProfile")}
       </p>
       <form action={signOut}>
-        <button type="submit" className="min-h-12 border border-ink px-6 font-display font-semibold">
+        <button type="submit" className="ui-btn ui-gray ui-neutral">
           {t("common.logout")}
         </button>
       </form>

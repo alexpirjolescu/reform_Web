@@ -143,14 +143,10 @@ export function StickerPicker({
   onSticker,
   onGif,
   onClose,
-  panelClass,
-  tabClass,
 }: {
   onSticker: (id: string) => void;
   onGif: (gif: GifResult) => void;
   onClose: () => void;
-  panelClass: string;
-  tabClass: (active: boolean) => string;
 }) {
   const t = useTranslations("messages");
   const locale = useLocale();
@@ -189,10 +185,10 @@ export function StickerPicker({
   }, [tab, query, locale]);
 
   return (
-    <div ref={panel} role="dialog" aria-label={t("stickersAndGifs")} className={`absolute bottom-full left-0 z-30 mb-2 flex max-h-[360px] w-[min(380px,calc(100vw-2rem))] flex-col gap-2 p-3 ${panelClass}`}>
-      <div role="tablist" className="flex gap-1.5">
+    <div ref={panel} role="dialog" aria-label={t("stickersAndGifs")} className="ui-menu absolute bottom-full left-0 z-30 mb-2 flex max-h-[360px] w-[min(380px,calc(100vw-2rem))] origin-bottom-left flex-col gap-2 p-3">
+      <div role="tablist" className="ui-seg shrink-0">
         {(["stickers", "gifs"] as const).map((name) => (
-          <button key={name} type="button" role="tab" aria-selected={tab === name} onClick={() => setTab(name)} className={tabClass(tab === name)}>
+          <button key={name} type="button" role="tab" aria-selected={tab === name} onClick={() => setTab(name)}>
             {t(name)}
           </button>
         ))}
@@ -210,7 +206,7 @@ export function StickerPicker({
       ) : (
         <>
           <input type="search" autoFocus value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("searchGifs")} aria-label={t("searchGifs")}
-            className="min-h-10 w-full rounded-lg border border-current/30 bg-transparent px-3 text-sm" />
+            className="ui-field ui-sm ui-search" />
           {status === "off" && <p className="text-sm">{t("gifsOff")}</p>}
           {status === "error" && <p className="text-sm">{t("gifsError")}</p>}
           {status === "loading" && !gifs && <p className="text-sm">{t("loading")}</p>}

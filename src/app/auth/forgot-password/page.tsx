@@ -17,7 +17,7 @@ export default async function ForgotPasswordPage() {
         <p className="text-th-muted">{t("intro")}</p>
       </div>
       <ForgotPasswordForm />
-      <Link href="/auth/login" className="text-th-link underline underline-offset-4">
+      <Link href="/auth/login" className="ui-btn ui-plain -ml-2.5 self-start">
         {t("back")}
       </Link>
     </div>

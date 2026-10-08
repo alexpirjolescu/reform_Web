@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { selectClass } from "@/components/form";
 import { UploadIcon } from "@/components/icons";
 import { moduleButtons } from "@/components/page-header";
 import { acceptedTypes } from "@/lib/library";
@@ -72,7 +73,7 @@ export function Uploader({
       <select
         value={target}
         onChange={(e) => setTarget(e.target.value)}
-        className={`min-h-11 px-3 text-sm ${variant === "color" ? "rounded-xl border-2 border-ink bg-white" : "rounded-th border border-th-edge bg-th-bg text-th-fg"}`}
+        className={selectClass}
       >
         <option value="" disabled>{t("pickFolder")}</option>
         {[...new Set(folders.map((f) => f.group))].map((group) => (
@@ -102,12 +103,12 @@ export function Uploader({
         disabled={busy}
         onClick={() => (currentFolderId ? input.current?.click() : setPicking((on) => !on))}
         aria-expanded={currentFolderId ? undefined : picking}
-        className={variant === "color" ? b.primary.replace("bg-pink", "bg-honey") : b.primary}
+        className={b.primary}
       >
         <UploadIcon size={16} /> {busy ? status : t("upload")}
       </button>
       {picking && (
-        <div className={`absolute top-full right-0 z-20 mt-2 flex w-72 flex-col gap-3 p-4 ${variant === "color" ? "rounded-[18px] border-2 border-ink bg-white" : "border border-th-cardline bg-th-raised text-th-fg"}`}>
+        <div className="ui-menu absolute top-full right-0 z-20 mt-2 flex w-72 flex-col gap-3 p-4">
           {folderSelect}
           <button type="button" disabled={!target} onClick={() => input.current?.click()} className={b.primary}>{t("chooseFiles")}</button>
         </div>

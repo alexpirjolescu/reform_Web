@@ -88,11 +88,11 @@ function Markdown({ children, studio }: { children: string; studio?: boolean }) 
   );
 }
 
-const studioStart = "min-h-12 rounded-th bg-teal px-6 font-display text-base font-semibold text-ink disabled:opacity-60";
+// The one big call to action of the screen: the iOS-style filled capsule in every theme.
 const startClass: Record<Theme, string> = {
-  dark: studioStart,
-  white: studioStart,
-  color: "min-h-12 rounded-full border-2 border-ink bg-lavender px-6 font-display text-base font-bold text-white disabled:opacity-60",
+  dark: "ui-btn ui-filled ui-lg",
+  white: "ui-btn ui-filled ui-lg",
+  color: "ui-btn ui-filled ui-lg",
 };
 
 /** Everything except the runner: intro before starting, hand-in receipt, results with feedback. */
@@ -365,10 +365,9 @@ export async function StudentColor({ data }: { data: StudentScreenData }) {
           <Logo name="academy" height={30} />
           <h1 className="font-display text-[36px] font-extrabold tracking-[-0.02em]">{t("assessments.title")}</h1>
         </div>
-        <nav aria-label={t("assessments.filter")} className="flex flex-wrap gap-1.5">
+        <nav aria-label={t("assessments.filter")} className="ui-seg ui-lg">
           {groups.map((group) => (
-            <Link key={group} href={`${selectedHref}?tab=${group}`} aria-current={data.tab === group ? "true" : undefined}
-              className={`flex h-10 items-center rounded-full border-2 border-ink px-4 text-sm ${data.tab === group ? "bg-ink text-white" : "bg-white"}`}>
+            <Link key={group} href={`${selectedHref}?tab=${group}`} aria-current={data.tab === group ? "true" : undefined}>
               {t(`assessments.groups.${group}`)} · {g[group].length}
             </Link>
           ))}

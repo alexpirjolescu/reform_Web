@@ -26,6 +26,21 @@
 - Teal `#77bfb2` is too light for text on white. On white backgrounds use `#3a978a` for headings of 24 px and up and `#2b7a6e` for smaller text.
 - Text on teal, honey, lime, pink or vermilion fills: dark ink `#221f20`. Text on lavender: white.
 
+## Controls (iOS style, 2026-10-09)
+
+Buttons, fields, selects, switches, checks, segmented controls, chips and menus use the `ui-` classes in
+`src/app/globals.css` in every theme (Pirjo's choice: iOS look everywhere, re_form teal as the one tint colour).
+Soft fills instead of outlines; shadows only on the switch knob, the selected segment and menus (which also blur
+what is behind them). Capsule buttons, 44 px tall by default (`ui-sm` 32 px). Fields are 16 px so iPhones don't zoom.
+
+| Token | White | Dark | Colour | Checked against (≥4.5:1 for text) |
+| --- | --- | --- | --- | --- |
+| tint (text, plain buttons) | `#24695f` | `#8fd0c4` | `#24695f` | page, sunk panels, gray and tinted fills |
+| tint fill (filled buttons) | `#24695f` + white text (6.4:1) | `#77bfb2` + ink (7.7:1) | `#77bfb2` + ink | — |
+| danger | `#a83226` | `#f39a78` | `#a83226` | page, sunk panels, tinted fill |
+| switch on | `#3a978a` | `#77bfb2` | `#3a978a` | ≥3:1 against the page |
+| check ring | `#7c7c82` | `#8e8e93` | `#7c7c82` | ≥3:1 against the page |
+
 ## Design directions
 
 The 15 mockups live on a Claude Design canvas (private link, owner: Pirjo) and their source is in [mockups/](mockups/). They are written in Claude's `.dc.html` canvas format, so they are a visual and CSS reference rather than pages that open on their own.

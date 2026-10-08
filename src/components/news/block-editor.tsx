@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { DndContext, KeyboardSensor, PointerSensor, closestCorners, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { ghostButtonClass, inputClass } from "@/components/form";
+import { inputClass } from "@/components/form";
 import { GripIcon, ImageIcon, LinkIcon, PlusIcon, TrashIcon, UploadIcon } from "@/components/icons";
 import { blankBlock, newKey, placements, textStyles, type BlockType, type EditorBlock, type Placement, type Width } from "@/lib/article";
 import { templateBlocks, templateIds, templateSketch, type TemplateId } from "@/lib/article-templates";
@@ -69,6 +69,7 @@ export function BlockEditor({
   const [undo, setUndo] = useState<EditorBlock[] | null>(null);
   // A block that should open its file chooser or focus its link field right after being added.
   const [autoAction, setAutoAction] = useState<{ key: string; action: "upload" | "link" } | null>(null);
+  const dndId = useId(); // stable aria ids between server and browser render
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
   const empty = blocks.length === 0;
 
@@ -123,26 +124,25 @@ export function BlockEditor({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div role="tablist" aria-label={t("modes")} className="inline-flex rounded-th-pill border-th p-1">
+        <div role="tablist" aria-label={t("modes")} className="ui-seg">
           {(["edit", "preview"] as const).map((mode) => (
-            <button key={mode} type="button" role="tab" aria-selected={tab === mode} onClick={() => setTab(mode)}
-              className={`min-h-10 rounded-th-pill px-4 text-sm font-medium ${tab === mode ? "bg-th-fg text-th-bg" : "text-th-fg"}`}>
+            <button key={mode} type="button" role="tab" aria-selected={tab === mode} onClick={() => setTab(mode)}>
               {t(`mode_${mode}`)}
             </button>
           ))}
         </div>
         {tab === "edit" && !empty && (
-          <button type="button" onClick={() => setShowTemplates((on) => !on)} aria-expanded={showTemplates} className={ghostButtonClass}>
+          <button type="button" onClick={() => setShowTemplates((on) => !on)} aria-expanded={showTemplates} className={`ui-btn ui-sm ${showTemplates ? "ui-tinted" : "ui-gray ui-neutral"}`}>
             <GridSketchIcon /> {t("templates")}
           </button>
         )}
       </div>
 
       {undo && (
-        <p role="status" className="flex flex-wrap items-center gap-3 rounded-th bg-th-notice px-4 py-2 text-sm">
+        <p role="status" className="flex flex-wrap items-center gap-3 rounded-[14px] bg-th-fill py-2 pr-2 pl-4 text-sm">
           {t("templateApplied")}
-          <button type="button" className="font-medium underline" onClick={() => { setBlocks(() => undo); setUndo(null); }}>{t("undo")}</button>
-          <button type="button" className="ml-auto text-th-muted underline" onClick={() => setUndo(null)}>{t("dismiss")}</button>
+          <button type="button" className="ui-btn ui-filled ui-sm" onClick={() => { setBlocks(() => undo); setUndo(null); }}>{t("undo")}</button>
+          <button type="button" className="ui-btn ui-plain ui-sm ui-neutral ml-auto" onClick={() => setUndo(null)}>{t("dismiss")}</button>
         </p>
       )}
 
@@ -161,7 +161,7 @@ export function BlockEditor({
       ) : (
         <>
           {(empty || showTemplates) && <TemplatePicker onPick={applyTemplate} replacing={!empty} />}
-          <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={onDragEnd}>
+          <DndContext id={dndId} sensors={sensors} collisionDetection={closestCorners} onDragEnd={onDragEnd}>
             <SortableContext items={blocks.map((b) => b.key)} strategy={verticalListSortingStrategy}>
               <ol className="flex flex-col" aria-label={t("listLabel")}>
                 <Inserter open={inserting === 0} onToggle={(on) => setInserting(on ? 0 : null)} onAdd={(kind) => insert(0, kind)} />
@@ -266,13 +266,13 @@ function Inserter({ open, onToggle, onAdd }: { open: boolean; onToggle: (on: boo
   return (
     <div className="group flex flex-col items-center py-1.5">
       <button type="button" onClick={() => onToggle(!open)} aria-expanded={open} aria-label={t("addHere")}
-        className={`flex min-h-8 items-center gap-1 rounded-th-pill border-th px-3 text-xs font-medium ${open ? "bg-th-fg text-th-bg" : "bg-th-card text-th-muted opacity-70 group-hover:opacity-100 focus:opacity-100"}`}>
+        className={`ui-btn ui-sm ${open ? "ui-tinted" : "ui-plain text-th-muted opacity-80 group-hover:opacity-100 focus-visible:opacity-100"}`}>
         <PlusIcon size={13} /> {t("add")}
       </button>
       {open && (
-        <div role="menu" className="mt-2 flex flex-wrap justify-center gap-1.5 rounded-th border-th bg-th-card p-2 shadow-sm">
+        <div role="menu" className="ui-menu mt-1.5 grid w-full max-w-2xl grid-cols-2 gap-0.5 sm:grid-cols-3">
           {addable.map((kind) => (
-            <button key={kind} type="button" role="menuitem" onClick={() => onAdd(kind)} className="min-h-10 rounded-th-pill border-th px-3 text-sm hover:bg-th-raised">
+            <button key={kind} type="button" role="menuitem" onClick={() => onAdd(kind)} className="ui-menu-item justify-center text-center leading-tight">
               {t(`kinds.${kind}`)}
             </button>
           ))}
@@ -322,10 +322,10 @@ function BlockCard({
   } else if (block.type === "text") {
     body = (
       <div className="flex flex-col gap-2">
-        <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={t("styleLabel")}>
+        <div className="ui-seg self-start" role="radiogroup" aria-label={t("styleLabel")}>
           {textStyles.map((style) => (
-            <button key={style} type="button" role="radio" aria-checked={block.style === style} onClick={() => onChange({ style })}
-              className={`min-h-9 rounded-th-pill border-th px-3 text-xs font-medium ${block.style === style ? "bg-th-fg text-th-bg" : ""}`}>
+            <button key={style} type="button" role="radio" aria-checked={block.style === style} data-on={block.style === style ? "" : undefined} onClick={() => onChange({ style })}
+              className="px-2 sm:px-3.5">
               {t(`styles.${style}`)}
             </button>
           ))}
@@ -365,14 +365,14 @@ function BlockCard({
     >
       <div className="flex items-center gap-2">
         <button type="button" ref={setActivatorNodeRef} {...attributes} {...listeners} aria-label={t("drag", { n: index + 1 })}
-          className="grid size-9 cursor-grab touch-none place-items-center rounded-th text-th-muted hover:bg-th-raised active:cursor-grabbing">
+          className="grid size-8 cursor-grab touch-none place-items-center rounded-full text-th-muted hover:bg-th-fill active:cursor-grabbing active:bg-th-fill-2">
           <GripIcon size={16} />
         </button>
         <span className="text-sm font-semibold">{kindName}</span>
         <span className="ml-auto flex items-center gap-1">
-          <button type="button" disabled={index === 0} onClick={() => onMove(-1)} aria-label={t("moveUp", { n: index + 1 })} className="grid size-9 place-items-center rounded-th hover:bg-th-raised disabled:opacity-30">↑</button>
-          <button type="button" disabled={index === count - 1} onClick={() => onMove(1)} aria-label={t("moveDown", { n: index + 1 })} className="grid size-9 place-items-center rounded-th hover:bg-th-raised disabled:opacity-30">↓</button>
-          <button type="button" onClick={onRemove} aria-label={t("remove", { n: index + 1 })} className="grid size-9 place-items-center rounded-th text-th-muted hover:bg-th-raised"><TrashIcon size={15} /></button>
+          <button type="button" disabled={index === 0} onClick={() => onMove(-1)} aria-label={t("moveUp", { n: index + 1 })} className="ui-btn ui-plain ui-icon ui-sm ui-neutral text-base">↑</button>
+          <button type="button" disabled={index === count - 1} onClick={() => onMove(1)} aria-label={t("moveDown", { n: index + 1 })} className="ui-btn ui-plain ui-icon ui-sm ui-neutral text-base">↓</button>
+          <button type="button" onClick={onRemove} aria-label={t("remove", { n: index + 1 })} className="ui-btn ui-plain ui-icon ui-sm ui-neutral"><TrashIcon size={15} /></button>
         </span>
       </div>
       {body}
@@ -453,11 +453,11 @@ function MediaBlockEditor({
     <div className="flex flex-col gap-3">
       <fieldset className="flex flex-col gap-1.5">
         <legend className="mb-1 text-sm text-th-muted">{t("placeLabel")}</legend>
-        <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+        <div className="ui-seg flex w-full rounded-[14px] sm:max-w-xl">
           {placements.map((place) => (
             <button key={place} type="button" aria-pressed={block.place === place}
               onClick={() => onChange({ place, width: place === "full" ? "l" : place === "row" ? block.width : "m" } as Partial<EditorBlock>)}
-              className={`flex min-h-16 flex-col items-center justify-center gap-1 rounded-th border-th p-2 text-xs font-medium ${block.place === place ? "bg-th-fg text-th-bg" : "hover:bg-th-raised"}`}>
+              className="flex-1 basis-0 flex-col gap-1 rounded-[12px] px-1.5 py-2 text-center text-xs leading-tight whitespace-normal">
               <PlaceSketch place={place} />
               {t(`places.${place}`)}
             </button>
@@ -465,14 +465,15 @@ function MediaBlockEditor({
         </div>
       </fieldset>
       {widthsFor(block.place).length > 0 && (
-        <div className="flex flex-wrap items-center gap-1.5" role="radiogroup" aria-label={t("widthLabel")}>
-          <span className="mr-1 text-sm text-th-muted">{t("widthLabel")}</span>
-          {widthsFor(block.place).map((width) => (
-            <button key={width} type="button" role="radio" aria-checked={block.width === width} onClick={() => onChange({ width } as Partial<EditorBlock>)}
-              className={`min-h-9 rounded-th-pill border-th px-3 text-xs font-medium ${block.width === width ? "bg-th-fg text-th-bg" : ""}`}>
-              {t(`widths.${width}`)}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center gap-2.5">
+          <span className="text-sm text-th-muted">{t("widthLabel")}</span>
+          <div className="ui-seg" role="radiogroup" aria-label={t("widthLabel")}>
+            {widthsFor(block.place).map((width) => (
+              <button key={width} type="button" role="radio" aria-checked={block.width === width} data-on={block.width === width ? "" : undefined} onClick={() => onChange({ width } as Partial<EditorBlock>)}>
+                {t(`widths.${width}`)}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
@@ -501,15 +502,15 @@ function MediaBlockEditor({
                 </span>
                 <input aria-label={tMedia("caption")} value={item.caption} maxLength={300} placeholder={tMedia("caption")}
                   onChange={(e) => setItems(block.items.map((m, i) => (i === index ? { ...m, caption: e.target.value } : m)))}
-                  className={`${inputClass} min-h-10 text-sm`} />
-                <div className="flex flex-wrap gap-x-4 text-xs">
+                  className="ui-field ui-sm" />
+                <div className="-ml-2 flex flex-wrap gap-x-1">
                   {block.items.length > 1 && (
                     <>
-                      <button type="button" disabled={index === 0} onClick={() => moveItem(index, -1)} className="min-h-8 text-th-link underline disabled:opacity-40">← {t("itemEarlier")}</button>
-                      <button type="button" disabled={index === block.items.length - 1} onClick={() => moveItem(index, 1)} className="min-h-8 text-th-link underline disabled:opacity-40">{t("itemLater")} →</button>
+                      <button type="button" disabled={index === 0} onClick={() => moveItem(index, -1)} className="ui-btn ui-plain ui-sm">← {t("itemEarlier")}</button>
+                      <button type="button" disabled={index === block.items.length - 1} onClick={() => moveItem(index, 1)} className="ui-btn ui-plain ui-sm">{t("itemLater")} →</button>
                     </>
                   )}
-                  <button type="button" onClick={() => setItems(block.items.filter((_, i) => i !== index))} className="min-h-8 text-th-link underline">{tMedia("remove")}</button>
+                  <button type="button" onClick={() => setItems(block.items.filter((_, i) => i !== index))} className="ui-btn ui-plain ui-sm ui-danger">{tMedia("remove")}</button>
                 </div>
               </div>
             </li>
@@ -518,7 +519,7 @@ function MediaBlockEditor({
       )}
 
       <div className="flex flex-wrap items-end gap-2">
-        <button type="button" disabled={uploading} onClick={() => files.current?.click()} className={ghostButtonClass}>
+        <button type="button" disabled={uploading} onClick={() => files.current?.click()} className="ui-btn ui-tinted">
           <UploadIcon size={14} /> {uploading ? tNews("uploading") : t("upload")}
         </button>
         <input ref={files} type="file" multiple accept={acceptedMediaTypes.join(",")} className="sr-only" tabIndex={-1} aria-hidden="true" data-block-upload
@@ -530,7 +531,7 @@ function MediaBlockEditor({
             onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addLink(); } }}
             className={inputClass} />
         </label>
-        <button type="button" onClick={addLink} disabled={!link.trim()} className={ghostButtonClass}><PlusIcon size={14} /> {tMedia("addLink")}</button>
+        <button type="button" onClick={addLink} disabled={!link.trim()} className="ui-btn ui-tinted"><PlusIcon size={14} /> {tMedia("addLink")}</button>
       </div>
       {note && <p role="status" className="text-xs text-th-muted">{note}</p>}
     </div>

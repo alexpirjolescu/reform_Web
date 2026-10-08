@@ -28,6 +28,9 @@ export function GroupAvatar({ id, title, photoUrl, size = 44, ring }: { id: stri
 
 const urlPattern = /https?:\/\/[^\s<>"']+[^\s<>"'.,;:!?)\]]/g;
 
+/** The people picker in the iOS-style kit: a menu-like list and soft chips (same in every theme). */
+const pickerStyles = (input: string, muted: string) => ({ input, muted, popover: "ui-menu", chip: "rounded-full bg-th-fill" });
+
 /**
  * Group info, as on WhatsApp: photo, name and description, members and admins, adding and removing
  * people, who may write or change things, mute, pinned messages, files and links, leaving.
@@ -68,9 +71,7 @@ export function GroupInfo({
   const studio = variant !== "color";
   const admin = conversation.myRole === "admin";
   const muted = studio ? "text-th-muted" : "text-muted";
-  const button = studio ? "min-h-10 rounded-th border border-th-edge px-3 text-sm hover:border-th-fg" : "min-h-10 rounded-full border-2 border-ink px-4 text-sm font-medium";
-  const primary = studio ? "min-h-10 rounded-th bg-teal px-4 font-display text-sm font-semibold text-ink" : "min-h-10 rounded-full border-2 border-ink bg-honey px-4 font-display text-sm font-bold";
-  const input = studio ? "w-full rounded-th border border-th-edge bg-th-bg px-3 py-2 text-sm text-th-fg" : "w-full rounded-xl border-2 border-ink bg-white px-3 py-2 text-sm";
+  const input = "ui-field ui-sm";
   const section = `flex flex-col gap-2.5 border-t pt-4 ${studio ? "border-th-line" : "border-line"}`;
 
   useEffect(() => {
@@ -114,14 +115,14 @@ export function GroupInfo({
     <aside aria-label={t("groupInfo")} className={`absolute inset-0 z-30 flex flex-col overflow-y-auto md:static md:w-[340px] md:shrink-0 md:border-l ${studio ? "border-th-line bg-th-card" : "border-l-2 border-ink bg-white"}`}>
       <div className={`flex items-center justify-between gap-2 border-b px-5 py-4 ${studio ? "border-th-line" : "border-ink"}`}>
         <h2 className="font-display text-lg font-bold">{t("groupInfo")}</h2>
-        <button type="button" onClick={onClose} aria-label={t("close")} className="grid size-10 place-items-center text-xl">×</button>
+        <button type="button" onClick={onClose} aria-label={t("close")} className="ui-btn ui-gray ui-icon ui-sm ui-neutral text-lg font-normal">×</button>
       </div>
       <div className="flex flex-col gap-4 p-5">
         <div className="flex flex-col items-center gap-3 text-center">
           <GroupAvatar id={conversation.id} title={conversation.title} photoUrl={conversation.photoUrl} size={96} ring={studio ? undefined : "#221f20"} />
           {conversation.canEdit && (
             <>
-              <button type="button" onClick={() => photoInput.current?.click()} className="text-sm underline underline-offset-4">{t("changePhoto")}</button>
+              <button type="button" onClick={() => photoInput.current?.click()} className="ui-btn ui-plain ui-sm">{t("changePhoto")}</button>
               <input ref={photoInput} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" tabIndex={-1} aria-hidden="true" onChange={(e) => void uploadPhoto(e.target.files?.[0])} />
             </>
           )}
@@ -135,23 +136,23 @@ export function GroupInfo({
             >
               <label className="flex flex-col gap-1 text-sm">{t("groupName")}<input value={title} required maxLength={80} onChange={(e) => setTitle(e.target.value)} className={input} /></label>
               <label className="flex flex-col gap-1 text-sm">{t("groupDescription")}<textarea value={description} rows={3} maxLength={500} onChange={(e) => setDescription(e.target.value)} className={input} /></label>
-              <div className="flex gap-2"><button type="submit" className={primary}>{t("save")}</button><button type="button" onClick={() => setEditing(false)} className="min-h-10 px-2 text-sm underline">{t("cancel")}</button></div>
+              <div className="flex gap-2"><button type="submit" className="ui-btn ui-filled">{t("save")}</button><button type="button" onClick={() => setEditing(false)} className="ui-btn ui-gray ui-neutral">{t("cancel")}</button></div>
             </form>
           ) : (
             <>
               <h3 className="font-display text-xl font-bold break-words">{conversation.title}</h3>
               <p className={`text-sm ${muted}`}>{t("membersCount", { count: conversation.members.length })}</p>
               {conversation.description && <p className="text-sm whitespace-pre-wrap">{conversation.description}</p>}
-              {conversation.canEdit && <button type="button" onClick={() => setEditing(true)} className={button}>{t("editGroup")}</button>}
+              {conversation.canEdit && <button type="button" onClick={() => setEditing(true)} className="ui-btn ui-tinted ui-sm">{t("editGroup")}</button>}
             </>
           )}
         </div>
 
         {error && <p role="alert" className="bg-vermilion/20 px-3 py-2 text-sm">{error}</p>}
 
-        <label className="flex items-center justify-between gap-3 text-sm">
+        <label className="flex min-h-11 cursor-pointer items-center justify-between gap-3 text-sm">
           {t("mute")}
-          <input type="checkbox" key={`m${conversation.muted}`} defaultChecked={conversation.muted} className="size-5"
+          <input type="checkbox" role="switch" key={`m${conversation.muted}`} defaultChecked={conversation.muted} className="ui-switch"
             onChange={(e) => void run(supabase.from("conversation_participants").update({ muted: e.target.checked }).eq("conversation_id", conversation.id).eq("profile_id", meId))} />
         </label>
 
@@ -159,14 +160,14 @@ export function GroupInfo({
           <fieldset className={section}>
             <legend className="sr-only">{t("groupSettings")}</legend>
             <span className="font-display font-semibold">{t("groupSettings")}</span>
-            <label className="flex items-center justify-between gap-3 text-sm">
+            <label className="flex min-h-11 cursor-pointer items-center justify-between gap-3 text-sm">
               {t("onlyAdminsSend")}
-              <input type="checkbox" key={`s${conversation.onlyAdminsSend}`} defaultChecked={conversation.onlyAdminsSend} className="size-5"
+              <input type="checkbox" role="switch" key={`s${conversation.onlyAdminsSend}`} defaultChecked={conversation.onlyAdminsSend} className="ui-switch"
                 onChange={(e) => void run(supabase.rpc("update_group", { target: conversation.id, patch: { only_admins_send: e.target.checked } }))} />
             </label>
-            <label className="flex items-center justify-between gap-3 text-sm">
+            <label className="flex min-h-11 cursor-pointer items-center justify-between gap-3 text-sm">
               {t("onlyAdminsEdit")}
-              <input type="checkbox" key={`e${conversation.onlyAdminsEdit}`} defaultChecked={conversation.onlyAdminsEdit} className="size-5"
+              <input type="checkbox" role="switch" key={`e${conversation.onlyAdminsEdit}`} defaultChecked={conversation.onlyAdminsEdit} className="ui-switch"
                 onChange={(e) => void run(supabase.rpc("update_group", { target: conversation.id, patch: { only_admins_edit: e.target.checked } }))} />
             </label>
           </fieldset>
@@ -186,7 +187,7 @@ export function GroupInfo({
         <section className={section} aria-label={t("members")}>
           <div className="flex items-center justify-between gap-2">
             <span className="font-display font-semibold">{t("members")} · {conversation.members.length}</span>
-            {admin && <button type="button" onClick={() => setAdding((on) => !on)} aria-expanded={adding} className={button}>+ {t("addMembers")}</button>}
+            {admin && <button type="button" onClick={() => setAdding((on) => !on)} aria-expanded={adding} className="ui-btn ui-tinted ui-sm">+ {t("addMembers")}</button>}
           </div>
           {adding && (
             <div className="flex flex-col gap-2">
@@ -198,10 +199,10 @@ export function GroupInfo({
                   selected={picked}
                   onToggle={(id, on) => setPicked((prev) => (on ? [...prev, id] : prev.filter((x) => x !== id)))}
                   label={t("addMembers")}
-                  styles={{ input, muted, popover: studio ? "border border-th-cardline bg-th-raised text-th-fg" : "rounded-[18px] border-2 border-ink bg-white", chip: studio ? "rounded-th-pill bg-th-sunk" : "rounded-full border-[1.5px] border-ink" }}
+                  styles={pickerStyles(input, muted)}
                 />
               )}
-              <button type="button" disabled={!picked.length} className={primary}
+              <button type="button" disabled={!picked.length} className="ui-btn ui-filled"
                 onClick={async () => {
                   if (await run(supabase.rpc("add_group_members", { target: conversation.id, members: picked }))) {
                     setPicked([]);
@@ -223,13 +224,13 @@ export function GroupInfo({
                 {member.groupRole === "admin" && <span className={`px-2 py-0.5 text-[11px] font-semibold ${studio ? "bg-teal/25" : "rounded-full border-[1.5px] border-ink bg-lime"}`}>{t("admin")}</span>}
                 {admin && member.id !== meId && (
                   <details className="relative">
-                    <summary aria-label={t("memberOptions", { name: member.full_name })} className="grid size-9 cursor-pointer list-none place-items-center text-lg">⋯</summary>
-                    <div className={`absolute right-0 z-10 mt-1 flex w-52 flex-col py-1 ${studio ? "border border-th-edge bg-th-card" : "rounded-[14px] border-2 border-ink bg-white"}`}>
-                      <button type="button" className="px-3 py-2 text-left text-sm hover:underline"
+                    <summary aria-label={t("memberOptions", { name: member.full_name })} className="ui-btn ui-plain ui-icon ui-sm ui-neutral list-none text-lg [&::-webkit-details-marker]:hidden">⋯</summary>
+                    <div className="ui-menu absolute right-0 z-10 mt-1 w-52 origin-top-right">
+                      <button type="button" className="ui-menu-item"
                         onClick={() => void run(supabase.rpc("set_group_admin", { target: conversation.id, member: member.id, make_admin: member.groupRole !== "admin" }))}>
                         {member.groupRole === "admin" ? t("removeAdmin") : t("makeAdmin")}
                       </button>
-                      <button type="button" className="px-3 py-2 text-left text-sm text-vermilion hover:underline"
+                      <button type="button" className="ui-menu-item ui-danger"
                         onClick={() => void run(supabase.rpc("remove_group_member", { target: conversation.id, member: member.id }))}>
                         {t("removeMember")}
                       </button>
@@ -242,10 +243,9 @@ export function GroupInfo({
         </section>
 
         <section className={section} aria-label={t("filesAndLinks")}>
-          <div role="tablist" className="flex gap-1.5">
+          <div role="tablist" className="ui-seg">
             {(["files", "links"] as const).map((name) => (
-              <button key={name} type="button" role="tab" aria-selected={tab === name} onClick={() => setTab(name)}
-                className={`min-h-9 px-3 text-sm ${tab === name ? (studio ? "bg-th-fg text-th-bg" : "rounded-full bg-ink text-white") : studio ? "border border-th-edge" : "rounded-full border-2 border-ink"}`}>
+              <button key={name} type="button" role="tab" aria-selected={tab === name} onClick={() => setTab(name)}>
                 {t(`tabs.${name}`)}
               </button>
             ))}
@@ -278,12 +278,12 @@ export function GroupInfo({
             <div className="flex flex-col gap-2">
               <p className="text-sm">{t("leaveConfirm")}</p>
               <div className="flex gap-2">
-                <button type="button" className={`${primary} bg-vermilion`} onClick={async () => { if (await run(supabase.rpc("leave_group", { target: conversation.id }))) router.push("/app/messages"); }}>{t("leaveYes")}</button>
-                <button type="button" onClick={() => setLeaving(false)} className="min-h-10 px-2 text-sm underline">{t("cancel")}</button>
+                <button type="button" className="ui-btn ui-filled ui-danger" onClick={async () => { if (await run(supabase.rpc("leave_group", { target: conversation.id }))) router.push("/app/messages"); }}>{t("leaveYes")}</button>
+                <button type="button" onClick={() => setLeaving(false)} className="ui-btn ui-gray ui-neutral">{t("cancel")}</button>
               </div>
             </div>
           ) : (
-            <button type="button" onClick={() => setLeaving(true)} className="min-h-10 self-start text-sm font-medium text-vermilion underline underline-offset-4">{t("leaveGroup")}</button>
+            <button type="button" onClick={() => setLeaving(true)} className="ui-btn ui-tinted ui-danger self-start">{t("leaveGroup")}</button>
           )}
         </div>
       </div>
@@ -302,7 +302,7 @@ export function NewGroup({ variant, onClose, onCreated }: { variant: Theme; onCl
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const studio = variant !== "color";
-  const input = studio ? "w-full rounded-th border border-th-edge bg-th-bg px-3 py-2 text-sm text-th-fg" : "w-full rounded-xl border-2 border-ink bg-white px-3 py-2 text-sm";
+  const input = "ui-field";
   const muted = studio ? "text-th-muted" : "text-muted";
 
   useEffect(() => {
@@ -317,7 +317,7 @@ export function NewGroup({ variant, onClose, onCreated }: { variant: Theme; onCl
   return (
     <form
       aria-label={t("newGroup")}
-      className={`flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto ${studio ? "px-[18px] pb-4" : ""}`}
+      className={`flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto ${studio ? "px-[18px] pb-4" : "-mx-1 px-1 pb-1"}`}
       onSubmit={async (e) => {
         e.preventDefault();
         if (!title.trim() || !picked.length) return;
@@ -340,17 +340,16 @@ export function NewGroup({ variant, onClose, onCreated }: { variant: Theme; onCl
           selected={picked}
           onToggle={(id, on) => setPicked((prev) => (on ? [...prev, id] : prev.filter((x) => x !== id)))}
           label={t("groupPeople")}
-          styles={{ input, muted, popover: studio ? "border border-th-cardline bg-th-raised text-th-fg" : "rounded-[18px] border-2 border-ink bg-white", chip: studio ? "rounded-th-pill bg-th-sunk" : "rounded-full border-[1.5px] border-ink" }}
+          styles={pickerStyles(input, muted)}
         />
       )}
       <p className={`text-xs ${muted}`}>{t("groupHint")}</p>
       {error && <p role="alert" className="text-sm text-vermilion">{error}</p>}
       <div className="flex gap-2">
-        <button type="submit" disabled={busy || !title.trim() || !picked.length}
-          className={studio ? "min-h-11 rounded-th bg-teal px-4 font-display text-sm font-semibold text-ink disabled:opacity-60" : "min-h-11 rounded-full border-2 border-ink bg-honey px-4 font-display text-sm font-bold disabled:opacity-60"}>
+        <button type="submit" disabled={busy || !title.trim() || !picked.length} className="ui-btn ui-filled">
           {t("createGroup")}
         </button>
-        <button type="button" onClick={onClose} className={`min-h-11 text-sm underline ${muted}`}>{t("cancel")}</button>
+        <button type="button" onClick={onClose} className="ui-btn ui-gray ui-neutral">{t("cancel")}</button>
       </div>
     </form>
   );

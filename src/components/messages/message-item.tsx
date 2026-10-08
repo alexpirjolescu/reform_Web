@@ -54,7 +54,7 @@ function LinkPlayers({ text, studio }: { text: string; studio: boolean }) {
           title={t("embedTitle", { provider: providerNames[provider] })}
           autoLoad={provider === "youtube" || provider === "vimeo"}
           boxClass={studio ? "border border-th-edge bg-th-card" : "rounded-[20px] border-2 border-ink bg-white"}
-          buttonClass={studio ? "min-h-11 rounded-th bg-teal px-4 font-display text-sm font-semibold text-ink" : "min-h-11 rounded-full border-2 border-ink bg-honey px-4 font-display text-sm font-bold"}
+          buttonClass="ui-btn ui-filled"
           labels={{ load: t("embedLoad"), open: t("embedOpen", { provider: providerNames[provider] }), notice: t("embedNotice", { company: player.company }) }}
         />
       ))}
@@ -157,7 +157,7 @@ export function MessageItem({
   } else if (message.kind === "poll" && poll) {
     content = (
       <div className={`px-4 py-3.5 ${bubble}`}>
-        <PollView poll={poll} meId={meId} names={names} studio={studio} canClose={poll.created_by === meId}
+        <PollView poll={poll} meId={meId} names={names} studio={studio} onColour={mine} canClose={poll.created_by === meId}
           onVote={(ids) => handlers.onVote(poll, ids)} onClose={() => handlers.onClosePoll(poll)} />
       </div>
     );
@@ -192,7 +192,8 @@ export function MessageItem({
     );
   }
 
-  const toolButton = `grid size-8 place-items-center rounded-full text-sm ${studio ? "hover:bg-th-raised" : "hover:bg-sand"}`;
+  // Hover actions: small round icon buttons; the reaction bar is an iOS-style pop-up menu.
+  const toolButton = "ui-btn ui-plain ui-icon ui-sm ui-neutral text-sm font-normal";
 
   return (
     <div id={`msg-${message.id}`} className={`group flex max-w-[88%] flex-col gap-1 sm:max-w-[70%] ${mine ? "items-end self-end" : "items-start self-start"}`}>
@@ -213,7 +214,7 @@ export function MessageItem({
               <button type="button" disabled={!canAct} onClick={() => handlers.onReact(message, emoji, !myReactions.has(emoji))}
                 title={who.map(name).join(", ")} aria-pressed={myReactions.has(emoji)}
                 aria-label={t("reactionCount", { emoji, count: who.length, names: who.map(name).join(", ") })}
-                className={`flex min-h-7 items-center gap-1 px-2 text-sm ${studio ? `rounded-th-pill border ${myReactions.has(emoji) ? "border-teal bg-teal/20" : "border-th-edge bg-th-card"}` : `rounded-full border-[1.5px] border-ink ${myReactions.has(emoji) ? "bg-honey" : "bg-white"}`}`}>
+                className="ui-chip min-h-7 gap-1 px-2.5 text-sm aria-pressed:bg-th-tint-fill/25 aria-pressed:text-th-fg">
                 <span>{emoji}</span><span className="text-xs">{who.length}</span>
               </button>
             </li>
@@ -228,10 +229,10 @@ export function MessageItem({
             <span className="relative">
               <button type="button" onClick={() => setPicking((on) => !on)} aria-expanded={picking} aria-label={t("react")} title={t("react")} className={toolButton}>☺</button>
               {picking && (
-                <span role="menu" className={`absolute bottom-full z-20 mb-1 flex gap-0.5 p-1 ${mine ? "right-0" : "left-0"} ${studio ? "border border-th-edge bg-th-card" : "rounded-full border-2 border-ink bg-white"}`}>
+                <span role="menu" className={`ui-menu absolute bottom-full z-20 mb-1 flex min-w-0 gap-0.5 rounded-full p-1 ${mine ? "right-0 origin-bottom-right" : "left-0 origin-bottom-left"}`}>
                   {quickReactions.map((emoji) => (
                     <button key={emoji} type="button" role="menuitem" aria-label={emoji} onClick={() => { setPicking(false); handlers.onReact(message, emoji, !myReactions.has(emoji)); }}
-                      className={`grid size-9 place-items-center rounded-full text-lg ${myReactions.has(emoji) ? "bg-teal/30" : "hover:bg-black/5"}`}>
+                      className={`ui-menu-item size-10 justify-center rounded-full p-0 text-xl ${myReactions.has(emoji) ? "bg-th-tint-fill/25" : ""}`}>
                       {emoji}
                     </button>
                   ))}
@@ -243,11 +244,11 @@ export function MessageItem({
             )}
             {mine && (confirm ? (
               <>
-                <button type="button" onClick={() => { setConfirm(false); handlers.onDelete(message); }} className="min-h-7 px-1 font-medium text-vermilion underline">{t("confirmDelete")}</button>
-                <button type="button" onClick={() => setConfirm(false)} className="min-h-7 px-1 underline">{t("cancel")}</button>
+                <button type="button" onClick={() => { setConfirm(false); handlers.onDelete(message); }} className="ui-btn ui-filled ui-danger ui-sm">{t("confirmDelete")}</button>
+                <button type="button" onClick={() => setConfirm(false)} className="ui-btn ui-plain ui-sm ui-neutral">{t("cancel")}</button>
               </>
             ) : (
-              <button type="button" onClick={() => setConfirm(true)} className="min-h-7 px-1 underline">{t("delete")}</button>
+              <button type="button" onClick={() => setConfirm(true)} className="ui-btn ui-plain ui-sm ui-danger">{t("delete")}</button>
             ))}
           </span>
         )}

@@ -56,11 +56,11 @@ export function EmbedFrame({
       <div className={`flex w-full flex-col items-start justify-center gap-3 p-5 ${boxClass}`} style={{ maxWidth: player.maxWidth, minHeight: 220, ...(player.aspect ? { aspectRatio: player.aspect } : {}) }}>
         <span className="font-display text-lg font-bold">{provider}</span>
         <p className="max-w-[46ch] text-sm leading-relaxed">{labels.notice}</p>
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
           <button type="button" onClick={() => setLoaded(true)} className={buttonClass}>
             {labels.load}
           </button>
-          <a href={url} target="_blank" rel="noopener noreferrer" className="min-h-11 content-center text-sm underline underline-offset-4">
+          <a href={url} target="_blank" rel="noopener noreferrer" className="ui-btn ui-plain">
             {labels.open} ↗
           </a>
         </div>

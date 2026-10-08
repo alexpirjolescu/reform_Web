@@ -67,7 +67,8 @@ export async function CategoryLabel({ category }: { category: ActivityCard["cate
   return <>{t(category)}</>;
 }
 
-/** Filter chips as plain links (they work without JavaScript); styles come from the paper (./paper.ts). */
+/** Filter chips as plain links (they work without JavaScript); styles come from the paper (./paper.ts).
+ * The chosen one carries aria-current, which the "ui-chip" class shows as selected. */
 export async function CategoryChips({
   filters,
   chip,
@@ -126,7 +127,7 @@ export async function SchoolSearchForm({
       {filters.category && <input type="hidden" name="type" value={filters.category} />}
       <label className={`flex flex-col gap-1 text-xs ${labelClass}`}>
         {t("school")}
-        <select name="school" defaultValue={filters.schoolId ?? ""} className={fieldClass}>
+        <select name="school" defaultValue={filters.schoolId ?? ""} className={`${fieldClass} ui-select`}>
           <option value="">{t("allSchools")}</option>
           {schools.map((school) => (
             <option key={school.id} value={school.id}>
@@ -137,7 +138,7 @@ export async function SchoolSearchForm({
       </label>
       <label className={`flex flex-col gap-1 text-xs ${labelClass}`}>
         {t("search")}
-        <input type="search" name="q" defaultValue={filters.q ?? ""} placeholder={t("searchPlaceholder")} className={`${fieldClass} w-40`} />
+        <input type="search" name="q" defaultValue={filters.q ?? ""} placeholder={t("searchPlaceholder")} className={`${fieldClass} ui-search w-52`} />
       </label>
       <button type="submit" className={buttonClass}>
         {t("apply")}

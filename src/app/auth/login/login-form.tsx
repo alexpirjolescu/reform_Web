@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { useTranslations } from "next-intl";
-import { Field, FormAlert, SubmitButton, type ActionState } from "@/components/form";
+import { Field, FormAlert, SubmitButton, buttonClass, type ActionState } from "@/components/form";
 import { signIn } from "../actions";
 
 export function LoginForm({ next }: { next?: string }) {
@@ -22,7 +22,7 @@ export function LoginForm({ next }: { next?: string }) {
         label={t("auth.login.password")}
       />
       {next && <input type="hidden" name="next" value={next} />}
-      <SubmitButton pendingLabel={t("common.sending")}>{t("auth.login.submit")}</SubmitButton>
+      <SubmitButton pendingLabel={t("common.sending")} className={`${buttonClass} ui-lg`}>{t("auth.login.submit")}</SubmitButton>
     </form>
   );
 }

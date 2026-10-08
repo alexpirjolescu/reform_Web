@@ -50,19 +50,15 @@ export function PageHeader({
   );
 }
 
-/** Button styles for links and buttons inside module pages: one set for the studio layout (dark, white), one for colour. */
-const studioButtons = {
-  primary: "inline-flex min-h-11 items-center gap-2 rounded-th bg-teal px-[18px] font-display text-[15px] font-semibold text-ink disabled:opacity-60",
-  ghost: "inline-flex min-h-11 items-center gap-2 rounded-th border border-th-edge px-3.5 text-[14px] text-th-fg hover:border-th-fg hover:bg-th-raised disabled:opacity-60",
-  danger: "inline-flex min-h-11 items-center gap-2 rounded-th bg-vermilion px-3.5 text-[14px] font-medium text-ink disabled:opacity-60",
+/** Button styles for links and buttons inside module pages: the iOS-style kit (globals.css), the same in every theme. */
+const kitButtons = {
+  primary: "ui-btn ui-filled",
+  ghost: "ui-btn ui-gray ui-neutral",
+  danger: "ui-btn ui-tinted ui-danger",
 };
 
 export const moduleButtons: Record<Theme, { primary: string; ghost: string; danger: string }> = {
-  dark: studioButtons,
-  white: studioButtons,
-  color: {
-    primary: "inline-flex min-h-11 items-center gap-2 rounded-full border-2 border-ink bg-pink px-[22px] font-display text-[15px] font-bold text-ink disabled:opacity-60",
-    ghost: "inline-flex min-h-11 items-center gap-2 rounded-full border-2 border-ink bg-white px-4 text-sm font-medium hover:bg-sand disabled:opacity-60",
-    danger: "inline-flex min-h-11 items-center gap-2 rounded-full border-2 border-ink bg-vermilion px-4 text-sm font-medium text-ink disabled:opacity-60",
-  },
+  dark: kitButtons,
+  white: kitButtons,
+  color: kitButtons,
 };

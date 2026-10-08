@@ -60,7 +60,7 @@ export function ArticleBody({ blocks, theme, locale }: { blocks: ArticleBlock[];
           case "button":
             return block.label.trim() && block.url ? (
               <p key={index} className="clear-both my-8">
-                <a href={block.url} target="_blank" rel="noopener noreferrer" className={`inline-flex min-h-12 items-center px-6 font-display font-semibold ${p.login}`}>
+                <a href={block.url} target="_blank" rel="noopener noreferrer" className={`${p.login} ui-lg`}>
                   {block.label} →
                 </a>
               </p>

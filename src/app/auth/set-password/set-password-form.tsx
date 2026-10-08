@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { useTranslations } from "next-intl";
-import { Field, FormAlert, SubmitButton, type ActionState } from "@/components/form";
+import { Field, FormAlert, SubmitButton, buttonClass, type ActionState } from "@/components/form";
 import { setPassword } from "../actions";
 
 export function SetPasswordForm() {
@@ -30,7 +30,7 @@ export function SetPasswordForm() {
         required
         label={t("auth.setPassword.confirm")}
       />
-      <SubmitButton pendingLabel={t("common.sending")}>{t("auth.setPassword.submit")}</SubmitButton>
+      <SubmitButton pendingLabel={t("common.sending")} className={`${buttonClass} ui-lg`}>{t("auth.setPassword.submit")}</SubmitButton>
     </form>
   );
 }

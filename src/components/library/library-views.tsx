@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { deleteFileForever, deleteFolder, restoreFile, trashFile } from "@/app/app/library/actions";
-import { FolderIcon, PlayIcon, SearchIcon } from "@/components/icons";
+import { FolderIcon, PlayIcon } from "@/components/icons";
 import { Logo } from "@/components/logo";
 import { moduleButtons } from "@/components/page-header";
 import { fileSize, fullDate, shortDate } from "@/lib/format";
@@ -50,12 +50,10 @@ function FolderBadge({ variant }: { variant: Theme }) {
 }
 
 function SearchForm({ data, variant, t }: { data: LibraryData; variant: Theme; t: T }) {
-  const box = variant === "color" ? "rounded-full border-2 border-ink px-4" : "border border-th-fieldline bg-th-card px-3";
   return (
-    <form action="/app/library" role="search" className={`flex h-11 items-center gap-2 ${box}`}>
+    <form action="/app/library" role="search" className="flex w-full items-center sm:w-auto">
       {data.query.folder && <input type="hidden" name="folder" value={data.query.folder} />}
       {data.query.trash && <input type="hidden" name="trash" value="1" />}
-      <SearchIcon size={16} strokeWidth={variant === "color" ? 2.5 : 2} className={variant === "color" ? "" : "text-th-muted"} />
       <label htmlFor="library-search" className="sr-only">{t("search")}</label>
       <input
         id="library-search"
@@ -63,13 +61,13 @@ function SearchForm({ data, variant, t }: { data: LibraryData; variant: Theme; t
         name="q"
         defaultValue={data.query.q}
         placeholder={variant === "color" ? t("searchFun") : t("searchPlaceholder")}
-        className={`w-full min-w-0 border-0 bg-transparent text-sm outline-offset-4 sm:w-[230px] ${variant === "color" ? "" : "text-th-fg placeholder:text-th-muted"}`}
+        className="ui-field ui-search min-w-0 sm:w-[320px]"
       />
     </form>
   );
 }
 
-function TypeFilter({ data, variant, t }: { data: LibraryData; variant: Theme; t: T }) {
+function TypeFilter({ data, t }: { data: LibraryData; t: T }) {
   const kinds = (["all", ...fileKinds] as const).filter((kind) => kind === "all" || data.counts[kind] > 0 || data.query.kind === kind);
   return (
     <nav aria-label={t("fileType")} className="flex flex-wrap gap-1.5">
@@ -77,12 +75,8 @@ function TypeFilter({ data, variant, t }: { data: LibraryData; variant: Theme; t
         const active = data.query.kind === kind;
         const href = libraryHref(data.query, { type: kind === "all" ? null : kind, file: null });
         const label = t(`kinds.${kind}`);
-        const cls =
-          variant === "color"
-            ? `rounded-full border-2 border-ink px-[13px] py-1.5 text-[13px] ${active ? "bg-ink text-white" : "bg-white"}`
-            : `rounded-th border px-3 py-[7px] text-[13px] ${active ? "border-th-fg bg-th-fg text-th-bg" : "border-th-edge hover:border-th-fg"}`;
         return (
-          <Link key={kind} href={href} aria-current={active ? "true" : undefined} className={cls}>
+          <Link key={kind} href={href} aria-current={active ? "true" : undefined} className="ui-chip">
             {label}
           </Link>
         );
@@ -114,21 +108,23 @@ function UsageBar({ data, variant, t, locale }: { data: LibraryData; variant: Th
   );
 }
 
+// The folder actions: plain teal buttons that open their form in a panel below.
+const toolButton = "ui-btn ui-plain justify-start cursor-pointer list-none [details[open]>&]:bg-th-fill";
+const toolPanel = "ui-menu mt-2 min-w-0 p-4";
+
 function FolderTools({ data, variant, t }: { data: LibraryData; variant: Theme; t: T }) {
-  const b = moduleButtons[variant];
-  const panel = variant === "color" ? "rounded-[18px] border-2 border-ink p-4" : "bg-th-sunk p-4";
   const current = data.query.trash || data.query.shared ? null : data.current;
   const inside = current?.canWrite ? { id: current.id, name: current.name } : null;
   return (
     <div className="flex flex-col gap-2">
       <details>
-        <summary className={`${b.ghost} cursor-pointer list-none`}>+ {inside ? t("newSubfolder") : t("newFolder")}</summary>
-        <div className={`mt-2 ${panel}`}><NewFolderForm schools={data.schools} isStaff={data.isStaff} parent={inside} /></div>
+        <summary className={toolButton}>+ {inside ? t("newSubfolder") : t("newFolder")}</summary>
+        <div className={toolPanel}><NewFolderForm schools={data.schools} isStaff={data.isStaff} parent={inside} /></div>
       </details>
       {current?.canWrite && (
         <details>
-          <summary className={`${b.ghost} cursor-pointer list-none`}>+ {t("addLink")}</summary>
-          <div className={`mt-2 ${panel}`}>
+          <summary className={toolButton}>+ {t("addLink")}</summary>
+          <div className={toolPanel}>
             <p className="mb-3 text-[13px]">{t("linkHint")}</p>
             <AddLinkForm folderId={current.id} />
           </div>
@@ -136,14 +132,14 @@ function FolderTools({ data, variant, t }: { data: LibraryData; variant: Theme; 
       )}
       {current?.mine && (
         <details>
-          <summary className={`${b.ghost} cursor-pointer list-none`}>{t("shareFolder")}{data.currentShares.length ? ` · ${data.currentShares.length}` : ""}</summary>
-          <div className={`mt-2 ${panel}`}><SharePanel kind="folder" id={current.id} shares={data.currentShares} variant={variant} meId={data.profileId} /></div>
+          <summary className={toolButton}>{t("shareFolder")}{data.currentShares.length ? ` · ${data.currentShares.length}` : ""}</summary>
+          <div className={toolPanel}><SharePanel kind="folder" id={current.id} shares={data.currentShares} variant={variant} meId={data.profileId} /></div>
         </details>
       )}
       {current?.canManage && (
         <details>
-          <summary className={`${b.ghost} cursor-pointer list-none`}>{t("moveFolder")}</summary>
-          <div className={`mt-2 ${panel}`}>
+          <summary className={toolButton}>{t("moveFolder")}</summary>
+          <div className={toolPanel}>
             <MoveForm kind="folder" id={current.id} current={current.parentId} variant={variant}
               targets={data.moveTargets.filter((f) => current.space === "personal" ? f.space !== "personal" || data.folders.find((x) => x.id === f.id)?.mine : f.space === current.space)} />
           </div>
@@ -152,7 +148,7 @@ function FolderTools({ data, variant, t }: { data: LibraryData; variant: Theme; 
       {current?.canManage && current.count === 0 && data.subfolders.length === 0 && (
         <form action={deleteFolder}>
           <input type="hidden" name="id" value={current.id} />
-          <button type="submit" className={`min-h-11 text-[13px] underline underline-offset-4 ${muted[variant]}`}>{t("deleteFolder")}</button>
+          <button type="submit" className="ui-btn ui-plain ui-sm ui-danger">{t("deleteFolder")}</button>
         </form>
       )}
     </div>
@@ -216,21 +212,22 @@ function PreviewActions({ data, variant, t }: { data: LibraryData; variant: Them
   const file = data.preview;
   if (!file) return null;
   const b = moduleButtons[variant];
-  const ghost = `${b.ghost} w-full justify-center`;
-  const panel = variant === "color" ? "mt-3" : "mt-3 bg-th-sunk p-3";
+  const ghost = `${b.ghost} w-full`;
+  const summary = `${ghost} cursor-pointer list-none [details[open]>&]:bg-th-fill-2`;
+  const panel = "ui-menu mt-2 min-w-0 p-3";
   return (
     <div className={`flex flex-col gap-2 ${variant === "color" ? "" : "mt-auto"}`}>
       <a
         href={file.external_url ?? `/app/library/file/${file.id}?download=1`}
         target={file.external_url ? "_blank" : undefined}
         rel={file.external_url ? "noopener noreferrer" : undefined}
-        className={`${variant === "color" ? b.primary.replace("bg-pink", "bg-honey") : b.primary} w-full justify-center`}
+        className={`${b.primary} w-full`}
       >
         {file.external_url ? t("openLink") : t("download")}
       </a>
       {file.canShare && (
         <details>
-          <summary className={`${ghost} cursor-pointer list-none`}>{t("share")}{file.shares.length ? ` · ${file.shares.length}` : ""}</summary>
+          <summary className={summary}>{t("share")}{file.shares.length ? ` · ${file.shares.length}` : ""}</summary>
           <div className={panel}><SharePanel kind="file" id={file.id} shares={file.shares} variant={variant} meId={data.profileId} /></div>
         </details>
       )}
@@ -238,20 +235,20 @@ function PreviewActions({ data, variant, t }: { data: LibraryData; variant: Them
       <CopyLinkButton fileId={file.id} className={ghost} />
       {file.canEdit && (
         <details>
-          <summary className={`${ghost} cursor-pointer list-none`}>{t("moveTo")}</summary>
+          <summary className={summary}>{t("moveTo")}</summary>
           <div className={panel}><MoveForm kind="file" id={file.id} current={file.folder_id} targets={data.moveTargets} variant={variant} /></div>
         </details>
       )}
       {file.canEdit && (
         <details>
-          <summary className={`${ghost} cursor-pointer list-none`}>{t("edit")}</summary>
-          <div className="mt-3"><EditFileForm file={file} /></div>
+          <summary className={summary}>{t("edit")}</summary>
+          <div className={panel}><EditFileForm file={file} /></div>
         </details>
       )}
       {file.canEdit && (
         <form action={trashFile}>
           <input type="hidden" name="id" value={file.id} />
-          <button type="submit" className={`min-h-11 w-full text-[13px] underline underline-offset-4 ${muted[variant]}`}>{t("moveToTrash")}</button>
+          <button type="submit" className="ui-btn ui-plain ui-sm ui-danger w-full">{t("moveToTrash")}</button>
         </form>
       )}
     </div>
@@ -324,12 +321,12 @@ function TrashList({ data, variant, t, locale }: ViewProps & { variant: Theme; t
           </span>
           <form action={restoreFile}>
             <input type="hidden" name="id" value={file.id} />
-            <button type="submit" className={b.ghost}>{t("restore")}</button>
+            <button type="submit" className={`${b.ghost} ui-sm`}>{t("restore")}</button>
           </form>
           {(data.isStaff || mine.has(file.folder_id)) && (
             <form action={deleteFileForever}>
               <input type="hidden" name="id" value={file.id} />
-              <button type="submit" className={b.danger}>{t("deleteForever")}</button>
+              <button type="submit" className={`${b.danger} ui-sm`}>{t("deleteForever")}</button>
             </form>
           )}
         </li>
@@ -354,7 +351,7 @@ function FolderNav({ data, variant, t, locale }: { data: LibraryData; variant: T
               return (
                 <FolderItem key={folder.id} as="li" id={folder.id} name={folder.name} canDrag={folder.canManage} canDrop={folder.canWrite} canUpload={folder.canWrite} profileId={data.profileId}>
                   <Link href={libraryHref(data.query, { folder: folder.id, ...resetView })} aria-current={active ? "true" : undefined} draggable={false}
-                    className={`flex justify-between gap-2 py-[9px] pr-2 ${active ? "bg-th-raised font-medium" : "hover:text-th-link"}`} style={{ paddingLeft: 8 + depth * 14 }}>
+                    className={`flex justify-between gap-2 rounded-[10px] py-[9px] pr-2 transition-colors ${active ? "bg-th-fill font-medium" : "hover:bg-th-fill"}`} style={{ paddingLeft: 8 + depth * 14 }}>
                     <span className="flex min-w-0 items-center gap-1.5">
                       {depth > 0 && <span aria-hidden="true" className="text-th-muted">└</span>}
                       <span className="truncate">{folder.name}</span>
@@ -368,7 +365,7 @@ function FolderNav({ data, variant, t, locale }: { data: LibraryData; variant: T
           {group.key === "mine" && group.tree.length === 0 && <p className="px-2 text-xs text-th-muted">{t("mySpaceEmpty")}</p>}
           {group.key === "sharedWithMe" && data.sharedFileCount > 0 && (
             <Link href={libraryHref(data.query, { ...resetView, folder: null, shared: "1" })} aria-current={data.query.shared ? "true" : undefined}
-              className={`flex justify-between gap-2 px-2 py-[9px] ${data.query.shared ? "bg-th-raised font-medium" : "hover:text-th-link"}`}>
+              className={`flex justify-between gap-2 rounded-[10px] px-2 py-[9px] transition-colors ${data.query.shared ? "bg-th-fill font-medium" : "hover:bg-th-fill"}`}>
               <span>{t("receivedFiles")}</span>
               <span className="text-th-muted">{data.sharedFileCount}</span>
             </Link>
@@ -379,7 +376,7 @@ function FolderNav({ data, variant, t, locale }: { data: LibraryData; variant: T
         <div className="flex flex-col">
           <span className="px-2 pb-1.5 text-xs text-th-muted">{t("sharedWithMe")}</span>
           <Link href={libraryHref(data.query, { ...resetView, folder: null, shared: "1" })} aria-current={data.query.shared ? "true" : undefined}
-            className={`flex justify-between gap-2 px-2 py-[9px] ${data.query.shared ? "bg-th-raised font-medium" : "hover:text-th-link"}`}>
+            className={`flex justify-between gap-2 rounded-[10px] px-2 py-[9px] transition-colors ${data.query.shared ? "bg-th-fill font-medium" : "hover:bg-th-fill"}`}>
             <span>{t("receivedFiles")}</span>
             <span className="text-th-muted">{data.sharedFileCount}</span>
           </Link>
@@ -388,7 +385,7 @@ function FolderNav({ data, variant, t, locale }: { data: LibraryData; variant: T
       <Link
         href={libraryHref(data.query, { ...resetView, trash: data.query.trash ? null : "1", folder: null })}
         aria-current={data.query.trash ? "true" : undefined}
-        className={`px-2 py-[9px] text-th-muted hover:text-th-fg ${data.query.trash ? "font-medium underline" : ""}`}
+        className={`rounded-[10px] px-2 py-[9px] transition-colors hover:bg-th-fill ${data.query.trash ? "bg-th-fill font-medium text-th-fg" : "text-th-muted"}`}
       >
         {t("trashShort", { count: data.trashCount })}
       </Link>
@@ -461,7 +458,7 @@ export async function LibraryStudio({ data, locale, variant: v }: ViewProps & { 
         <ListDrop data={data} className="min-w-0 flex-1 overflow-auto px-4 py-[18px] sm:px-6">
           <div className="mb-3.5 flex flex-wrap items-center justify-between gap-3">
             <div className="text-[13px] text-th-muted"><Breadcrumb data={data} t={t} /></div>
-            {showList && <TypeFilter data={data} variant={v} t={t} />}
+            {showList && <TypeFilter data={data} t={t} />}
           </div>
           <DropStatus className="mb-3 text-sm" />
           {data.query.trash ? (
@@ -577,7 +574,7 @@ export async function LibraryColor({ data, locale }: ViewProps) {
 
       {data.current && !data.query.shared && (
         <div className="flex flex-wrap items-center gap-3 text-sm">
-          <Link href={libraryHref(data.query, { ...resetView, folder: data.current.parentId })} className="rounded-full border-2 border-ink px-3 py-1 font-medium">← {t("back")}</Link>
+          <Link href={libraryHref(data.query, { ...resetView, folder: data.current.parentId })} className="ui-btn ui-plain ui-sm -ml-2">← {t("back")}</Link>
           <span className="text-muted"><Breadcrumb data={data} t={t} /></span>
         </div>
       )}
@@ -613,7 +610,7 @@ export async function LibraryColor({ data, locale }: ViewProps) {
         <ListDrop data={data} className="flex min-w-0 flex-[1_1_460px] flex-col gap-3 rounded-[22px]">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="font-display text-2xl font-extrabold">{listTitle}</h2>
-            {!data.query.trash && <TypeFilter data={data} variant={v} t={t} />}
+            {!data.query.trash && <TypeFilter data={data} t={t} />}
           </div>
           <DropStatus className="text-sm" />
           {data.query.trash ? (

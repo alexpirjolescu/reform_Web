@@ -50,7 +50,7 @@ export default async function WorkspacePage() {
     const archive = canArchive && (
       <form action={archiveBoard}>
         <input type="hidden" name="boardId" value={board.id} />
-        <button type="submit" className={`min-h-11 text-[13px] underline underline-offset-4 text-th-muted hover:text-th-fg`}>
+        <button type="submit" className="ui-btn ui-plain ui-sm ui-neutral -ml-2">
           {t("archive")}
         </button>
       </form>

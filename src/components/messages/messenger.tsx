@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Avatar } from "@/components/avatar";
-import { ClipIcon, FileIcon, SearchIcon, SendIcon } from "@/components/icons";
+import { ClipIcon, FileIcon, SendIcon } from "@/components/icons";
 import { Logo } from "@/components/logo";
 import { relativeStamp } from "@/lib/format";
 import type { GifResult } from "@/lib/giphy";
@@ -324,11 +324,9 @@ export function Messenger({ variant, me, inbox, selected, locale }: Props) {
   // Studio (dark and white) and colour; the colours of the studio come from the theme tokens.
   const studio = variant !== "color";
   const muted = studio ? "text-th-muted" : "text-muted";
-  const popover = studio ? "border border-th-edge bg-th-card text-th-fg shadow-lg" : "rounded-[22px] border-2 border-ink bg-white text-ink";
-  const fieldClass = studio ? "min-h-10 w-full rounded-th border border-th-edge bg-th-bg px-3 text-sm text-th-fg" : "min-h-10 w-full rounded-xl border-2 border-ink bg-white px-3 text-sm";
-  const tabClass = (active: boolean) =>
-    studio ? `min-h-9 px-3 text-sm ${active ? "bg-th-fg text-th-bg" : "border border-th-edge"}` : `min-h-9 rounded-full border-2 border-ink px-3 text-sm ${active ? "bg-ink text-white" : ""}`;
-  const primaryClass = studio ? "min-h-11 rounded-th bg-teal px-4 font-display text-sm font-semibold text-ink disabled:opacity-60" : "min-h-11 rounded-full border-2 border-ink bg-honey px-4 font-display text-sm font-bold disabled:opacity-60";
+  // Controls are the iOS-style "ui-" kit in every theme (globals.css); round icon buttons in the header
+  // look pressed (tinted) while their panel is open.
+  const headerIcon = (open: boolean) => `ui-btn ui-icon text-xl ${open ? "ui-tinted" : "ui-gray ui-neutral"}`;
 
   const previewOf = (c: ConversationSummary) => {
     if (c.lastText === null && !c.lastKind) return c.hasMessages ? t("deleted") : t("noMessagesYet");
@@ -341,23 +339,18 @@ export function Messenger({ variant, me, inbox, selected, locale }: Props) {
   // ---- shared pieces -------------------------------------------------------
 
   const searchBox = (
-    <label className={`flex h-11 items-center gap-2 px-3 ${studio ? "border border-th-fieldline bg-th-card" : "rounded-full border-2 border-ink px-3.5"}`}>
-      <SearchIcon size={16} strokeWidth={studio ? 2 : 2.5} className={studio ? "text-th-muted" : ""} />
+    <label className="block">
       <span className="sr-only">{t("searchConversations")}</span>
       <input type="search" value={filter} onChange={(e) => setFilter(e.target.value)}
         placeholder={studio ? t("searchPlaceholder") : t("searchFun")}
-        className={`w-full min-w-0 border-0 bg-transparent text-sm ${studio ? "text-th-fg placeholder:text-th-muted" : ""}`} />
+        className="ui-field ui-search" />
     </label>
   );
 
   const newButton = (
     <button type="button" onClick={() => setComposing((on) => (on ? null : "chat"))} aria-expanded={Boolean(composing)}
       aria-label={t("newConversation")}
-      className={
-        studio
-          ? "grid size-11 place-items-center rounded-th bg-teal text-[22px] text-ink"
-          : "grid size-11 place-items-center rounded-full border-2 border-ink bg-vermilion text-[22px] font-semibold"
-      }>
+      className="ui-btn ui-filled ui-icon text-[22px]">
       +
     </button>
   );
@@ -476,7 +469,7 @@ export function Messenger({ variant, me, inbox, selected, locale }: Props) {
     <button type="button" onClick={() => handlers.onJump(pinned[0].id)}
       className={`flex items-center gap-2 px-4 py-2 text-left text-sm sm:px-7 ${studio ? "border-b border-th-line bg-th-sunk" : "border-b-2 border-ink bg-honey-wash"}`}>
       <span aria-hidden="true">📌</span>
-      <span className="min-w-0 flex-1 truncate"><span className="font-semibold">{t("pinned")}:</span> {pinned[0].body || t(`kinds.${pinned[0].kind}`)}</span>
+      <span className="min-w-0 flex-1 truncate"><span className="font-semibold text-th-tint">{t("pinned")}:</span> {pinned[0].body || t(`kinds.${pinned[0].kind}`)}</span>
       {pinned.length > 1 && <span className={`text-xs ${muted}`}>+{pinned.length - 1}</span>}
     </button>
   );
@@ -487,9 +480,6 @@ export function Messenger({ variant, me, inbox, selected, locale }: Props) {
 
   const closePanel = useCallback(() => setPanel(null), []);
   const canWrite = Boolean(selected?.canPost) && !selected?.blockedByMe;
-  const iconButton = studio
-    ? "grid size-12 shrink-0 place-items-center rounded-th border border-th-edge disabled:opacity-50"
-    : "grid size-12 shrink-0 place-items-center rounded-full border-2 border-ink bg-honey disabled:opacity-50";
 
   const composer = selected && (
     canWrite ? (
@@ -500,33 +490,35 @@ export function Messenger({ variant, me, inbox, selected, locale }: Props) {
               <span className="block font-semibold">{t("replyingTo", { name: replyTo.sender_id === me.id ? t("you") : names.get(replyTo.sender_id) ?? t("someone") })}</span>
               <span className="line-clamp-1 opacity-80">{replyTo.body || t(`kinds.${replyTo.kind}`)}</span>
             </div>
-            <button type="button" onClick={() => setReplyTo(null)} aria-label={t("cancelReply")} className="grid size-9 place-items-center text-lg">×</button>
+            <button type="button" onClick={() => setReplyTo(null)} aria-label={t("cancelReply")} className="ui-btn ui-gray ui-icon ui-sm ui-neutral text-lg font-normal">×</button>
           </div>
         )}
         <div className="relative">
           {panel === "attach" && (
-            <div role="menu" aria-label={t("attach")} className={`absolute bottom-full left-4 z-30 mb-2 flex w-60 flex-col py-1.5 ${popover}`}>
-              <button type="button" role="menuitem" onClick={() => { setPanel(null); fileInput.current?.click(); }} className="px-4 py-3 text-left text-sm hover:underline">{t("fromDevice")}</button>
-              <button type="button" role="menuitem" onClick={() => setPanel("resources")} className="px-4 py-3 text-left text-sm hover:underline">{t("fromResources")}</button>
-              <button type="button" role="menuitem" onClick={() => setPanel("poll")} className="px-4 py-3 text-left text-sm hover:underline">{t("newPoll")}</button>
+            <div role="menu" aria-label={t("attach")} className="ui-menu absolute bottom-full left-4 z-30 mb-2 w-64 origin-bottom-left">
+              <button type="button" role="menuitem" onClick={() => { setPanel(null); fileInput.current?.click(); }} className="ui-menu-item py-2">{t("fromDevice")}</button>
+              <button type="button" role="menuitem" onClick={() => setPanel("resources")} className="ui-menu-item py-2">{t("fromResources")}</button>
+              <button type="button" role="menuitem" onClick={() => setPanel("poll")} className="ui-menu-item py-2">{t("newPoll")}</button>
             </div>
           )}
           {panel === "resources" && (
-            <ResourcePicker meId={me.id} onPick={sendResource} onClose={closePanel} panelClass={popover} inputClass={fieldClass} tabClass={tabClass} />
+            <ResourcePicker meId={me.id} onPick={sendResource} onClose={closePanel} />
           )}
           {panel === "poll" && (
             <div className="absolute bottom-full left-4 z-30 mb-2 w-[min(400px,calc(100vw-2rem))]">
-              <PollComposer onCreate={createPoll} onCancel={closePanel} panelClass={popover} inputClass={fieldClass} buttonClass={primaryClass} />
+              <PollComposer onCreate={createPoll} onCancel={closePanel} />
             </div>
           )}
           {panel === "stickers" && (
-            <StickerPicker onSticker={(id) => void sendSticker(id)} onGif={(gif) => void sendGif(gif)} onClose={closePanel} panelClass={popover} tabClass={tabClass} />
+            <StickerPicker onSticker={(id) => void sendSticker(id)} onGif={(gif) => void sendGif(gif)} onClose={closePanel} />
           )}
-        <form onSubmit={send} className={studio ? "relative flex items-end gap-2.5 px-4 pt-4 pb-[22px] sm:px-7" : "relative flex items-center gap-2.5 px-[18px] py-3.5"}>
-          <button type="button" onClick={() => setPanel((p) => (p === "attach" ? null : "attach"))} disabled={sending} aria-label={t("attach")} aria-expanded={panel === "attach"} className={iconButton}>
-            <ClipIcon size={20} strokeWidth={variant === "color" ? 2.5 : 2} />
+        <form onSubmit={send} className={studio ? "relative flex items-end gap-2 px-4 pt-4 pb-[22px] sm:px-7" : "relative flex items-center gap-2 px-[18px] py-3.5"}>
+          <button type="button" onClick={() => setPanel((p) => (p === "attach" ? null : "attach"))} disabled={sending} aria-label={t("attach")} aria-expanded={panel === "attach"}
+            className={`ui-btn ui-icon shrink-0 ${panel === "attach" ? "ui-tinted" : "ui-gray ui-neutral"}`}>
+            <ClipIcon size={20} />
           </button>
-          <button type="button" onClick={() => setPanel((p) => (p === "stickers" ? null : "stickers"))} disabled={sending} aria-label={t("stickersAndGifs")} aria-expanded={panel === "stickers"} className={`${iconButton} text-xl`}>
+          <button type="button" onClick={() => setPanel((p) => (p === "stickers" ? null : "stickers"))} disabled={sending} aria-label={t("stickersAndGifs")} aria-expanded={panel === "stickers"}
+            className={`ui-btn ui-icon shrink-0 text-[22px] font-normal ${panel === "stickers" ? "ui-tinted" : "ui-plain ui-neutral"}`}>
             ☺
           </button>
           <input ref={fileInput} type="file" accept={messageAttachmentTypes.join(",")} className="sr-only" tabIndex={-1} aria-hidden="true"
@@ -550,18 +542,11 @@ export function Messenger({ variant, me, inbox, selected, locale }: Props) {
                 if (e.key === "Escape" && replyTo) setReplyTo(null);
               }}
               placeholder={variant === "color" ? t("writeTo", { name: selected.title.split(" ")[0] }) : t("write")}
-              className={
-                studio ? "min-h-12 w-full resize-none rounded-th border border-th-edge bg-th-card px-3.5 py-3 text-[15px] text-th-fg"
-                  : "h-12 w-full resize-none rounded-full border-2 border-ink px-[18px] py-3 text-[15px]"
-              }
+              className="ui-field block resize-none rounded-[22px] px-4"
             />
           </label>
-          <button type="submit" disabled={sending || !draft.trim()} aria-label={variant === "color" ? t("send") : undefined}
-            className={
-              studio ? "h-12 shrink-0 rounded-th bg-teal px-5 font-display text-[15px] font-semibold text-ink disabled:opacity-60"
-                : "grid size-12 shrink-0 place-items-center rounded-full border-2 border-ink bg-vermilion disabled:opacity-60"
-            }>
-            {variant === "color" ? <SendIcon size={20} strokeWidth={2.5} /> : t("send")}
+          <button type="submit" disabled={sending || !draft.trim()} aria-label={t("send")} className="ui-btn ui-filled ui-icon shrink-0">
+            <SendIcon size={19} strokeWidth={2.2} />
           </button>
         </form>
         </div>
@@ -583,18 +568,19 @@ export function Messenger({ variant, me, inbox, selected, locale }: Props) {
   );
 
   const safetyMenu = selected && (
-    <div role="menu" aria-label={t("options")} className={`absolute top-full right-4 z-20 mt-2 flex w-[260px] flex-col py-1.5 sm:right-7 ${studio ? "border border-th-edge bg-th-card" : "rounded-[18px] border-2 border-ink bg-white"}`}>
+    <div role="menu" aria-label={t("options")} className="ui-menu absolute top-full right-4 z-20 mt-2 w-[260px] origin-top-right sm:right-7">
       {group ? (
-        <button type="button" role="menuitem" onClick={() => { setMenu(false); setInfoOpen(true); }} className="px-4 py-3 text-left text-sm hover:underline">{t("groupInfo")}</button>
+        <button type="button" role="menuitem" onClick={() => { setMenu(false); setInfoOpen(true); }} className="ui-menu-item">{t("groupInfo")}</button>
       ) : (
-        <button type="button" role="menuitem" onClick={() => void toggleBlock()} className="px-4 py-3 text-left text-sm hover:underline">
+        <button type="button" role="menuitem" onClick={() => void toggleBlock()} className="ui-menu-item">
           {selected.blockedByMe ? t("unblock") : t("block")}
         </button>
       )}
+      <div aria-hidden="true" className="ui-menu-sep" />
       {reporting ? (
         <ReportForm variant={variant} onCancel={() => setReporting(false)} onSubmit={report} />
       ) : (
-        <button type="button" role="menuitem" onClick={() => setReporting(true)} className={`border-t px-4 py-3 text-left text-sm hover:underline ${studio ? "border-th-line text-th-notice" : "border-line font-medium"}`}>
+        <button type="button" role="menuitem" onClick={() => setReporting(true)} className="ui-menu-item ui-danger">
           {t("report")}
         </button>
       )}
@@ -614,12 +600,12 @@ export function Messenger({ variant, me, inbox, selected, locale }: Props) {
     <>
       {blockedNote}
       {reported && <p role="status" className="bg-teal/30 px-4 py-2 text-sm">{t("reported")}</p>}
-      {error && <p role="alert" className="bg-vermilion/25 px-4 py-2 text-sm">{error} <button type="button" onClick={() => setError(null)} className="underline">{t("dismiss")}</button></p>}
+      {error && <p role="alert" className="bg-vermilion/25 px-4 py-2 text-sm">{error} <button type="button" onClick={() => setError(null)} className="ui-btn ui-plain ui-sm ui-neutral ml-1">{t("dismiss")}</button></p>}
     </>
   );
 
   const backLink = (
-    <Link href="/app/messages" className="grid size-11 shrink-0 place-items-center text-xl md:hidden" aria-label={t("back")}>←</Link>
+    <Link href="/app/messages" className="ui-btn ui-plain ui-icon shrink-0 text-xl md:hidden" aria-label={t("back")}>←</Link>
   );
 
   const emptyThread = (
@@ -668,16 +654,16 @@ export function Messenger({ variant, me, inbox, selected, locale }: Props) {
                 {backLink}
                 {headerTitle}
                 {!group && (
-                  <button type="button" onClick={() => setFilesOpen((on) => !on)} aria-expanded={filesOpen} aria-label={t("filesInConversation")} className={`grid size-11 place-items-center border ${filesOpen ? "border-teal bg-th-raised" : "border-th-edge"}`}><FileIcon size={18} /></button>
+                  <button type="button" onClick={() => setFilesOpen((on) => !on)} aria-expanded={filesOpen} aria-label={t("filesInConversation")} className={headerIcon(filesOpen)}><FileIcon size={18} /></button>
                 )}
-                <button type="button" onClick={() => setMenu((on) => !on)} aria-expanded={menu} aria-label={t("options")} className={`size-11 border text-xl ${menu ? "border-teal bg-th-raised" : "border-th-edge"}`}>⋯</button>
+                <button type="button" onClick={() => setMenu((on) => !on)} aria-expanded={menu} aria-label={t("options")} className={headerIcon(menu)}>⋯</button>
                 {menu && safetyMenu}
               </div>
               {filesOpen && !group && (
                 <div className="border-b border-th-line bg-th-sunk px-4 py-3 text-sm sm:px-7">
                   {selected.files.length === 0 ? <span className="text-th-muted">{t("noFiles")}</span> : (
                     <ul className="flex flex-wrap gap-2">
-                      {selected.files.map((f) => <li key={f.id}><button type="button" onClick={() => void openAttachment(f.path)} className="border border-th-edge px-3 py-1.5 hover:border-th-fg">{f.name}</button></li>)}
+                      {selected.files.map((f) => <li key={f.id}><button type="button" onClick={() => void openAttachment(f.path)} className="ui-chip">{f.name}</button></li>)}
                     </ul>
                   )}
                 </div>
@@ -709,7 +695,8 @@ export function Messenger({ variant, me, inbox, selected, locale }: Props) {
             <div className="relative flex items-center gap-3.5 border-b-2 border-ink bg-vermilion px-4 py-3.5 sm:px-5">
               {backLink}
               {headerTitle}
-              <button type="button" onClick={() => setMenu((on) => !on)} aria-expanded={menu} aria-label={t("optionsLong")} className="size-11 rounded-full border-2 border-ink bg-white text-xl">⋯</button>
+              <button type="button" onClick={() => setMenu((on) => !on)} aria-expanded={menu} aria-label={t("optionsLong")}
+                className={`ui-btn ui-icon ui-neutral text-xl ${menu ? "bg-white" : "bg-white/60 hover:bg-white/85"}`}>⋯</button>
               {menu && safetyMenu}
             </div>
             {pinnedBar}
@@ -737,12 +724,11 @@ function ReportForm({ variant, onCancel, onSubmit }: { variant: Theme; onCancel:
     >
       <label className="flex flex-col gap-1.5 text-sm">
         {t("reportReason")}
-        <textarea rows={3} value={reason} onChange={(e) => setReason(e.target.value)} maxLength={2000}
-          className={`p-2 text-sm ${variant === "color" ? "rounded-xl border-2 border-ink" : "border border-th-edge bg-th-bg text-th-fg"}`} />
+        <textarea rows={3} value={reason} onChange={(e) => setReason(e.target.value)} maxLength={2000} className="ui-field ui-sm" />
       </label>
       <div className="flex gap-2">
-        <button type="submit" className={`min-h-11 px-3 text-sm font-medium ${variant === "color" ? "rounded-full border-2 border-ink bg-honey" : "bg-honey text-ink"}`}>{t("sendReport")}</button>
-        <button type="button" onClick={onCancel} className="min-h-11 px-3 text-sm underline">{t("cancel")}</button>
+        <button type="submit" className="ui-btn ui-filled ui-sm">{t("sendReport")}</button>
+        <button type="button" onClick={onCancel} className="ui-btn ui-gray ui-neutral ui-sm">{t("cancel")}</button>
       </div>
       <p className={`text-xs ${variant === "color" ? "text-muted" : "text-th-muted"}`}>{t("safetyNote")}</p>
     </form>
@@ -785,15 +771,12 @@ function NewConversation({ variant, onClose, onGroup, subLabel }: { variant: The
   const muted = studio ? "text-th-muted" : "text-muted";
   return (
     <div className={`flex min-h-0 flex-1 flex-col gap-3 ${studio ? "px-[18px] pb-4" : ""}`}>
-      <button type="button" onClick={onGroup}
-        className={`flex min-h-12 items-center gap-3 px-3 text-left text-sm font-semibold ${studio ? "border border-th-edge hover:border-th-fg" : "rounded-full border-2 border-ink bg-lime"}`}>
+      <button type="button" onClick={onGroup} className="ui-btn ui-tinted justify-start">
         <span aria-hidden="true" className="text-lg">👥</span> {t("newGroup")}
       </button>
-      <label className={`flex h-11 items-center gap-2 px-3 ${studio ? "border border-th-fieldline bg-th-card" : "rounded-full border-2 border-ink"}`}>
-        <SearchIcon size={16} />
+      <label className="block">
         <span className="sr-only">{t("findPerson")}</span>
-        <input autoFocus type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("findPerson")}
-          className={`w-full border-0 bg-transparent text-sm ${studio ? "text-th-fg placeholder:text-th-muted" : ""}`} />
+        <input autoFocus type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("findPerson")} className="ui-field ui-search" />
       </label>
       {error && <p role="alert" className="text-sm text-vermilion">{error}</p>}
       <ul className="flex min-h-0 flex-1 flex-col overflow-auto">
@@ -801,7 +784,7 @@ function NewConversation({ variant, onClose, onGroup, subLabel }: { variant: The
         {people?.length === 0 && <li className={`p-2 text-sm ${muted}`}>{t("noPeople")}</li>}
         {people?.map((person) => (
           <li key={person.id}>
-            <button type="button" onClick={() => void start(person)} className="flex min-h-11 w-full items-center gap-3 px-1 py-2 text-left hover:underline">
+            <button type="button" onClick={() => void start(person)} className="flex min-h-11 w-full items-center gap-3 rounded-[10px] px-2 py-2 text-left hover:bg-th-fill">
               <Avatar id={person.id} name={person.full_name} size={34} />
               <span className="flex flex-col">
                 <span className="text-sm font-medium">{person.full_name}</span>
@@ -811,7 +794,7 @@ function NewConversation({ variant, onClose, onGroup, subLabel }: { variant: The
           </li>
         ))}
       </ul>
-      <button type="button" onClick={onClose} className={`min-h-11 text-sm underline ${muted}`}>{t("cancel")}</button>
+      <button type="button" onClick={onClose} className="ui-btn ui-gray ui-neutral">{t("cancel")}</button>
     </div>
   );
 }

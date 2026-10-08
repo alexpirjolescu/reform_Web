@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import {
@@ -39,10 +39,10 @@ const studio: Record<string, string> = {
   column: "flex w-[260px] shrink-0 flex-col gap-2.5 bg-th-sunk p-3 md:w-auto md:flex-[1_0_224px]",
   columnTitle: "font-display text-base font-semibold",
   count: "text-[13px] text-th-muted",
-  addCard: "border border-dashed border-th-edge p-2.5 text-left text-[13px] text-th-muted hover:text-th-fg",
-  input: "w-full rounded-th border border-th-edge bg-th-bg px-3 py-2 text-sm text-th-fg",
-  primary: "inline-flex min-h-11 items-center gap-2 rounded-th bg-teal px-[18px] font-display text-[15px] font-semibold text-ink",
-  ghost: "min-h-11 rounded-th border border-th-edge px-3 text-[13px] text-th-fg hover:border-th-fg",
+  addCard: "ui-btn ui-plain ui-sm justify-start rounded-[10px] text-[14px]",
+  input: "ui-field ui-sm",
+  primary: "ui-btn ui-filled",
+  ghost: "ui-btn ui-gray ui-neutral",
   muted: "text-th-muted",
 };
 
@@ -54,10 +54,10 @@ const styles: Record<Theme, Record<string, string>> = {
     column: "flex w-[250px] shrink-0 flex-col gap-2.5 rounded-[22px] bg-sand p-3 md:w-auto md:flex-[1_0_226px]",
     columnTitle: "font-display text-[17px] font-bold",
     count: "rounded-full border-2 border-ink bg-white px-[9px] font-fun text-sm font-bold",
-    addCard: "rounded-2xl border-2 border-dashed border-ink p-2.5 text-[13px] font-medium",
-    input: "w-full rounded-xl border-2 border-ink bg-white px-3 py-2 text-sm",
-    primary: "inline-flex min-h-11 items-center gap-2 rounded-full border-2 border-ink bg-pink px-[22px] font-display text-[15px] font-bold",
-    ghost: "min-h-11 rounded-full border-2 border-ink px-4 text-sm font-medium",
+    addCard: "ui-btn ui-plain ui-sm justify-start text-[14px]",
+    input: "ui-field ui-sm bg-white",
+    primary: "ui-btn ui-filled",
+    ghost: "ui-btn ui-gray ui-neutral",
     muted: "text-muted",
   },
 };
@@ -134,6 +134,8 @@ export function Board({
     return { done, late: !done && !!card.due_date && card.due_date < today, today: !done && card.due_date === today };
   };
 
+  // A stable id keeps dnd-kit's aria-describedby the same on the server and in the browser (no hydration warning).
+  const dndId = useId();
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -232,7 +234,7 @@ export function Board({
   );
 
   const boardBody = (
-    <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={onDragStart} onDragOver={onDragOver} onDragEnd={onDragEnd}>
+    <DndContext id={dndId} sensors={sensors} collisionDetection={closestCorners} onDragStart={onDragStart} onDragOver={onDragOver} onDragEnd={onDragEnd}>
       <div className={`flex min-h-0 flex-1 items-start gap-3.5 overflow-auto px-4 pb-6 sm:px-8 ${variant === "color" ? "pt-0" : "pt-5"}`}>
         {columns.map((column) => (
           <ColumnView
@@ -341,7 +343,7 @@ export function Board({
       {header}
       {error && (
         <p role="alert" className="mx-4 mb-2 bg-vermilion/20 px-3 py-2 text-sm sm:mx-8">
-          {error} <button type="button" onClick={() => setError(null)} className="ml-2 underline">{t("dismiss")}</button>
+          {error} <button type="button" onClick={() => setError(null)} className="ui-btn ui-plain ui-sm ui-neutral ml-1">{t("dismiss")}</button>
         </p>
       )}
       <div className="flex min-h-0 flex-1">
@@ -430,7 +432,7 @@ function ColumnView({
         )}
         <span className={s.count}>{cards.length}</span>
         {cards.length === 0 && !editing && (
-          <button type="button" onClick={() => void onDelete()} aria-label={t("deleteColumn", { name: column.name })} className={`ml-auto grid size-8 place-items-center text-lg ${s.muted}`}>
+          <button type="button" onClick={() => void onDelete()} aria-label={t("deleteColumn", { name: column.name })} className="ui-btn ui-plain ui-icon ui-sm ui-neutral ml-auto text-lg font-normal">
             ×
           </button>
         )}
@@ -543,9 +545,9 @@ function BoardHeader({
     ? Math.round((Date.parse(`${data.board.due_date}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000)
     : null;
   const mineToggle = (
-    <label className={`inline-flex min-h-11 items-center gap-2 text-[13px] ${variant === "color" ? "font-medium" : ""}`}>
-      <input type="checkbox" checked={onlyMine} onChange={(e) => setOnlyMine(e.target.checked)} className={`size-4 ${variant === "color" ? "accent-ink" : "accent-th-link"}`} />
+    <label className="inline-flex min-h-11 cursor-pointer items-center gap-2.5 text-[14px]">
       {t("onlyMine")}
+      <input type="checkbox" role="switch" checked={onlyMine} onChange={(e) => setOnlyMine(e.target.checked)} className="ui-switch" />
     </label>
   );
 
@@ -566,11 +568,10 @@ function BoardHeader({
             <button type="button" onClick={onNewTask} className={s.primary}>+ {t("newTask")}</button>
           </div>
         </div>
-        <div className="mt-5 flex flex-wrap items-center justify-between gap-4 border-b border-th-line px-4 sm:px-8">
-          <div role="tablist" aria-label={t("views")} className="flex gap-6 text-[15px]">
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-4 border-b border-th-line px-4 pb-3 sm:px-8">
+          <div role="tablist" aria-label={t("views")} className="ui-seg">
             {views.map((v) => (
-              <button key={v} type="button" role="tab" aria-selected={view === v} onClick={() => setView(v)}
-                className={`border-b-[3px] py-3 ${view === v ? "border-teal text-th-fg" : "border-transparent text-th-muted"}`}>
+              <button key={v} type="button" role="tab" aria-selected={view === v} onClick={() => setView(v)}>
                 {t(`view_${v}`)}
               </button>
             ))}
@@ -604,13 +605,14 @@ function BoardHeader({
         </div>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-3 px-4 pb-4 sm:px-7">
-        <div role="tablist" aria-label={t("views")} className="flex flex-wrap gap-1.5">
-          {views.map((v) => (
-            <button key={v} type="button" role="tab" aria-selected={view === v} onClick={() => setView(v)}
-              className={`h-10 rounded-full border-2 border-ink px-[18px] text-sm ${view === v ? "bg-ink font-medium text-white" : "bg-white"}`}>
-              {t(`view_${v}`)}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center gap-4">
+          <div role="tablist" aria-label={t("views")} className="ui-seg ui-lg">
+            {views.map((v) => (
+              <button key={v} type="button" role="tab" aria-selected={view === v} onClick={() => setView(v)}>
+                {t(`view_${v}`)}
+              </button>
+            ))}
+          </div>
           {view !== "map" && mineToggle}
         </div>
         <button type="button" onClick={onNewTask} className={s.primary}>+ {t("newTask")}</button>

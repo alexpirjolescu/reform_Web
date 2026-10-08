@@ -2,6 +2,7 @@
 
 import type { ComponentProps, ReactNode } from "react";
 import { useFormStatus } from "react-dom";
+import { buttonClass, inputClass, selectClass } from "./ui-classes";
 
 /** State returned by server actions used with useActionState. `error` and `message` are i18n keys. */
 export type ActionState = {
@@ -15,13 +16,9 @@ export type ActionState = {
   link?: string;
 };
 
-// Shared screens (auth, admin, create forms) follow the chosen theme through the --th-* tokens in globals.css.
-export const inputClass =
-  "min-h-12 w-full rounded-th border-th bg-th-card px-3 text-base text-th-fg placeholder:text-th-muted disabled:opacity-60";
-export const buttonClass =
-  "inline-flex min-h-12 items-center justify-center gap-2 rounded-th-pill border-th bg-th-accent px-6 font-display text-base font-semibold text-th-accent-fg transition-opacity disabled:opacity-60";
-export const ghostButtonClass =
-  "inline-flex min-h-11 items-center justify-center gap-2 rounded-th-pill border-th px-4 text-sm font-medium text-th-fg hover:bg-th-raised disabled:opacity-60";
+// Shared screens (auth, admin, create forms) use the iOS-style "ui-" controls from globals.css,
+// which follow the chosen theme through the --th-* tokens.
+export { buttonClass, ghostButtonClass, inputClass, selectClass } from "./ui-classes";
 
 export function SubmitButton({ children, pendingLabel, className }: { children: ReactNode; pendingLabel: string; className?: string }) {
   const { pending } = useFormStatus();
@@ -46,7 +43,7 @@ export function TextAreaField({ label, id, hint, ...input }: { label: string; id
   return (
     <label htmlFor={id} className="flex flex-col gap-1.5 text-sm text-th-muted">
       {label}
-      <textarea id={id} className={`${inputClass} py-2.5 leading-relaxed`} rows={4} {...input} />
+      <textarea id={id} className={inputClass} rows={4} {...input} />
       {hint && <span className="text-xs">{hint}</span>}
     </label>
   );
@@ -56,7 +53,7 @@ export function SelectField({ label, id, children, ...input }: { label: string; 
   return (
     <label htmlFor={id} className="flex flex-col gap-1.5 text-sm text-th-muted">
       {label}
-      <select id={id} className={inputClass} {...input}>
+      <select id={id} className={selectClass} {...input}>
         {children}
       </select>
     </label>
@@ -65,9 +62,22 @@ export function SelectField({ label, id, children, ...input }: { label: string; 
 
 export function CheckboxField({ label, id, ...input }: { label: ReactNode; id: string } & ComponentProps<"input">) {
   return (
-    <label htmlFor={id} className="flex min-h-11 items-start gap-3 text-sm text-th-fg">
-      <input id={id} type="checkbox" className="mt-0.5 size-5 shrink-0 accent-teal" {...input} />
+    <label htmlFor={id} className="flex min-h-11 cursor-pointer items-start gap-3 text-sm text-th-fg">
+      <input id={id} type="checkbox" className="ui-check -mt-px" {...input} />
       <span>{label}</span>
+    </label>
+  );
+}
+
+/** An on/off setting, iOS style: the words on the left, a switch on the right. */
+export function SwitchField({ label, id, hint, ...input }: { label: ReactNode; id: string; hint?: ReactNode } & ComponentProps<"input">) {
+  return (
+    <label htmlFor={id} className="flex min-h-11 cursor-pointer items-center justify-between gap-4 text-sm text-th-fg">
+      <span className="flex flex-col gap-0.5">
+        {label}
+        {hint && <span className="text-xs text-th-muted">{hint}</span>}
+      </span>
+      <input id={id} type="checkbox" role="switch" className="ui-switch" {...input} />
     </label>
   );
 }

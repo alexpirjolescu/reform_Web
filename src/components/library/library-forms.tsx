@@ -4,7 +4,7 @@ import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { addLink, createFolder, moveItemForm, shareItem, unshareItem, updateFile } from "@/app/app/library/actions";
-import { Field, FormAlert, SelectField, SubmitButton, TextAreaField, type ActionState } from "@/components/form";
+import { Field, FormAlert, SelectField, SubmitButton, TextAreaField, selectClass, type ActionState } from "@/components/form";
 import { moduleButtons } from "@/components/page-header";
 import { PeoplePicker } from "@/components/workspace/people-picker";
 import { createClient } from "@/lib/supabase/client";
@@ -148,8 +148,6 @@ export function AttachToCard({ fileId, variant, className }: { fileId: string; v
   }
 
   const shown = (cards ?? []).filter((card) => `${card.title} ${card.board}`.toLocaleLowerCase("ro").includes(search.toLocaleLowerCase("ro")));
-  const panel =
-    variant === "color" ? "rounded-[18px] border-2 border-ink bg-white" : "border border-th-cardline bg-th-raised text-th-fg";
 
   return (
     <div className="relative">
@@ -165,7 +163,7 @@ export function AttachToCard({ fileId, variant, className }: { fileId: string; v
         {t("attachToTask")}
       </button>
       {open && (
-        <div className={`absolute right-0 bottom-full z-30 mb-2 flex max-h-80 w-[min(320px,85vw)] flex-col gap-2 p-3 ${panel}`}>
+        <div className="ui-menu absolute right-0 bottom-full z-30 mb-2 flex max-h-80 w-[min(320px,85vw)] flex-col gap-1.5 p-2 md:w-full">
           <label className="sr-only" htmlFor={`attach-search-${fileId}`}>{t("searchTasks")}</label>
           <input
             id={`attach-search-${fileId}`}
@@ -173,23 +171,24 @@ export function AttachToCard({ fileId, variant, className }: { fileId: string; v
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t("searchTasks")}
-            className={`min-h-11 px-3 text-sm ${variant === "color" ? "rounded-xl border-2 border-ink" : "border border-th-edge bg-th-bg text-th-fg"}`}
+            className="ui-field ui-sm ui-search"
           />
-          {done && <p role="status" className="text-[13px]">{t("attachedTo", { title: done })}</p>}
-          {error && <p role="alert" className="text-[13px] text-vermilion">{error}</p>}
+          {done && <p role="status" className="px-2 text-[13px]">{t("attachedTo", { title: done })}</p>}
+          {error && <p role="alert" className="px-2 text-[13px] text-th-danger">{error}</p>}
           <ul className="flex flex-col overflow-y-auto">
-            {cards === null && <li className="p-2 text-sm">{t("loading")}</li>}
-            {cards !== null && shown.length === 0 && <li className="p-2 text-sm">{t("noTasks")}</li>}
+            {cards === null && <li className="px-3 py-2 text-sm text-th-muted">{t("loading")}</li>}
+            {cards !== null && shown.length === 0 && <li className="px-3 py-2 text-sm text-th-muted">{t("noTasks")}</li>}
             {shown.map((card) => (
               <li key={card.id}>
-                <button type="button" onClick={() => void attach(card)} className="flex min-h-11 w-full flex-col items-start px-2 py-1.5 text-left text-sm hover:underline">
+                <button type="button" onClick={() => void attach(card)} className="ui-menu-item min-h-11 flex-col items-start justify-center gap-0 py-1.5 text-sm">
                   <span className="font-medium">{card.title}</span>
-                  <span className="text-xs opacity-75">{card.board}</span>
+                  <span className="text-xs text-th-muted">{card.board}</span>
                 </button>
               </li>
             ))}
           </ul>
-          <button type="button" onClick={() => setOpen(false)} className={b.ghost}>{t("close")}</button>
+          <div className="ui-menu-sep" />
+          <button type="button" onClick={() => setOpen(false)} className={`${b.ghost} ui-sm`}>{t("close")}</button>
         </div>
       )}
     </div>
@@ -213,14 +212,13 @@ export function MoveForm({
   const t = useTranslations();
   const [state, action] = useActionState<ActionState, FormData>(moveItemForm, {});
   const b = moduleButtons[variant];
-  const field = variant === "color" ? "rounded-xl border-2 border-ink bg-white" : "rounded-th border border-th-edge bg-th-bg text-th-fg";
   return (
     <form action={action} className="flex flex-col gap-2">
       <input type="hidden" name="kind" value={kind} />
       <input type="hidden" name="id" value={id} />
       <label className="flex flex-col gap-1.5 text-sm">
         {kind === "file" ? t("library.moveFileTo") : t("library.moveFolderTo")}
-        <select name="to" defaultValue="" required className={`min-h-11 px-3 text-sm ${field}`}>
+        <select name="to" defaultValue="" required className={selectClass}>
           <option value="" disabled>{t("library.pickFolder")}</option>
           {kind === "folder" && <option value="root">{t("library.toTop")}</option>}
           {targets.filter((f) => f.id !== current && f.id !== id).map((f) => (
@@ -273,10 +271,14 @@ export function SharePanel({
   }, [supabase, meId]);
 
   const already = new Set(shares.map((s) => s.profileId));
-  const styles =
-    variant === "color"
-      ? { input: "w-full rounded-xl border-2 border-ink bg-white px-3", muted: "text-muted", popover: "rounded-[18px] border-2 border-ink bg-white", chip: "rounded-full border-[1.5px] border-ink bg-white" }
-      : { input: "w-full rounded-th border border-th-edge bg-th-bg px-3 text-th-fg", muted: "text-th-muted", popover: "border border-th-cardline bg-th-raised text-th-fg", chip: "rounded-th-pill bg-th-sunk" };
+  // The picker's own popover is positioned by PeoplePicker; the kit gives it the iOS menu look. It opens
+  // inside another ui-menu panel, where a second backdrop blur can't see the page, so it is opaque.
+  const styles = {
+    input: "ui-field ui-search",
+    muted: variant === "color" ? "text-muted" : "text-th-muted",
+    popover: "ui-menu bg-th-high",
+    chip: "rounded-full bg-th-fill",
+  };
 
   async function share() {
     if (!picked.length) return;
@@ -301,7 +303,7 @@ export function SharePanel({
               <span>{s.name}</span>
               <form action={unshareItem}>
                 <input type="hidden" name="id" value={s.id} />
-                <button type="submit" className="min-h-9 px-2 text-xs underline underline-offset-4" aria-label={t("library.unshare", { name: s.name })}>{t("library.stopSharing")}</button>
+                <button type="submit" className="ui-btn ui-plain ui-sm ui-danger -mr-2" aria-label={t("library.unshare", { name: s.name })}>{t("library.stopSharing")}</button>
               </form>
             </li>
           ))}

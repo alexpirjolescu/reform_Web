@@ -22,6 +22,7 @@ export type Paper = {
   numeral: string;
   logoWhite: boolean;
   tone: "light" | "dark";
+  /** Controls use the iOS-style "ui-" kit (globals.css), the same in every theme; only the fields differ. */
   login: string;
   /** News panel filters. */
   chip: string;
@@ -34,9 +35,7 @@ export type Paper = {
   /** One accent bar per stat. */
   bars: [string, string, string, string];
   newsletter: { input: string; button: string; message: string };
-  /** Archive page: upcoming/past tabs, filter boxes and cards. */
-  tab: string;
-  activeTab: string;
+  /** Archive page: filter chips and cards (the upcoming/past switch is a "ui-seg"). */
   filter: string;
   activeFilter: string;
   card: string;
@@ -63,22 +62,20 @@ const white: Paper = {
   numeral: "font-display",
   logoWhite: false,
   tone: "light",
-  login: "bg-ink px-[18px] py-[11px] font-display text-[15px] font-semibold text-white",
-  chip: "border-b-4 border-transparent py-2 text-[15px] text-muted hover:text-ink",
-  activeChip: "border-b-4 border-teal py-2 text-[15px] font-medium text-ink",
-  field: "min-h-11 border border-ink bg-white px-2.5 text-sm text-ink",
-  fieldButton: "min-h-11 bg-ink px-4 text-sm text-white",
+  login: "ui-btn ui-filled",
+  chip: "ui-chip",
+  activeChip: "ui-chip",
+  field: "ui-field",
+  fieldButton: "ui-btn ui-filled",
   media: "",
   bars: ["bg-teal", "bg-teal", "bg-teal", "bg-teal"],
   newsletter: {
-    input: "w-[300px] border-2 border-ink bg-white px-3.5 py-3.5 text-[15px]",
-    button: "border-2 border-ink bg-ink px-6 py-[15px] font-display text-[15px] font-semibold text-white disabled:opacity-60",
+    input: "ui-field w-[300px] max-w-full",
+    button: "ui-btn ui-filled",
     message: "text-teal-text",
   },
-  tab: "border-b-4 border-transparent px-1 py-2 text-muted",
-  activeTab: "border-b-4 border-teal px-1 py-2 font-medium",
-  filter: "border border-ink px-3 py-2 text-sm",
-  activeFilter: "border border-ink bg-ink px-3 py-2 text-sm text-white",
+  filter: "ui-chip",
+  activeFilter: "ui-chip",
   card: "border border-line p-3",
   listItem: "border-b border-line",
   tag: "px-3 py-1",
@@ -99,22 +96,20 @@ const dark: Paper = {
   numeral: "font-display",
   logoWhite: true,
   tone: "dark",
-  login: "bg-teal px-[18px] py-[11px] font-display text-[15px] font-semibold text-night",
-  chip: "border-b-4 border-transparent py-2 text-[15px] text-night-muted hover:text-white",
-  activeChip: "border-b-4 border-teal py-2 text-[15px] font-medium text-white",
-  field: "min-h-11 border border-night-edge bg-night-3 px-2.5 text-sm text-white",
-  fieldButton: "min-h-11 bg-teal px-4 text-sm text-night",
+  login: "ui-btn ui-filled",
+  chip: "ui-chip",
+  activeChip: "ui-chip",
+  field: "ui-field",
+  fieldButton: "ui-btn ui-filled",
   media: "",
   bars: ["bg-teal", "bg-teal", "bg-teal", "bg-teal"],
   newsletter: {
-    input: "w-[300px] border-2 border-night-edge bg-night-3 px-3.5 py-3.5 text-[15px] text-white placeholder:text-night-muted",
-    button: "border-2 border-teal bg-teal px-6 py-[15px] font-display text-[15px] font-semibold text-night disabled:opacity-60",
+    input: "ui-field w-[300px] max-w-full",
+    button: "ui-btn ui-filled",
     message: "text-teal",
   },
-  tab: "border-b-4 border-transparent px-1 py-2 text-night-muted",
-  activeTab: "border-b-4 border-teal px-1 py-2 font-medium",
-  filter: "border border-night-edge px-3 py-2 text-sm",
-  activeFilter: "border border-white bg-white px-3 py-2 text-sm text-night",
+  filter: "ui-chip",
+  activeFilter: "ui-chip",
   card: "border border-night-line bg-night-3 p-3",
   listItem: "border-b border-night-line",
   tag: "px-3 py-1",
@@ -135,23 +130,22 @@ const color: Paper = {
   numeral: "font-fun",
   logoWhite: false,
   tone: "light",
-  login: "rounded-full border-2 border-ink bg-teal px-5 py-[9px] font-display text-[15px] font-bold text-ink",
-  chip: "rounded-full border-2 border-ink px-3.5 py-1.5 text-sm hover:bg-white",
-  activeChip: "rounded-full border-2 border-ink bg-ink px-3.5 py-1.5 text-sm text-white",
+  login: "ui-btn ui-filled",
+  chip: "ui-chip",
+  activeChip: "ui-chip",
   dot: "round",
-  field: "min-h-11 rounded-full border-2 border-ink bg-white px-3.5 text-sm text-ink",
-  fieldButton: "min-h-11 rounded-full bg-ink px-5 text-sm text-white",
+  // honey paper: fields on white so they don't turn muddy
+  field: "ui-field bg-white",
+  fieldButton: "ui-btn ui-filled",
   media: "rounded-2xl border-2 border-ink",
   bars: ["bg-teal", "bg-lavender", "bg-vermilion", "bg-pink"],
   newsletter: {
-    input: "w-[300px] rounded-full border-2 border-ink bg-white px-4 py-3.5 text-[15px]",
-    button: "rounded-full border-2 border-ink bg-ink px-6 py-[15px] font-display text-[15px] font-semibold text-white disabled:opacity-60",
+    input: "ui-field w-[300px] max-w-full bg-white",
+    button: "ui-btn ui-filled",
     message: "font-medium text-ink",
   },
-  tab: "rounded-full border-2 border-ink px-4 py-2 hover:bg-white",
-  activeTab: "rounded-full border-2 border-ink bg-ink px-4 py-2 text-white",
-  filter: "rounded-full border-2 border-ink px-4 py-2 text-sm hover:bg-white",
-  activeFilter: "rounded-full border-2 border-ink bg-ink px-4 py-2 text-sm text-white",
+  filter: "ui-chip",
+  activeFilter: "ui-chip",
   card: "rounded-3xl border-2 border-ink p-3",
   listItem: "rounded-2xl border-2 border-ink",
   tag: "rounded-full border-2 border-ink px-3 py-1",

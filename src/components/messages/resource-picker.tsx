@@ -15,16 +15,10 @@ export function ResourcePicker({
   meId,
   onPick,
   onClose,
-  panelClass,
-  inputClass,
-  tabClass,
 }: {
   meId: string;
   onPick: (file: { id: string; name: string }, note: string) => Promise<boolean>;
   onClose: () => void;
-  panelClass: string;
-  inputClass: string;
-  tabClass: (active: boolean) => string;
 }) {
   const t = useTranslations("messages");
   const supabase = useMemo(() => createClient(), []);
@@ -60,19 +54,19 @@ export function ResourcePicker({
   const shown = (files ?? []).filter((f) => f.space === space && (!needle || `${f.name} ${f.folder}`.toLocaleLowerCase("ro").includes(needle)));
 
   return (
-    <div role="dialog" aria-label={t("fromResources")} className={`absolute bottom-full left-0 z-30 mb-2 flex max-h-[420px] w-[min(420px,calc(100vw-2rem))] flex-col gap-2.5 p-3 ${panelClass}`}>
+    <div role="dialog" aria-label={t("fromResources")} className="ui-menu absolute bottom-full left-0 z-30 mb-2 flex max-h-[420px] w-[min(420px,calc(100vw-2rem))] origin-bottom-left flex-col gap-2.5 p-3">
       <div className="flex items-center justify-between gap-2">
         <span className="font-display font-semibold">{t("fromResources")}</span>
-        <button type="button" onClick={onClose} aria-label={t("close")} className="grid size-9 place-items-center">×</button>
+        <button type="button" onClick={onClose} aria-label={t("close")} className="ui-btn ui-gray ui-icon ui-sm ui-neutral text-lg font-normal">×</button>
       </div>
-      <div role="tablist" className="flex flex-wrap gap-1.5">
+      <div role="tablist" className="ui-seg shrink-0">
         {(["personal", "school", "shared"] as const).map((name) => (
-          <button key={name} type="button" role="tab" aria-selected={space === name} onClick={() => setSpace(name)} className={tabClass(space === name)}>
+          <button key={name} type="button" role="tab" aria-selected={space === name} onClick={() => setSpace(name)}>
             {t(`spaces.${name}`)}
           </button>
         ))}
       </div>
-      <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("searchFiles")} aria-label={t("searchFiles")} className={inputClass} />
+      <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("searchFiles")} aria-label={t("searchFiles")} className="ui-field ui-sm ui-search" />
       <ul className="flex min-h-24 flex-col overflow-y-auto">
         {files === null && <li className="p-2 text-sm">{t("loading")}</li>}
         {files !== null && shown.length === 0 && <li className="p-2 text-sm opacity-80">{t("noFilesHere")}</li>}
@@ -89,7 +83,7 @@ export function ResourcePicker({
                   setBusy(null);
                   if (ok) onClose();
                 }}
-                className="flex min-h-11 w-full items-center gap-3 rounded-lg px-1.5 py-1.5 text-left hover:bg-black/5"
+                className="ui-menu-item min-h-11 gap-3 px-1.5 py-1.5"
               >
                 <span className="w-11 shrink-0 py-1 text-center font-display text-[10px] font-bold" style={{ background: badge.bg, color: badge.fg }}>{badge.label.slice(0, 5)}</span>
                 <span className="flex min-w-0 flex-col">
@@ -103,7 +97,7 @@ export function ResourcePicker({
       </ul>
       <label className="flex flex-col gap-1 text-xs">
         {t("addNote")}
-        <input value={note} maxLength={500} onChange={(e) => setNote(e.target.value)} className={inputClass} />
+        <input value={note} maxLength={500} onChange={(e) => setNote(e.target.value)} className="ui-field ui-sm" />
       </label>
       {space === "personal" && <p className="text-xs opacity-80">{t("personalShareNote")}</p>}
     </div>

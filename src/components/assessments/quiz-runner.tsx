@@ -117,11 +117,7 @@ export function QuizRunner({ variant, attemptId, title, kicker, closesLabel, att
             value={answer.text_answer}
             onChange={(e) => update(q.id, { ...answer, text_answer: e.target.value }, 800)}
             placeholder={t("openPlaceholder")}
-            className={
-              variant === "color"
-                ? "w-full rounded-[22px] border-2 border-ink p-4 text-base leading-relaxed"
-                : "w-full rounded-th border border-th-edge bg-th-sunk p-4 text-base leading-relaxed text-th-fg"
-            }
+            className="ui-field rounded-2xl px-4 py-3 leading-relaxed"
           />
         </label>
       );
@@ -137,30 +133,11 @@ export function QuizRunner({ variant, attemptId, title, kicker, closesLabel, att
           : [choice.id];
         update(q.id, { ...answer, choice_ids: next }, 150);
       };
-      const input = (
-        <input
-          type={multiple ? "checkbox" : "radio"}
-          name={`q-${q.id}`}
-          checked={selected}
-          onChange={toggle}
-          className={variant === "color" ? "sr-only" : "size-5 shrink-0 accent-th-link"}
-        />
-      );
-      if (variant !== "color") {
-        return (
-          <label key={choice.id} className={`flex cursor-pointer items-center gap-4 rounded-th px-[18px] py-4 text-base leading-snug ${selected ? "border-2 border-teal bg-th-raised" : "border border-th-edge"} has-focus-visible:outline-3 has-focus-visible:outline-teal`}>
-            {input}
-            <span className="w-[18px] font-display font-bold text-th-link">{choiceLetter(i)}</span>
-            <span>{choice.label}</span>
-          </label>
-        );
-      }
+      // iOS-style choice rows: a soft fill, a round radio (one answer) or check (several), teal when picked.
       return (
-        <label key={choice.id} className={`flex cursor-pointer items-center gap-3.5 rounded-full border-2 border-ink py-2.5 pr-[18px] pl-2.5 text-base font-medium has-focus-visible:outline-3 has-focus-visible:outline-ink ${selected ? "bg-honey-wash" : "bg-white"}`}>
-          {input}
-          <span aria-hidden="true" className={`grid size-9 shrink-0 place-items-center rounded-full border-2 border-ink font-fun text-[17px] font-bold ${selected ? "bg-honey" : "bg-white"}`}>
-            {multiple && selected ? "✓" : choiceLetter(i)}
-          </span>
+        <label key={choice.id} className={`flex min-h-14 cursor-pointer items-center gap-4 px-[18px] py-3 text-base leading-snug transition-colors has-focus-visible:outline-3 has-focus-visible:outline-th-link ${variant === "color" ? "rounded-[22px] font-medium" : "rounded-2xl"} ${selected ? "bg-th-tint-fill/15" : "bg-th-fill hover:bg-th-fill-2"}`}>
+          <input type={multiple ? "checkbox" : "radio"} name={`q-${q.id}`} checked={selected} onChange={toggle} className={multiple ? "ui-check" : "ui-radio"} />
+          <span className={variant === "color" ? "w-[18px] font-fun text-[17px] font-bold" : "w-[18px] font-display font-bold text-th-link"}>{choiceLetter(i)}</span>
           <span>{choice.label}</span>
         </label>
       );
@@ -192,7 +169,7 @@ export function QuizRunner({ variant, attemptId, title, kicker, closesLabel, att
           <p className="text-sm">{t("unansweredList")}</p>
           <div className="flex flex-wrap gap-2">
             {unanswered.map(({ i }) => (
-              <button key={i} type="button" onClick={() => go(i)} className={`min-h-11 min-w-11 px-3 font-display font-semibold ${variant === "color" ? "rounded-full border-2 border-ink" : "rounded-th border border-th-edge"}`}>
+              <button key={i} type="button" onClick={() => go(i)} className="ui-btn ui-gray ui-neutral ui-icon">
                 {i + 1}
               </button>
             ))}
@@ -203,16 +180,12 @@ export function QuizRunner({ variant, attemptId, title, kicker, closesLabel, att
     </div>
   );
 
-  const studio = {
-    back: "min-h-12 rounded-th border border-th-edge px-5 text-[15px] hover:border-th-fg disabled:opacity-40",
-    next: "ml-auto min-h-12 rounded-th bg-teal px-6 font-display text-base font-semibold text-ink disabled:opacity-60",
-    note: "text-[13px] text-th-muted",
-  };
+  // The big footer buttons are the same iOS capsules in every theme.
   const buttons = {
-    dark: studio,
-    white: studio,
-    color: { back: "min-h-12 rounded-full border-2 border-ink bg-white px-5 text-[15px] disabled:opacity-40", next: "ml-auto min-h-12 rounded-full border-2 border-ink bg-lavender px-6 font-display text-base font-bold text-white disabled:opacity-60", note: "text-[13px] text-muted" },
-  }[variant];
+    back: "ui-btn ui-gray ui-neutral ui-lg",
+    next: "ui-btn ui-filled ui-lg ml-auto",
+    note: `flex-[1_1_160px] text-[13px] ${variant === "color" ? "text-muted" : "text-th-muted"}`,
+  };
 
   const footer = (
     <div className="flex max-w-[780px] flex-wrap items-center gap-3 pt-2">
@@ -257,7 +230,7 @@ export function QuizRunner({ variant, attemptId, title, kicker, closesLabel, att
           <div role="progressbar" aria-label={t("progress")} aria-valuemin={0} aria-valuemax={total} aria-valuenow={answeredCount} className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${Math.max(total, 1)}, minmax(0, 1fr))` }}>
             {questions.map((q, i) => (
               <button key={q.id} type="button" onClick={() => go(i)} aria-label={t("goTo", { n: i + 1 })}
-                className={`h-1.5 ${i === index ? "bg-th-fg" : isAnswered(q, answers[q.id]) ? "bg-teal" : "bg-th-line"}`} />
+                className={`h-1.5 rounded-full ${i === index ? "bg-th-fg" : isAnswered(q, answers[q.id]) ? "bg-teal" : "bg-th-line"}`} />
             ))}
           </div>
           <div ref={headingRef} tabIndex={-1} className="mt-2.5 text-[13px] text-th-muted outline-none">{stepLabel}</div>
@@ -283,7 +256,7 @@ export function QuizRunner({ variant, attemptId, title, kicker, closesLabel, att
         <div role="progressbar" aria-label={t("progress")} aria-valuemin={0} aria-valuemax={total} aria-valuenow={answeredCount} className="flex flex-wrap gap-2">
           {questions.map((q, i) => (
             <button key={q.id} type="button" onClick={() => go(i)} aria-label={t("goTo", { n: i + 1 })}
-              className={`size-[22px] rounded-full border-2 border-ink ${i === index ? "bg-honey" : isAnswered(q, answers[q.id]) ? "bg-lime" : "bg-white"}`} />
+              className={`size-[22px] rounded-full transition-colors ${i === index ? "bg-honey" : isAnswered(q, answers[q.id]) ? "bg-lime" : "bg-th-fill-2"}`} />
           ))}
         </div>
         <div ref={headingRef} tabIndex={-1} className="text-[13px] font-medium outline-none">{stepLabel}</div>

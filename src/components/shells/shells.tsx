@@ -28,7 +28,7 @@ function MobileAccount({ label, panelClass, profile, children }: { label: string
       <summary aria-label={label} className="flex min-h-11 min-w-11 cursor-pointer list-none items-center justify-center">
         <Avatar id={profile.id} name={profile.full_name} size={36} />
       </summary>
-      <div className={`absolute top-full right-0 z-40 mt-2 flex w-64 flex-col gap-3 p-4 ${panelClass}`}>{children}</div>
+      <div className={`ui-menu absolute top-full right-0 z-40 mt-2 flex w-64 flex-col gap-3 p-4 ${panelClass}`}>{children}</div>
     </details>
   );
 }
@@ -41,10 +41,10 @@ export async function StudioShell({ shell, theme, children }: ShellProps & { the
   const t = await getTranslations();
   const { profile } = shell;
   const dark = theme === "dark";
-  const item = "flex min-h-11 items-center gap-3 px-2.5 py-3 text-[15px] hover:text-th-link";
-  const active = "flex min-h-11 items-center gap-3 bg-th-raised px-2.5 py-3 text-[15px] font-medium";
+  const item = "flex min-h-11 items-center gap-3 rounded-[10px] px-2.5 py-3 text-[15px] transition-colors hover:bg-th-fill";
+  const active = "flex min-h-11 items-center gap-3 rounded-[10px] bg-th-fill px-2.5 py-3 text-[15px] font-medium";
   const tone = dark ? "dark" : "light";
-  const marker = <span aria-hidden="true" className="ml-auto h-1 w-4 bg-teal" />;
+  const marker = <span aria-hidden="true" className="ml-auto h-1 w-4 rounded-full bg-teal" />;
 
   return (
     <div className="flex min-h-screen flex-col bg-th-bg text-th-fg md:h-screen md:flex-row md:overflow-hidden">
@@ -53,11 +53,11 @@ export async function StudioShell({ shell, theme, children }: ShellProps & { the
           <Link href="/app" className="ml-1.5 flex self-start" aria-label="re_form platform">
             <Logo name="platform" white={dark} height={38} />
           </Link>
-          <MobileAccount label={t("shell.account")} panelClass="border border-th-edge bg-th-card text-th-fg" profile={profile}>
+          <MobileAccount label={t("shell.account")} panelClass="" profile={profile}>
             <span className="text-sm">{profile.full_name} · <span className="text-th-muted">{t(`roles.${profile.role}`)}</span></span>
             <Link href="/" className="text-sm text-th-muted hover:text-th-link">{t("common.newsPanel")} ↗</Link>
-            <div className="flex items-center justify-between"><ThemeSwitcher current={theme} tone={tone} /><LanguageSwitcher className="text-th-muted" /></div>
-            <form action={signOut}><button type="submit" className="min-h-11 text-sm underline underline-offset-4">{t("common.logout")}</button></form>
+            <div className="flex flex-wrap items-center gap-2"><ThemeSwitcher current={theme} tone={tone} /><LanguageSwitcher /></div>
+            <form action={signOut}><button type="submit" className="ui-btn ui-plain ui-sm ui-danger -ml-2">{t("common.logout")}</button></form>
           </MobileAccount>
         </div>
         <div className="hidden px-1.5 md:block">
@@ -73,7 +73,7 @@ export async function StudioShell({ shell, theme, children }: ShellProps & { the
               <NavLink key={key} href={href} className={item} activeClassName={active} activeExtra={marker}>
                 <WhenActive href={href} active={<Icon className="text-th-link" />} inactive={<Icon />} />
                 {t(`nav.${key}`)}
-                {badge > 0 && <span className="ml-auto bg-th-fg px-[7px] py-px text-xs text-th-bg">{badge}</span>}
+                {badge > 0 && <span className="ml-auto min-w-5 rounded-full bg-th-fg px-1.5 py-px text-center text-xs font-semibold text-th-bg">{badge}</span>}
               </NavLink>
             );
           })}
@@ -84,7 +84,7 @@ export async function StudioShell({ shell, theme, children }: ShellProps & { the
               <NavLink key={key} href={href} exact={exact} className={item} activeClassName={active} activeExtra={marker}>
                 <WhenActive href={href} exact={exact} active={<Icon className="text-th-link" />} inactive={<Icon />} />
                 {t(`nav.admin_${key}`)}
-                {!!badge && <span className="ml-auto bg-honey px-[7px] py-px text-xs text-ink">{badge}</span>}
+                {!!badge && <span className="ml-auto min-w-5 rounded-full bg-honey px-1.5 py-px text-center text-xs font-semibold text-ink">{badge}</span>}
               </NavLink>
             );
           })}
@@ -98,12 +98,12 @@ export async function StudioShell({ shell, theme, children }: ShellProps & { the
               <span className="text-xs text-th-muted">{t(`roles.${profile.role}`)}</span>
             </span>
           </div>
-          <div className="flex flex-wrap items-center justify-between gap-1">
+          <div className="flex flex-wrap items-center gap-2">
             <ThemeSwitcher current={theme} tone={tone} />
-            <LanguageSwitcher className="text-th-muted" />
+            <LanguageSwitcher />
           </div>
           <form action={signOut}>
-            <button type="submit" className="min-h-11 text-sm text-th-muted underline underline-offset-4 hover:text-th-fg">{t("common.logout")}</button>
+            <button type="submit" className="ui-btn ui-plain ui-sm ui-danger -ml-2">{t("common.logout")}</button>
           </form>
         </div>
       </aside>
@@ -118,8 +118,8 @@ export async function StudioShell({ shell, theme, children }: ShellProps & { the
 export async function ColorShell({ shell, children }: ShellProps) {
   const t = await getTranslations();
   const { profile } = shell;
-  const item = "flex min-h-11 items-center gap-3 rounded-full border-2 border-transparent py-1.5 pr-3 pl-1.5 text-[15px] font-medium hover:border-line";
-  const active = "flex min-h-11 items-center gap-3 rounded-full border-2 border-ink py-1.5 pr-3 pl-1.5 text-[15px] font-medium";
+  const item = "flex min-h-11 items-center gap-3 rounded-full py-1.5 pr-3 pl-1.5 text-[15px] font-medium transition-colors hover:bg-th-fill";
+  const active = "flex min-h-11 items-center gap-3 rounded-full bg-th-fill-2 py-1.5 pr-3 pl-1.5 text-[15px] font-semibold";
 
   return (
     <div className="flex min-h-screen flex-col bg-white text-ink md:h-screen md:flex-row md:overflow-hidden">
@@ -128,11 +128,11 @@ export async function ColorShell({ shell, children }: ShellProps) {
           <Link href="/app" className="flex self-start" aria-label="re_form platform">
             <Logo name="platform" height={38} />
           </Link>
-          <MobileAccount label={t("shell.account")} panelClass="rounded-[18px] border-2 border-ink bg-white" profile={profile}>
+          <MobileAccount label={t("shell.account")} panelClass="" profile={profile}>
             <span className="text-sm font-medium">{profile.full_name} · {t(`roles.${profile.role}`)}</span>
             <Link href="/" className="text-sm font-medium hover:underline">← {t("common.newsPanel")}</Link>
-            <div className="flex items-center justify-between"><ThemeSwitcher current="color" /><LanguageSwitcher /></div>
-            <form action={signOut}><button type="submit" className="min-h-11 text-sm font-medium underline underline-offset-4">{t("common.logout")}</button></form>
+            <div className="flex flex-wrap items-center gap-2"><ThemeSwitcher current="color" /><LanguageSwitcher /></div>
+            <form action={signOut}><button type="submit" className="ui-btn ui-plain ui-sm ui-danger -ml-2">{t("common.logout")}</button></form>
           </MobileAccount>
         </div>
         <span className="hidden self-start rounded-full border-2 border-ink px-3 py-1 text-[13px] font-medium md:inline">
@@ -174,12 +174,12 @@ export async function ColorShell({ shell, children }: ShellProps) {
               <span className="text-xs text-muted">{t(`roles.${profile.role}`)}</span>
             </span>
           </div>
-          <div className="flex flex-wrap items-center justify-between gap-1">
+          <div className="flex flex-wrap items-center gap-2">
             <ThemeSwitcher current="color" />
             <LanguageSwitcher />
           </div>
           <form action={signOut}>
-            <button type="submit" className="min-h-11 text-sm font-medium underline underline-offset-4">{t("common.logout")}</button>
+            <button type="submit" className="ui-btn ui-plain ui-sm ui-danger -ml-2">{t("common.logout")}</button>
           </form>
         </div>
       </aside>

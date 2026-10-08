@@ -37,12 +37,15 @@ const NODE_W = 240;
 const STAGE_W = 196; // narrower than a lane, so the phrase joining two steps fits between them
 const width = LANE * stages.length;
 
+// Controls (fields, buttons) are the iOS-style "ui-" kit in every theme; the map itself keeps each design's look.
 const studio = {
   frame: "border-th-line",
   inspector: "border-th-line bg-th-card",
-  input: "w-full rounded-th border border-th-edge bg-th-bg px-3 py-2 text-sm text-th-fg",
-  button: "min-h-10 rounded-th bg-teal px-3 font-display text-sm font-semibold text-ink",
-  ghost: "min-h-10 rounded-th border border-th-edge px-3 text-sm text-th-fg hover:border-th-fg",
+  input: "ui-field ui-sm",
+  select: "ui-field ui-select ui-sm",
+  button: "ui-btn ui-filled ui-sm",
+  ghost: "ui-btn ui-gray ui-neutral ui-sm",
+  danger: "ui-btn ui-tinted ui-danger ui-sm",
   muted: "text-th-muted",
   heading: "font-display text-base font-semibold text-th-heading",
   card: "rounded-th border border-th-edge bg-th-card text-th-fg",
@@ -56,9 +59,11 @@ const ui: Record<Theme, typeof studio> = {
   color: {
     frame: "border-ink",
     inspector: "border-ink bg-white",
-    input: "w-full rounded-xl border-2 border-ink bg-white px-3 py-2 text-sm",
-    button: "min-h-10 rounded-full border-2 border-ink bg-pink px-4 font-display text-sm font-bold",
-    ghost: "min-h-10 rounded-full border-2 border-ink px-4 text-sm font-medium",
+    input: "ui-field ui-sm",
+    select: "ui-field ui-select ui-sm",
+    button: "ui-btn ui-filled ui-sm",
+    ghost: "ui-btn ui-gray ui-neutral ui-sm",
+    danger: "ui-btn ui-tinted ui-danger ui-sm",
     muted: "text-muted",
     heading: "font-display text-base font-extrabold",
     card: "rounded-2xl border-2 border-ink bg-white text-ink",
@@ -535,7 +540,7 @@ export function ProjectMap({
                     setEditingLink(null);
                   }
                 }}
-                className={`absolute w-40 -translate-x-1/2 -translate-y-1/2 px-2 py-1 text-center text-xs outline outline-2 outline-teal ${s.linkLabel}`}
+                className="ui-field ui-sm absolute w-44 -translate-x-1/2 -translate-y-1/2 bg-th-card text-center"
                 style={{ left: mid.x, top: mid.y, ...look }}
               />
             );
@@ -561,8 +566,12 @@ export function ProjectMap({
   // ---- inspector ------------------------------------------------------------
 
   const startLink = (id: string) => (
-    <button type="button" onClick={() => startLinking(id)} className={s.ghost}>↗ {t("map.connect")}</button>
+    <button type="button" onClick={() => startLinking(id)} className="ui-btn ui-tinted ui-sm">↗ {t("map.connect")}</button>
   );
+
+  // Colour pickers stay swatches: round, a hairline so ink and white show on any panel, a ring when chosen.
+  const swatch = (on: boolean) =>
+    `size-8 shrink-0 rounded-full inset-ring-1 inset-ring-th-sep transition-transform active:scale-90 ${on ? "ring-2 ring-th-fg ring-offset-2 ring-offset-th-card" : ""}`;
 
   const paint = (field: "label_bg" | "label_fg", color: LinkColor | null) =>
     run(supabase.from("board_map_links").update(field === "label_bg" ? { label_bg: color } : { label_fg: color }).eq("id", selectedLink!.id));
@@ -570,16 +579,16 @@ export function ProjectMap({
   const swatches = (legend: string, value: LinkColor | null, field: "label_bg" | "label_fg") => (
     <fieldset className="flex flex-col gap-1.5">
       <legend className={`mb-1 text-sm ${s.muted}`}>{legend}</legend>
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap gap-2.5">
         <button type="button" aria-pressed={value === null} aria-label={t("map.colorDefault")} title={t("map.colorDefault")}
           onClick={() => paint(field, null)}
-          className={`grid size-8 place-items-center rounded-full border-2 text-xs ${value === null ? "border-current" : `border-dashed ${s.frame}`}`}>
+          className={`grid place-items-center bg-th-fill text-xs text-th-muted ${swatch(value === null)}`}>
           ⌀
         </button>
         {linkColors.map((color) => (
           <button key={color} type="button" aria-pressed={value === color} aria-label={t(`map.colors.${color}`)} title={t(`map.colors.${color}`)}
             onClick={() => paint(field, color)}
-            className={`size-8 rounded-full border-2 ${value === color ? "border-current outline outline-2 outline-offset-1 outline-teal" : "border-th-line"}`}
+            className={swatch(value === color)}
             style={{ background: linkHex(color) }} />
         ))}
       </div>
@@ -607,7 +616,7 @@ export function ProjectMap({
           <button type="button" className={s.ghost} onClick={() => run(supabase.from("board_map_links").update({ from_node: selectedLink.to_node, to_node: selectedLink.from_node }).eq("id", selectedLink.id))}>
             ⇄ {t("map.reverse")}
           </button>
-          <button type="button" className={s.ghost} onClick={async () => { await run(supabase.from("board_map_links").delete().eq("id", selectedLink.id)); setSelected(null); }}>
+          <button type="button" className={s.danger} onClick={async () => { await run(supabase.from("board_map_links").delete().eq("id", selectedLink.id)); setSelected(null); }}>
             {t("map.removeLink")}
           </button>
         </div>
@@ -642,7 +651,7 @@ export function ProjectMap({
         <h3 className={s.heading}>{card.title}</h3>
         <label className="flex flex-col gap-1 text-sm">
           <span className={s.muted}>{t("stage")}</span>
-          <select value={card.stage ?? ""} onChange={(e) => void setStage(card.id, (e.target.value || null) as Stage | null)} className={s.input}>
+          <select value={card.stage ?? ""} onChange={(e) => void setStage(card.id, (e.target.value || null) as Stage | null)} className={s.select}>
             <option value="">{t("map.offMap")}</option>
             {stages.map((st) => <option key={st} value={st}>{t(`stages.${st}.name`)}</option>)}
           </select>
@@ -670,17 +679,17 @@ export function ProjectMap({
         </label>
         <fieldset className="flex flex-col gap-1.5">
           <legend className={`mb-1 text-sm ${s.muted}`}>{t("labelColor")}</legend>
-          <div className="flex gap-1.5">
+          <div className="flex flex-wrap gap-2.5">
             {labelColors.map((color) => (
               <button key={color} type="button" aria-pressed={selectedNode.color === color} aria-label={t(`colors.${color}`)}
                 onClick={() => run(supabase.from("board_map_nodes").update({ color }).eq("id", selectedNode.id))}
-                className={`size-8 rounded-full border-2 ${selectedNode.color === color ? "border-current" : "border-transparent"}`} style={{ background: labelHex[color].bg }} />
+                className={swatch(selectedNode.color === color)} style={{ background: labelHex[color].bg }} />
             ))}
           </div>
         </fieldset>
         <div className="flex flex-wrap gap-2">
           {startLink(selectedNode.id)}
-          <button type="button" className={s.ghost} onClick={async () => { await run(supabase.from("board_map_nodes").delete().eq("id", selectedNode.id)); setSelected(null); }}>
+          <button type="button" className={s.danger} onClick={async () => { await run(supabase.from("board_map_nodes").delete().eq("id", selectedNode.id)); setSelected(null); }}>
             {t("map.removeIdea")}
           </button>
         </div>
@@ -702,7 +711,7 @@ export function ProjectMap({
             {unstaged.map((c) => (
               <label key={c.id} className="flex flex-col gap-1">
                 <span className="text-sm">{c.title}</span>
-                <select value="" aria-label={t("map.placeTask", { title: c.title })} onChange={(e) => e.target.value && void setStage(c.id, e.target.value as Stage)} className={s.input}>
+                <select value="" aria-label={t("map.placeTask", { title: c.title })} onChange={(e) => e.target.value && void setStage(c.id, e.target.value as Stage)} className={s.select}>
                   <option value="">{t("map.pickStep")}</option>
                   {stages.map((st) => <option key={st} value={st}>{t(`stages.${st}.name`)}</option>)}
                 </select>
@@ -761,26 +770,25 @@ export function ProjectMap({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className={`flex shrink-0 flex-wrap items-center gap-2 border-b px-4 py-2.5 sm:px-8 ${s.frame}`}>
-        <div role="tablist" aria-label={t("map.modes")} className="flex gap-1">
+      <div className={`flex shrink-0 flex-wrap items-center gap-2.5 border-b px-4 py-2.5 sm:px-8 ${s.frame}`}>
+        <div role="tablist" aria-label={t("map.modes")} className="ui-seg">
           {(["map", "story"] as const).map((m) => (
-            <button key={m} type="button" role="tab" aria-selected={mode === m} onClick={() => setMode(m)}
-              className={`${s.ghost} ${mode === m ? "border-th-fg font-semibold" : ""}`}>
+            <button key={m} type="button" role="tab" aria-selected={mode === m} onClick={() => setMode(m)}>
               {t(`map.mode_${m}`)}
             </button>
           ))}
         </div>
         {mode === "map" && (
           <>
-            <button type="button" onClick={addIdea} className={s.button}>+ {t("map.addIdea")}</button>
+            <button type="button" onClick={addIdea} className="ui-btn ui-filled ui-sm">+ {t("map.addIdea")}</button>
             <button type="button" onClick={() => (linking ? setLinking(null) : startLinking(selectedNodeId))} aria-pressed={Boolean(linking)} aria-keyshortcuts="L"
-              title={t("map.newLinkHint")} className={`${s.ghost} ${linking ? "border-th-fg font-semibold" : ""}`}>
-              ↗ {t("map.newLink")} <kbd className={`ml-1 rounded border px-1 text-[11px] ${s.frame} ${s.muted}`}>L</kbd>
+              title={t("map.newLinkHint")} className={`ui-btn ui-sm ${linking ? "ui-filled" : "ui-tinted"}`}>
+              ↗ {t("map.newLink")} <kbd className="rounded-md bg-current/15 px-1.5 py-px text-[11px] leading-4 font-semibold">L</kbd>
             </button>
-            <div className="ml-auto flex items-center gap-1" aria-label={t("map.zoom")}>
-              <button type="button" className={`${s.ghost} w-10`} aria-label={t("map.zoomOut")} onClick={() => setZoom((z) => Math.max(0.5, Math.round((z - 0.1) * 10) / 10))}>−</button>
+            <div className="ml-auto flex items-center rounded-full bg-th-fill p-0.5" aria-label={t("map.zoom")}>
+              <button type="button" className="ui-btn ui-plain ui-icon ui-sm ui-neutral text-lg font-normal" aria-label={t("map.zoomOut")} onClick={() => setZoom((z) => Math.max(0.5, Math.round((z - 0.1) * 10) / 10))}>−</button>
               <span className="w-12 text-center text-sm tabular-nums">{Math.round(zoom * 100)}%</span>
-              <button type="button" className={`${s.ghost} w-10`} aria-label={t("map.zoomIn")} onClick={() => setZoom((z) => Math.min(1.5, Math.round((z + 0.1) * 10) / 10))}>+</button>
+              <button type="button" className="ui-btn ui-plain ui-icon ui-sm ui-neutral text-lg font-normal" aria-label={t("map.zoomIn")} onClick={() => setZoom((z) => Math.min(1.5, Math.round((z + 0.1) * 10) / 10))}>+</button>
             </div>
           </>
         )}
@@ -788,12 +796,12 @@ export function ProjectMap({
       {linking && (
         <p role="status" className="shrink-0 bg-teal/30 px-4 py-2 text-sm sm:px-8">
           {connectFrom ? t("map.connecting", { name: labelOf(nodeById.get(connectFrom)) }) : t("map.pickStart")}{" "}
-          <button type="button" onClick={() => setLinking(null)} className="underline">{t("cancel")}</button>
+          <button type="button" onClick={() => setLinking(null)} className="ui-btn ui-plain ui-sm ui-neutral ml-1">{t("cancel")}</button>
         </p>
       )}
       {error && (
         <p role="alert" className="shrink-0 bg-vermilion/20 px-4 py-2 text-sm sm:px-8">
-          {error} <button type="button" onClick={() => setError(null)} className="underline">{t("dismiss")}</button>
+          {error} <button type="button" onClick={() => setError(null)} className="ui-btn ui-plain ui-sm ui-neutral ml-1">{t("dismiss")}</button>
         </p>
       )}
       {mode === "story" ? (

@@ -65,7 +65,7 @@ export default async function UsersPage({ searchParams }: PageProps<"/app/admin/
             <form role="search" className="flex items-center gap-2">
               <label htmlFor="user-search" className="sr-only">{t("admin.users.search")}</label>
               <input id="user-search" type="search" name="q" defaultValue={typeof q === "string" ? q : ""} placeholder={t("admin.users.search")}
-                className="min-h-11 rounded-th border-th bg-th-card px-3 text-sm" />
+                className="ui-field ui-sm ui-search w-72 max-w-full" />
             </form>
           </div>
           {shown.length ? (
@@ -94,7 +94,7 @@ export default async function UsersPage({ searchParams }: PageProps<"/app/admin/
                           <form action={setActive}>
                             <input type="hidden" name="id" value={user.id} />
                             <input type="hidden" name="active" value={user.deactivated_at ? "1" : "0"} />
-                            <button type="submit" className="min-h-11 text-xs text-th-link underline underline-offset-4">
+                            <button type="submit" className={`ui-btn ui-plain ui-sm -ml-2 ${user.deactivated_at ? "" : "ui-danger"}`}>
                               {user.deactivated_at ? t("admin.users.reactivate") : t("admin.users.deactivate")}
                             </button>
                           </form>

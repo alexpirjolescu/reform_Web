@@ -69,7 +69,7 @@ export default async function AdminNewsPage({ searchParams }: PageProps<"/app/ad
                       <td className="py-3 pr-4">
                         <Link href={`/app/admin/news/${a.id}`} className="font-medium underline-offset-4 hover:underline">{a.title}</Link>
                         {" · "}
-                        <Link href={`/activities/${a.id}`} className="text-xs text-th-link underline underline-offset-4">{state === "live" ? t("view") : t("preview")}</Link>
+                        <Link href={`/activities/${a.id}`} className="ui-btn ui-plain ui-sm -my-1.5">{state === "live" ? t("view") : t("preview")}</Link>
                       </td>
                       <td className="py-3 pr-4 whitespace-nowrap">{shortDate(a.starts_at, locale)}, {timeOfDay(a.starts_at, locale)}</td>
                       <td className="py-3 pr-4">{t(`categories.${a.category}`)}</td>

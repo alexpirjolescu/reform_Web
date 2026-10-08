@@ -43,20 +43,17 @@ type LibraryPick = { id: string; name: string; folderName: string };
 const detailSelect =
   "id, title, description, due_date, column_id, stage, card_labels(id, name, color), card_assignees(profile_id), checklist_items(id, label, done, position, done_by, done_at, checklist_item_assignees(profile_id)), card_comments(id, author_id, body, created_at, parent_id), card_attachments(id, library_files(id, name, size_bytes, storage_path, external_url)), card_events(id, actor_id, kind, created_at)";
 
-// Studio (dark and white) window; the colour design has its own.
+// Studio (dark and white) window; the colour design has its own. The controls are the iOS-style
+// "ui-" kit in every theme (globals.css); only the comment field differs, white on colour's sand column.
 const studio = {
   dialog: "border border-th-line bg-th-card text-th-fg",
   aside: "bg-th-sunk",
-  input: "w-full rounded-th border border-th-edge bg-th-bg px-3 py-2.5 text-[15px] text-th-fg",
-  button: "min-h-11 rounded-th bg-teal px-4 font-display font-semibold text-ink disabled:opacity-60",
-  ghost: "min-h-11 rounded-th border border-th-edge px-3 text-sm text-th-fg hover:border-th-fg",
+  asideField: "ui-field ui-sm",
   heading: "font-display text-base font-semibold text-th-heading",
   muted: "text-th-muted",
   chip: "rounded-th",
   rule: "border-th-line",
   thread: "rounded-th border border-th-cardline bg-th-card",
-  popover: "rounded-th border border-th-edge bg-th-card text-th-fg shadow-lg",
-  person: "rounded-th bg-th-raised",
 };
 
 const ui: Record<Theme, typeof studio> = {
@@ -65,16 +62,12 @@ const ui: Record<Theme, typeof studio> = {
   color: {
     dialog: "rounded-[28px] border-2 border-ink bg-white text-ink",
     aside: "bg-sand",
-    input: "w-full rounded-xl border-2 border-ink bg-white px-3 py-2.5 text-[15px]",
-    button: "min-h-11 rounded-full border-2 border-ink bg-pink px-5 font-display font-bold disabled:opacity-60",
-    ghost: "min-h-11 rounded-full border-2 border-ink px-4 text-sm font-medium",
+    asideField: "ui-field ui-sm bg-white",
     heading: "font-display text-base font-extrabold",
     muted: "text-muted",
     chip: "rounded-full border-[1.5px] border-ink",
     rule: "border-ink",
     thread: "rounded-2xl border-2 border-ink bg-white",
-    popover: "rounded-2xl border-2 border-ink bg-white text-ink shadow-lg",
-    person: "rounded-full border-[1.5px] border-ink bg-white",
   },
 };
 
@@ -276,7 +269,7 @@ export function CardDetail({
     }
   }
 
-  const pickerStyles = { input: s.input, muted: s.muted, popover: s.popover, chip: s.person };
+  const pickerStyles = { input: "ui-field ui-sm ui-search", muted: s.muted, popover: "ui-menu", chip: "rounded-full bg-th-fill" };
   const column = detail ? columns.find((c) => c.id === detail.column_id) : null;
 
   const details = detail && (
@@ -295,19 +288,19 @@ export function CardDetail({
 
       <div className="grid grid-cols-1 gap-x-4 gap-y-3 text-sm sm:grid-cols-[130px_1fr] sm:items-center">
         <label htmlFor="task-status" className={s.muted}>{t("status")}</label>
-        <select id="task-status" value={detail.column_id} onChange={(e) => updateCard({ column_id: e.target.value })} className={`${s.input} py-1.5 text-sm sm:w-64`}>
+        <select id="task-status" value={detail.column_id} onChange={(e) => updateCard({ column_id: e.target.value })} className="ui-field ui-select ui-sm sm:w-64">
           {columns.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
         <label htmlFor="task-stage" className={s.muted}>{t("stage")}</label>
         <div className="flex items-center gap-2">
           {detail.stage && <span aria-hidden="true" className="size-3 shrink-0 rounded-full" style={{ background: stageColor[detail.stage].bg }} />}
-          <select id="task-stage" value={detail.stage ?? ""} onChange={(e) => updateCard({ stage: (e.target.value || null) as Stage | null })} className={`${s.input} py-1.5 text-sm sm:w-64`}>
+          <select id="task-stage" value={detail.stage ?? ""} onChange={(e) => updateCard({ stage: (e.target.value || null) as Stage | null })} className="ui-field ui-select ui-sm sm:w-64">
             <option value="">{t("noStage")}</option>
             {stages.map((stage) => <option key={stage} value={stage}>{t(`stages.${stage}.name`)}</option>)}
           </select>
         </div>
         <label htmlFor="task-due" className={s.muted}>{t("due")}</label>
-        <input id="task-due" type="date" defaultValue={detail.due_date ?? ""} key={`due-${detail.due_date}`} onChange={(e) => updateCard({ due_date: e.target.value || null })} className={`${s.input} py-1.5 sm:w-64`} />
+        <input id="task-due" type="date" defaultValue={detail.due_date ?? ""} key={`due-${detail.due_date}`} onChange={(e) => updateCard({ due_date: e.target.value || null })} className="ui-field ui-sm sm:w-64" />
         <span className={`${s.muted} self-start sm:pt-2`}>{t("assignees")}</span>
         <PeoplePicker
           members={members}
@@ -344,12 +337,12 @@ export function CardDetail({
           }}
         >
           <label className="sr-only" htmlFor="new-label">{t("newLabel")}</label>
-          <input id="new-label" value={newLabel.name} onChange={(e) => setNewLabel({ ...newLabel, name: e.target.value })} placeholder={t("newLabel")} maxLength={30} className={`${s.input} min-w-0 flex-1 basis-40 py-1.5 text-sm`} />
+          <input id="new-label" value={newLabel.name} onChange={(e) => setNewLabel({ ...newLabel, name: e.target.value })} placeholder={t("newLabel")} maxLength={30} className="ui-field ui-sm min-w-0 flex-1 basis-40" />
           <label className="sr-only" htmlFor="new-label-color">{t("labelColor")}</label>
-          <select id="new-label-color" value={newLabel.color} onChange={(e) => setNewLabel({ ...newLabel, color: e.target.value as LabelColor })} className={`${s.input} flex-none basis-36 py-1.5 text-sm`}>
+          <select id="new-label-color" value={newLabel.color} onChange={(e) => setNewLabel({ ...newLabel, color: e.target.value as LabelColor })} className="ui-field ui-select ui-sm flex-none basis-36">
             {labelColors.map((color) => <option key={color} value={color}>{t(`colors.${color}`)}</option>)}
           </select>
-          <button type="submit" className={s.ghost}>{t("add")}</button>
+          <button type="submit" className="ui-btn ui-tinted ui-sm">{t("add")}</button>
         </form>
       </div>
 
@@ -361,7 +354,7 @@ export function CardDetail({
           rows={4}
           placeholder={t("descriptionPlaceholder")}
           onBlur={(e) => e.target.value !== detail.description && updateCard({ description: e.target.value })}
-          className={`${s.input} text-[15px] leading-relaxed`}
+          className="ui-field leading-relaxed"
         />
       </label>
 
@@ -381,7 +374,7 @@ export function CardDetail({
                   setDetail((d) => d && { ...d, checklist: d.checklist.map((i) => (i.id === item.id ? { ...i, done: !item.done } : i)) });
                   void run(supabase.from("checklist_items").update({ done: !item.done }).eq("id", item.id));
                 }}
-                className={`size-[18px] shrink-0 ${variant === "color" ? "accent-ink" : "accent-th-link"}`}
+                className="ui-check"
               />
               <label htmlFor={`item-${item.id}`} className={`min-w-0 flex-grow ${item.done ? "line-through opacity-70" : ""}`}>{item.label}</label>
               <PeoplePicker
@@ -398,12 +391,12 @@ export function CardDetail({
                   )
                 }
               />
-              <button type="button" aria-label={t("removeItem", { label: item.label })} onClick={() => run(supabase.from("checklist_items").delete().eq("id", item.id))} className={`grid size-8 shrink-0 place-items-center ${s.muted}`}>
+              <button type="button" aria-label={t("removeItem", { label: item.label })} onClick={() => run(supabase.from("checklist_items").delete().eq("id", item.id))} className={`ui-btn ui-plain ui-icon ui-sm ui-neutral shrink-0 ${s.muted}`}>
                 <TrashIcon size={15} />
               </button>
             </div>
             {item.done && item.done_at && (
-              <p className={`pl-7 text-xs ${s.muted}`}>✓ {t("doneBy", { name: nameOf(item.done_by), date: when(item.done_at) })}</p>
+              <p className={`pl-8 text-xs ${s.muted}`}>✓ {t("doneBy", { name: nameOf(item.done_by), date: when(item.done_at) })}</p>
             )}
           </div>
         ))}
@@ -418,8 +411,8 @@ export function CardDetail({
           }}
         >
           <label className="sr-only" htmlFor="new-item">{t("newItem")}</label>
-          <input id="new-item" value={newItem} onChange={(e) => setNewItem(e.target.value)} placeholder={t("newItem")} className={`${s.input} py-1.5 text-sm`} />
-          <button type="submit" className={s.ghost}>{t("add")}</button>
+          <input id="new-item" value={newItem} onChange={(e) => setNewItem(e.target.value)} placeholder={t("newItem")} className="ui-field ui-sm" />
+          <button type="submit" className="ui-btn ui-tinted ui-sm">{t("add")}</button>
         </form>
       </fieldset>
 
@@ -428,17 +421,17 @@ export function CardDetail({
         {detail.attachments.map(({ id, file }) => (
           <div key={id} className={`flex items-center gap-2 border-b py-2 text-sm ${s.rule}`}>
             <button type="button" onClick={() => void openFile(file)} className="flex-grow truncate text-left underline-offset-4 hover:underline">{file.name}</button>
-            <button type="button" aria-label={t("removeAttachment", { name: file.name })} onClick={() => run(supabase.from("card_attachments").delete().eq("id", id))} className={`grid size-8 place-items-center ${s.muted}`}>
+            <button type="button" aria-label={t("removeAttachment", { name: file.name })} onClick={() => run(supabase.from("card_attachments").delete().eq("id", id))} className={`ui-btn ui-plain ui-icon ui-sm ui-neutral shrink-0 ${s.muted}`}>
               <TrashIcon size={15} />
             </button>
           </div>
         ))}
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={() => fileInput.current?.click()} disabled={uploading} className={`${s.ghost} inline-flex items-center gap-2`}>
+          <button type="button" onClick={() => fileInput.current?.click()} disabled={uploading} className="ui-btn ui-tinted">
             <UploadIcon size={16} /> {uploading ? t("uploading") : t("uploadFile")}
           </button>
           <input ref={fileInput} type="file" className="hidden" onChange={(e) => e.target.files?.[0] && uploadAttachment(e.target.files[0])} />
-          <button type="button" onClick={loadPicks} className={s.ghost}>{t("fromLibrary")}</button>
+          <button type="button" onClick={loadPicks} className="ui-btn ui-tinted">{t("fromLibrary")}</button>
         </div>
         {picks && (
           <label className="flex flex-col gap-1 text-sm">
@@ -450,7 +443,7 @@ export function CardDetail({
                 void run(supabase.from("card_attachments").insert({ card_id: cardId, file_id: e.target.value }));
                 setPicks(null);
               }}
-              className={s.input}
+              className="ui-field ui-select"
             >
               <option value="">—</option>
               {picks.map((pick) => <option key={pick.id} value={pick.id}>{pick.folderName} / {pick.name}</option>)}
@@ -479,14 +472,14 @@ export function CardDetail({
                 onChanged();
                 onClose();
               }}
-              className={`${s.ghost} bg-vermilion text-ink`}
+              className="ui-btn ui-filled ui-danger"
             >
               {t("deleteYes")}
             </button>
-            <button type="button" onClick={() => setConfirmDelete(false)} className={s.ghost}>{t("cancel")}</button>
+            <button type="button" onClick={() => setConfirmDelete(false)} className="ui-btn ui-gray ui-neutral">{t("cancel")}</button>
           </>
         ) : (
-          <button type="button" onClick={() => setConfirmDelete(true)} className={`${s.ghost} inline-flex items-center gap-2`}>
+          <button type="button" onClick={() => setConfirmDelete(true)} className="ui-btn ui-tinted ui-danger">
             <TrashIcon size={15} /> {t("deleteCard")}
           </button>
         )}
@@ -510,7 +503,7 @@ export function CardDetail({
           <span className={`truncate text-sm ${s.muted}`}>
             {t("detailLabel")}{column ? ` · ${column.name}` : ""}
           </span>
-          <button type="button" onClick={onClose} aria-label={t("close")} className="grid size-11 place-items-center">
+          <button type="button" onClick={onClose} aria-label={t("close")} className="ui-btn ui-plain ui-icon ui-neutral shrink-0">
             <CloseIcon />
           </button>
         </div>
@@ -609,7 +602,7 @@ function CommentsPanel({
             <span className={`block text-xs ${s.muted}`}>{when(comment.created_at)}</span>
           </span>
           {comment.author_id === currentUserId && (
-            <button type="button" aria-label={t("deleteComment")} onClick={() => onRun(supabase.from("card_comments").delete().eq("id", comment.id))} className={`grid size-8 shrink-0 place-items-center ${s.muted}`}>
+            <button type="button" aria-label={t("deleteComment")} onClick={() => onRun(supabase.from("card_comments").delete().eq("id", comment.id))} className={`ui-btn ui-plain ui-icon ui-sm ui-neutral shrink-0 ${s.muted}`}>
               <TrashIcon size={14} />
             </button>
           )}
@@ -652,14 +645,14 @@ function CommentsPanel({
                 >
                   <label className="sr-only" htmlFor={`reply-${thread.id}`}>{t("replyTo", { name: memberMap.get(thread.author_id)?.full_name ?? t("someone") })}</label>
                   <textarea id={`reply-${thread.id}`} autoFocus rows={2} value={reply} onChange={(e) => setReply(e.target.value)} onKeyDown={submitOnCtrlEnter}
-                    placeholder={t("replyPlaceholder")} className={`${s.input} text-sm`} />
+                    placeholder={t("replyPlaceholder")} className="ui-field ui-sm" />
                   <div className="flex gap-2">
-                    <button type="submit" disabled={sending || !reply.trim()} className={`${s.button} min-h-9 text-sm`}>{t("reply")}</button>
-                    <button type="button" onClick={() => setReplyTo(null)} className={`${s.ghost} min-h-9`}>{t("cancel")}</button>
+                    <button type="submit" disabled={sending || !reply.trim()} className="ui-btn ui-filled ui-sm">{t("reply")}</button>
+                    <button type="button" onClick={() => setReplyTo(null)} className="ui-btn ui-gray ui-neutral ui-sm">{t("cancel")}</button>
                   </div>
                 </form>
               ) : (
-                <button type="button" onClick={() => { setReplyTo(thread.id); setReply(""); }} className={`self-start text-xs font-medium underline underline-offset-4 ${s.muted}`}>
+                <button type="button" onClick={() => { setReplyTo(thread.id); setReply(""); }} className="ui-btn ui-plain ui-sm ui-neutral -ml-2 self-start">
                   {t("reply")}
                 </button>
               )}
@@ -677,8 +670,8 @@ function CommentsPanel({
         }}
       >
         <label className="sr-only" htmlFor="new-comment">{t("newComment")}</label>
-        <textarea id="new-comment" rows={2} value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={submitOnCtrlEnter} placeholder={t("newComment")} className={`${s.input} text-sm`} />
-        <button type="submit" disabled={sending || !draft.trim()} className={`${s.button} self-start`}>{t("send")}</button>
+        <textarea id="new-comment" rows={2} value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={submitOnCtrlEnter} placeholder={t("newComment")} className={s.asideField} />
+        <button type="submit" disabled={sending || !draft.trim()} className="ui-btn ui-filled self-start">{t("send")}</button>
       </form>
     </aside>
   );

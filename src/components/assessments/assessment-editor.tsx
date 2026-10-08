@@ -9,8 +9,8 @@ import {
   FormAlert,
   SelectField,
   SubmitButton,
+  SwitchField,
   TextAreaField,
-  ghostButtonClass,
   inputClass,
   type ActionState,
 } from "@/components/form";
@@ -142,10 +142,10 @@ export function AssessmentEditor({
         <Field id="ed-title" label={t("assessments.editor.title")} value={title} onChange={(e) => setTitle(e.target.value)} required minLength={3} maxLength={160} />
         <fieldset className="flex flex-col gap-2" disabled={locked}>
           <legend className="mb-1 text-sm text-th-muted">{t("assessments.editor.kind")}</legend>
-          <div className="flex flex-wrap gap-4">
+          <div className="ui-seg ui-lg self-start">
             {(["quiz", "assignment"] as const).map((k) => (
-              <label key={k} className="flex min-h-11 items-center gap-2 text-sm">
-                <input type="radio" name="ed-kind" value={k} checked={kind === k} onChange={() => setKind(k)} className="size-5 accent-teal" />
+              <label key={k} className="has-disabled:cursor-default has-disabled:opacity-50">
+                <input type="radio" name="ed-kind" value={k} checked={kind === k} onChange={() => setKind(k)} className="sr-only" />
                 {t(`assessments.kinds.${k}`)}
               </label>
             ))}
@@ -175,7 +175,7 @@ export function AssessmentEditor({
             <option value="never">{t("assessments.editor.show.never")}</option>
           </SelectField>
         </div>
-        <CheckboxField id="ed-late" label={t("assessments.editor.allowLate")} checked={allowLate} onChange={(e) => setAllowLate(e.target.checked)} />
+        <SwitchField id="ed-late" label={t("assessments.editor.allowLate")} checked={allowLate} onChange={(e) => setAllowLate(e.target.checked)} />
         <p className="text-xs text-th-muted">{t("assessments.editor.timezone")}</p>
       </section>
 
@@ -204,9 +204,9 @@ export function AssessmentEditor({
                   <span className="font-display text-lg font-bold">{index + 1}.</span>
                   <span className="text-sm text-th-muted">{t(`assessments.questionKinds.${q.kind}`)}</span>
                   <span className="ml-auto flex gap-1">
-                    <button type="button" onClick={() => move(q.key, -1)} disabled={index === 0} aria-label={t("assessments.editor.moveUp")} className="grid size-11 place-items-center disabled:opacity-30">↑</button>
-                    <button type="button" onClick={() => move(q.key, 1)} disabled={index === questions.length - 1} aria-label={t("assessments.editor.moveDown")} className="grid size-11 place-items-center disabled:opacity-30">↓</button>
-                    <button type="button" onClick={() => setQuestions((prev) => prev.filter((x) => x.key !== q.key))} aria-label={t("assessments.editor.removeQuestion", { n: index + 1 })} className="grid size-11 place-items-center"><TrashIcon size={16} /></button>
+                    <button type="button" onClick={() => move(q.key, -1)} disabled={index === 0} aria-label={t("assessments.editor.moveUp")} className="ui-btn ui-plain ui-icon ui-neutral">↑</button>
+                    <button type="button" onClick={() => move(q.key, 1)} disabled={index === questions.length - 1} aria-label={t("assessments.editor.moveDown")} className="ui-btn ui-plain ui-icon ui-neutral">↓</button>
+                    <button type="button" onClick={() => setQuestions((prev) => prev.filter((x) => x.key !== q.key))} aria-label={t("assessments.editor.removeQuestion", { n: index + 1 })} className="ui-btn ui-plain ui-icon ui-neutral"><TrashIcon size={16} /></button>
                   </span>
                 </div>
                 <TextAreaField id={`q-${q.key}`} label={t("assessments.editor.prompt")} rows={2} value={q.prompt} maxLength={2000}
@@ -228,7 +228,7 @@ export function AssessmentEditor({
                           checked={choice.correct}
                           onChange={(e) => setCorrect(q, choice.key, e.target.checked)}
                           aria-label={t("assessments.editor.markCorrect", { letter: String.fromCharCode(65 + ci) })}
-                          className="size-5 shrink-0 accent-teal"
+                          className={q.kind === "multiple" ? "ui-check" : "ui-radio"}
                         />
                         <label className="sr-only" htmlFor={`c-${choice.key}`}>{t("assessments.editor.choice", { letter: String.fromCharCode(65 + ci) })}</label>
                         <input id={`c-${choice.key}`} value={choice.label} maxLength={500} readOnly={q.kind === "true_false"}
@@ -236,13 +236,13 @@ export function AssessmentEditor({
                           className={inputClass} placeholder={t("assessments.editor.choice", { letter: String.fromCharCode(65 + ci) })} />
                         {q.kind !== "true_false" && q.choices.length > 2 && (
                           <button type="button" onClick={() => patchQuestion(q.key, { choices: q.choices.filter((c) => c.key !== choice.key) })}
-                            aria-label={t("assessments.editor.removeChoice")} className="grid size-11 shrink-0 place-items-center"><TrashIcon size={16} /></button>
+                            aria-label={t("assessments.editor.removeChoice")} className="ui-btn ui-plain ui-icon ui-neutral shrink-0"><TrashIcon size={16} /></button>
                         )}
                       </div>
                     ))}
                     {q.kind !== "true_false" && q.choices.length < 12 && (
                       <button type="button" onClick={() => patchQuestion(q.key, { choices: [...q.choices, { key: key(), label: "", correct: false }] })}
-                        className={`${ghostButtonClass} self-start`}><PlusIcon size={14} /> {t("assessments.editor.addChoice")}</button>
+                        className="ui-btn ui-plain ui-sm -ml-2 self-start"><PlusIcon size={14} /> {t("assessments.editor.addChoice")}</button>
                     )}
                   </fieldset>
                 )}
@@ -250,7 +250,7 @@ export function AssessmentEditor({
             ))}
             <div className="flex flex-wrap gap-2">
               {(["single", "multiple", "true_false", "open"] as const).map((k) => (
-                <button key={k} type="button" onClick={() => addQuestion(k)} className={ghostButtonClass}>
+                <button key={k} type="button" onClick={() => addQuestion(k)} className="ui-btn ui-tinted">
                   <PlusIcon size={14} /> {t(`assessments.questionKinds.${k}`)}
                 </button>
               ))}

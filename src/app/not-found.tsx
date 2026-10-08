@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { buttonClass } from "@/components/form";
 
 export default async function NotFound() {
   const t = await getTranslations("notFound");
@@ -10,8 +9,8 @@ export default async function NotFound() {
       <h1 className="font-display text-4xl font-extrabold">{t("title")}</h1>
       <p className="text-lg leading-relaxed text-th-muted">{t("body")}</p>
       <div className="flex flex-wrap gap-3">
-        <Link href="/" className={buttonClass}>{t("home")}</Link>
-        <Link href="/app" className="inline-flex min-h-12 items-center px-2 underline underline-offset-4">{t("app")}</Link>
+        <Link href="/" className="ui-btn ui-filled">{t("home")}</Link>
+        <Link href="/app" className="ui-btn ui-plain">{t("app")}</Link>
       </div>
     </main>
   );

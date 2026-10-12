@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { Logo, type LogoName } from "@/components/logo";
 import type { Theme } from "@/lib/theme-shared";
 
 /** The title row of an app page: the studio header (dark, white) or the colour design's. */
@@ -7,15 +6,12 @@ export function PageHeader({
   variant,
   title,
   kicker,
-  logo,
   actions,
   children,
 }: {
   variant: Theme;
   title: ReactNode;
   kicker?: ReactNode;
-  /** Sub-brand logo shown above the title in the colour design (re_form core, hub, academy, community). */
-  logo?: LogoName;
   actions?: ReactNode;
   children?: ReactNode;
 }) {
@@ -39,8 +35,7 @@ export function PageHeader({
     <div className="shrink-0 px-4 pt-6 pb-[18px] sm:px-7">
       <div className="flex flex-wrap items-end justify-between gap-5">
         <div className="flex flex-col gap-2.5">
-          {logo && <Logo name={logo} height={30} />}
-          {kicker && !logo && <span className="text-[13px] font-medium">{kicker}</span>}
+          {kicker && <span className="text-[13px] font-medium">{kicker}</span>}
           <h1 className="font-display text-[36px] font-extrabold tracking-[-0.02em]">{title}</h1>
         </div>
         {actions && <div className="flex flex-wrap items-center gap-3">{actions}</div>}

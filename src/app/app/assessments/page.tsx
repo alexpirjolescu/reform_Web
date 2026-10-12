@@ -29,7 +29,7 @@ export default async function AssessmentsPage({ searchParams }: PageProps<"/app/
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
-      <PageHeader variant={theme} logo="academy" kicker={t("staffKicker")} title={t("title")}
+      <PageHeader variant={theme} kicker={t("staffKicker")} title={t("title")}
         actions={<Link href="/app/assessments/new" className={b.primary}>+ {t("new")}</Link>} />
       <div className="px-4 py-6 sm:px-8">
         {rows.length === 0 ? (

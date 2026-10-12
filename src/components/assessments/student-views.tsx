@@ -2,7 +2,6 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import { getTranslations } from "next-intl/server";
-import { Logo } from "@/components/logo";
 import {
   canStartAgain,
   choiceLetter,
@@ -362,7 +361,6 @@ export async function StudentColor({ data }: { data: StudentScreenData }) {
     <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-auto px-4 pt-6 pb-7 sm:px-7">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-col gap-2.5">
-          <Logo name="academy" height={30} />
           <h1 className="font-display text-[36px] font-extrabold tracking-[-0.02em]">{t("assessments.title")}</h1>
         </div>
         <nav aria-label={t("assessments.filter")} className="ui-seg ui-lg">

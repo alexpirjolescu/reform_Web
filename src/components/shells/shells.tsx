@@ -5,13 +5,13 @@ import { signOut } from "@/app/auth/actions";
 import { Avatar } from "@/components/avatar";
 import { BoardIcon, ChatIcon, FolderIcon, GridIcon, MailIcon, NewsIcon, QuizIcon, ShieldIcon, UsersIcon } from "@/components/icons";
 import { LanguageSwitcher } from "@/components/language-switcher";
-import { Logo } from "@/components/logo";
 import { MenuSetting, MobileMenu } from "@/components/mobile-menu";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { menuRow, menuRowActive } from "@/components/ui-classes";
 import type { Theme } from "@/lib/theme";
 import type { ShellData } from "@/lib/shell";
 import { NavLink, WhenActive } from "./nav-link";
+import { SectionLogo } from "./section-logo";
 import { adminNav, badgeFor, moduleNav, type AdminKey, type NavKey } from "./nav-items";
 
 const moduleIcons: Record<NavKey, typeof BoardIcon> = {
@@ -26,7 +26,7 @@ type ShellProps = { shell: ShellData; children: ReactNode };
 type NavStyle = { nav: string; item: string; active: string; section?: string; marker?: ReactNode };
 
 /**
- * Phones: the sidebar folds into the ☰ menu (top right), which slides in from the left with who you are,
+ * Phones: the sidebar folds into the ☰ menu (top right), which slides in from the right with who you are,
  * every section, the news panel, the look, the language and logging out.
  */
 async function AppMenu({ shell, theme, logo, nav, panelClass }: { shell: ShellData; theme: Theme; logo: ReactNode; nav: ReactNode; panelClass: string }) {
@@ -107,12 +107,12 @@ export async function StudioShell({ shell, theme, children }: ShellProps & { the
       <aside className="flex shrink-0 flex-col gap-4 border-b border-th-line px-4 pt-3 pb-3 md:w-[220px] md:gap-7 md:overflow-y-auto md:border-r md:border-b-0 md:pt-7 md:pb-5">
         <div className="flex items-center justify-between gap-3">
           <Link href="/app" className="ml-1.5 flex self-start" aria-label="re_form platform">
-            <Logo name="platform" white={dark} height={38} />
+            <SectionLogo white={dark} height={38} />
           </Link>
           <AppMenu
             shell={shell}
             theme={theme}
-            logo={<Logo name="platform" white={dark} height={32} />}
+            logo={<SectionLogo white={dark} height={32} />}
             panelClass="bg-th-bg text-th-fg"
             nav={nav({ nav: "flex flex-col gap-0.5", item: menuRow, active: menuRowActive, section: "mt-3 mb-1 px-3 text-[13px] text-th-muted" })}
           />
@@ -196,12 +196,12 @@ export async function ColorShell({ shell, children }: ShellProps) {
       <aside className="flex shrink-0 flex-col gap-4 border-b-2 border-ink px-[18px] pt-3 pb-3 md:w-[236px] md:gap-6 md:overflow-y-auto md:border-r-2 md:border-b-0 md:pt-[26px] md:pb-[22px]">
         <div className="flex items-center justify-between gap-3">
           <Link href="/app" className="flex self-start" aria-label="re_form platform">
-            <Logo name="platform" height={38} />
+            <SectionLogo height={38} />
           </Link>
           <AppMenu
             shell={shell}
             theme="color"
-            logo={<Logo name="platform" height={32} />}
+            logo={<SectionLogo height={32} />}
             panelClass="bg-white text-ink"
             nav={nav({
               nav: "flex flex-col gap-1",

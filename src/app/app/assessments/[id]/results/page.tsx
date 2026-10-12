@@ -45,7 +45,6 @@ export default async function ResultsPage({ params }: PageProps<"/app/assessment
     <div className="min-h-0 flex-1 overflow-y-auto">
       <PageHeader
         variant={theme}
-        logo="academy"
         kicker={<Link href="/app/assessments" className="hover:underline">← {t("title")}</Link>}
         title={assessment.title}
         actions={

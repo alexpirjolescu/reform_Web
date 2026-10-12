@@ -42,7 +42,6 @@ export default async function ReviewPage({ params }: PageProps<"/app/assessments
     <div className="min-h-0 flex-1 overflow-y-auto">
       <PageHeader
         variant={theme}
-        logo="academy"
         kicker={<Link href={`/app/assessments/${id}/results`} className="hover:underline">← {attempt.assessments.title}</Link>}
         title={attempt.profiles?.full_name ?? t("review.student")}
         actions={next ? <Link href={`/app/assessments/${id}/review/${next.id}`} className="ui-btn ui-gray ui-neutral">{t("review.next")} →</Link> : undefined}

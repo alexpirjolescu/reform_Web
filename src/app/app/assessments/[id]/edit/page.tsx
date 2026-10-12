@@ -23,7 +23,7 @@ export default async function EditAssessmentPage({ params }: PageProps<"/app/ass
   if (!initial) notFound();
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
-      <PageHeader variant={theme} logo="academy" kicker={<Link href={`/app/assessments/${id}/results`} className="hover:underline">← {initial.title}</Link>} title={t("edit")} />
+      <PageHeader variant={theme} kicker={<Link href={`/app/assessments/${id}/results`} className="hover:underline">← {initial.title}</Link>} title={t("edit")} />
       <div className="px-4 py-6 sm:px-8">
         <AssessmentEditor initial={initial} schools={options.schools} activities={options.activities} defaultWindow={defaultWindow()} />
       </div>

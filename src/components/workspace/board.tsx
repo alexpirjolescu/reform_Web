@@ -19,7 +19,6 @@ import {
 import { SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Avatar } from "@/components/avatar";
-import { Logo } from "@/components/logo";
 import { createClient } from "@/lib/supabase/client";
 import type { Theme } from "@/lib/theme-shared";
 import { cardSelect, positionBetween, toBoardCard, type BoardCard, type BoardColumn, type BoardData, type Member, type RawCard } from "@/lib/workspace";
@@ -586,7 +585,6 @@ function BoardHeader({
     <div className="shrink-0">
       <div className="flex flex-wrap items-center justify-between gap-5 px-4 pt-6 pb-[18px] sm:px-7">
         <div className="flex flex-col gap-2.5">
-          <Logo name="core" height={30} />
           <h1 className="font-display text-[36px] font-extrabold tracking-[-0.02em]">{data.board.name}</h1>
         </div>
         <div className="flex flex-wrap items-center gap-3">
@@ -605,7 +603,7 @@ function BoardHeader({
         </div>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-3 px-4 pb-4 sm:px-7">
-        <div className="flex flex-wrap items-center gap-4">
+        <div className="flex max-w-full min-w-0 flex-wrap items-center gap-4">
           <div role="tablist" aria-label={t("views")} className="ui-seg ui-lg">
             {views.map((v) => (
               <button key={v} type="button" role="tab" aria-selected={view === v} onClick={() => setView(v)}>

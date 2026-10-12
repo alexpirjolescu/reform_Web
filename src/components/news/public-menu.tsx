@@ -10,7 +10,7 @@ import { paperFor } from "./paper";
 
 /**
  * Phones and tablets: the public pages' links, language, look and the way into the platform, in the ☰ menu
- * (top right, slides in from the left on the paper of the chosen theme). Wide screens show them in the header.
+ * (top right, slides in from the right on the paper of the chosen theme). Wide screens show them in the header.
  */
 export async function PublicMenu({ theme, signedIn }: { theme: Theme; signedIn: boolean }) {
   const t = await getTranslations();

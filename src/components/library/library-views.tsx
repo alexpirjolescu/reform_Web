@@ -2,7 +2,6 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { deleteFileForever, deleteFolder, restoreFile, trashFile } from "@/app/app/library/actions";
 import { FolderIcon, PlayIcon } from "@/components/icons";
-import { Logo } from "@/components/logo";
 import { moduleButtons } from "@/components/page-header";
 import { fileSize, fullDate, shortDate } from "@/lib/format";
 import { badgeOf, fileKinds, kindOf, youtubeEmbed, type LibraryFile } from "@/lib/library";
@@ -563,7 +562,6 @@ export async function LibraryColor({ data, locale }: ViewProps) {
     <div className="flex min-h-0 flex-1 flex-col gap-[22px] overflow-auto px-4 pt-6 pb-7 sm:px-7">
       <div className="flex flex-wrap items-center justify-between gap-5">
         <div className="flex flex-col gap-2.5">
-          <Logo name="hub" height={30} />
           <h1 className="font-display text-[36px] font-extrabold tracking-[-0.02em]">{t("title")}</h1>
         </div>
         <div className="flex flex-wrap items-start gap-2.5">

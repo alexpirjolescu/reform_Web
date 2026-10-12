@@ -94,7 +94,6 @@ export default async function WorkspacePage() {
     <div className="min-h-0 flex-1 overflow-y-auto">
       <PageHeader
         variant={theme}
-        logo="core"
         kicker={isStaff ? t("allSchools") : groups.keys().next().value}
         title={t("title_projects")}
       />

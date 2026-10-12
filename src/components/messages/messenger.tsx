@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Avatar } from "@/components/avatar";
 import { ClipIcon, FileIcon, SendIcon } from "@/components/icons";
-import { Logo } from "@/components/logo";
 import { relativeStamp } from "@/lib/format";
 import type { GifResult } from "@/lib/giphy";
 import { storageSafeName } from "@/lib/library";
@@ -684,7 +683,6 @@ export function Messenger({ variant, me, inbox, selected, locale }: Props) {
     <div className="flex min-h-0 flex-1 flex-col md:flex-row">
       {listColumn(
         <>
-          <Logo name="community" height={30} />
           <div className="flex items-center justify-between"><h1 className="font-display text-[32px] font-extrabold">{t("title")}</h1>{newButton}</div>
           {!composing && searchBox}
         </>,

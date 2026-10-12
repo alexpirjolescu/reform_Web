@@ -7,7 +7,7 @@ const wideScreen = { md: "(min-width: 48rem)", lg: "(min-width: 64rem)" } as con
 const focusable = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea, [tabindex]:not([tabindex="-1"])';
 
 /**
- * Phones and small tablets: a ☰ button that slides in, from the left, a menu holding every link and setting
+ * Phones and small tablets: a ☰ button (top right) that slides in, from the right, a menu holding every link and setting
  * of the page (navigation, theme, language, account). From `hideFrom` up the page shows them itself, so the
  * button is hidden. The ✕, Escape, a tap on the dimmed page or following a link close it; Tab stays inside
  * while it is open and focus goes back to ☰ afterwards.
@@ -107,7 +107,7 @@ export function MobileMenu({
           if ((event.target as Element).closest("a[href]")) setOpen(false);
         }}
         // Opening shows the panel at once (so ✕ can take focus); closing keeps it visible until it has slid away.
-        className={`fixed inset-y-0 left-0 z-50 flex w-[min(86vw,340px)] flex-col overflow-y-auto overscroll-contain rounded-r-[24px] shadow-[0_0_48px_rgb(0_0_0/0.28)] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none ${open ? "visible translate-x-0 transition-transform" : "invisible -translate-x-full transition-[transform,visibility]"} ${panelClass}`}
+        className={`fixed inset-y-0 right-0 z-50 flex w-[min(86vw,340px)] flex-col overflow-y-auto overscroll-contain rounded-l-[24px] shadow-[0_0_48px_rgb(0_0_0/0.28)] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none ${open ? "visible translate-x-0 transition-transform" : "invisible translate-x-full transition-[transform,visibility]"} ${panelClass}`}
         style={{ paddingTop: "max(14px, env(safe-area-inset-top))", paddingBottom: "max(20px, env(safe-area-inset-bottom))" }}
       >
         <div className="flex items-center justify-between gap-3 pr-4 pb-4 pl-5">

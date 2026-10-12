@@ -9,6 +9,7 @@ import { ActivityVisual, CategoryChips, CategoryLabel, SchoolSearchForm, type Ne
 import { NewsletterForm } from "./newsletter-form";
 import { NewsFooter } from "./footer";
 import { paperFor } from "./paper";
+import { PublicMenu } from "./public-menu";
 
 const statKeys = ["schools", "students", "activities", "thisYear"] as const;
 // Two columns on phones, four from md: a divider before every cell that does not start a row.
@@ -27,9 +28,10 @@ export async function NewsPanel(props: NewsProps) {
 
   return (
     <div className={`min-h-screen ${p.page}`}>
-      <div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-6 px-4 py-[18px] text-sm sm:px-10">
+      <div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-6 px-4 py-2.5 text-sm sm:px-10 lg:py-[18px]">
         <span className={p.muted}>{t("news.issueOf", { month: issue })}</span>
-        <div className="flex flex-wrap items-center gap-6">
+        <PublicMenu theme={theme} signedIn={signedIn} />
+        <div className="hidden flex-wrap items-center gap-6 lg:flex">
           <nav aria-label={t("news.mainNav")} className="flex flex-wrap gap-6">
             <a href="#urmeaza" className={p.hover}>{t("news.nav.activities")}</a>
             <Link href="/about" className={p.hover}>{t("news.nav.about")}</Link>

@@ -29,6 +29,9 @@ export const QuizIcon = (p: IconProps) => (
 export const ChatIcon = (p: IconProps) => (
   <svg {...base(p)}><path d="M4 5h16v11H9l-5 4z" /></svg>
 );
+export const MenuIcon = (p: IconProps) => (
+  <svg {...base({ strokeLinecap: "round", ...p })}><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+);
 export const SearchIcon = (p: IconProps) => (
   <svg {...base(p)}><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" /></svg>
 );

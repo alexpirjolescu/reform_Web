@@ -13,6 +13,8 @@ M = {
     "login": ("intră în cont", "log in"),
     "logout": ("ieși din cont", "log out"),
     "language": ("Limba", "Language"),
+    "menu": ("Meniu", "Menu"),
+    "closeMenu": ("Închide meniul", "Close menu"),
     "newsPanel": ("panou de știri", "news panel"),
     "save": ("Salvează", "Save"),
     "sending": ("Se trimite…", "Sending…"),

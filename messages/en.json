@@ -7,6 +7,8 @@
     "login": "log in",
     "logout": "log out",
     "language": "Language",
+    "menu": "Menu",
+    "closeMenu": "Close menu",
     "newsPanel": "news panel",
     "save": "Save",
     "sending": "Sending…"

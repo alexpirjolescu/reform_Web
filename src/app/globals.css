@@ -616,14 +616,18 @@
 
 /*
  * Phones: a page that needs exactly one screen (an open conversation marks itself with data-fill-screen)
- * makes the app shell one screen tall. The top bar, the chat header and the composer then stay in place and
- * only the messages scroll, as on wide screens.
+ * makes the app shell one screen tall, so the chat header and the composer stay in place and only the
+ * messages scroll, as on wide screens. The top bar (logo, ☰) steps aside: the chat header is the top of the
+ * screen, and its ← leads back to the list, where the top bar is again.
  */
 @media (max-width: 47.999rem) {
   .app-shell:has([data-fill-screen]) {
     height: 100dvh;
     min-height: 0;
     overflow: hidden;
+  }
+  .app-shell:has([data-fill-screen]) > aside {
+    display: none;
   }
 }
 

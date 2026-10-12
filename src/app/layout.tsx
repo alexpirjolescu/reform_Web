@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Lexend, Outfit, Sour_Gummy } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -16,6 +16,10 @@ export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("meta");
   return { title: { default: t("title"), template: `%s · ${t("title")}` }, description: t("description") };
 }
+
+// Android: the on-screen keyboard shrinks the page instead of covering it, so an open chat keeps its header
+// and its composer above the keyboard.
+export const viewport: Viewport = { width: "device-width", initialScale: 1, interactiveWidget: "resizes-content" };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const [locale, session] = await Promise.all([getLocale(), getSession()]);

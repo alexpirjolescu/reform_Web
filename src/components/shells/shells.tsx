@@ -103,7 +103,7 @@ export async function StudioShell({ shell, theme, children }: ShellProps & { the
   );
 
   return (
-    <div className="flex min-h-screen flex-col bg-th-bg text-th-fg md:h-screen md:flex-row md:overflow-hidden">
+    <div className="app-shell flex min-h-screen flex-col bg-th-bg text-th-fg md:h-screen md:flex-row md:overflow-hidden">
       <aside className="flex shrink-0 flex-col gap-4 border-b border-th-line px-4 pt-3 pb-3 md:w-[220px] md:gap-7 md:overflow-y-auto md:border-r md:border-b-0 md:pt-7 md:pb-5">
         <div className="flex items-center justify-between gap-3">
           <Link href="/app" className="ml-1.5 flex self-start" aria-label="re_form platform">
@@ -192,7 +192,7 @@ export async function ColorShell({ shell, children }: ShellProps) {
   );
 
   return (
-    <div className="flex min-h-screen flex-col bg-white text-ink md:h-screen md:flex-row md:overflow-hidden">
+    <div className="app-shell flex min-h-screen flex-col bg-white text-ink md:h-screen md:flex-row md:overflow-hidden">
       <aside className="flex shrink-0 flex-col gap-4 border-b-2 border-ink px-[18px] pt-3 pb-3 md:w-[236px] md:gap-6 md:overflow-y-auto md:border-r-2 md:border-b-0 md:pt-[26px] md:pb-[22px]">
         <div className="flex items-center justify-between gap-3">
           <Link href="/app" className="flex self-start" aria-label="re_form platform">

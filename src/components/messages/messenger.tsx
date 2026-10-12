@@ -625,7 +625,7 @@ export function Messenger({ variant, me, inbox, selected, locale }: Props) {
     ) : (
       <>
         <Avatar id={selected.other.id} name={selected.other.full_name} size={studio ? 44 : 46} ring={studio ? undefined : "#221f20"} />
-        <div className="min-w-0 flex-1"><h2 className={`font-display ${studio ? "text-[19px] font-semibold" : "text-xl font-extrabold"}`}>{selected.other.full_name}</h2><div className={`text-[13px] ${studio ? "text-th-muted" : ""}`}>{subLabel(selected.other)}</div></div>
+        <div className="min-w-0 flex-1"><h2 className={`truncate font-display ${studio ? "text-[19px] font-semibold" : "text-xl font-extrabold"}`}>{selected.other.full_name}</h2><div className={`truncate text-[13px] ${studio ? "text-th-muted" : ""}`}>{subLabel(selected.other)}</div></div>
       </>
     )
   );
@@ -637,9 +637,12 @@ export function Messenger({ variant, me, inbox, selected, locale }: Props) {
 
   // ---- layouts ------------------------------------------------------------
 
+  // An open conversation fills the phone screen: see .app-shell in globals.css.
+  const fill = selected ? { "data-fill-screen": "" } : {};
+
   if (studio) {
     return (
-      <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+      <div className="flex min-h-0 flex-1 flex-col md:flex-row" {...fill}>
         {listColumn(
           <div className="flex flex-col gap-4 px-[18px] pt-[26px] pb-4">
             <div className="flex items-center justify-between"><h1 className="font-display text-[36px] font-bold text-th-heading">{t("title")}</h1>{newButton}</div>
@@ -649,7 +652,7 @@ export function Messenger({ variant, me, inbox, selected, locale }: Props) {
         {selected ? (
           <div className="relative flex min-h-0 min-w-0 flex-1">
             <main className="relative flex min-h-0 min-w-0 flex-1 flex-col">
-              <div className="relative flex items-center gap-3.5 border-b border-th-line px-4 py-[18px] sm:px-7">
+              <div className="relative flex shrink-0 items-center gap-3.5 border-b border-th-line px-4 py-3 sm:px-7 md:py-[18px]">
                 {backLink}
                 {headerTitle}
                 {!group && (
@@ -680,7 +683,7 @@ export function Messenger({ variant, me, inbox, selected, locale }: Props) {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+    <div className="flex min-h-0 flex-1 flex-col md:flex-row" {...fill}>
       {listColumn(
         <>
           <div className="flex items-center justify-between"><h1 className="font-display text-[32px] font-extrabold">{t("title")}</h1>{newButton}</div>
@@ -688,9 +691,9 @@ export function Messenger({ variant, me, inbox, selected, locale }: Props) {
         </>,
       )}
       {selected ? (
-        <div className="relative m-3 flex min-h-0 min-w-0 flex-1 overflow-hidden rounded-[28px] border-2 border-ink md:my-4 md:mr-4 md:ml-0">
+        <div className="relative m-2.5 flex min-h-0 min-w-0 flex-1 overflow-hidden rounded-[28px] border-2 border-ink md:my-4 md:mr-4 md:ml-0">
           <main className="flex min-h-0 min-w-0 flex-1 flex-col">
-            <div className="relative flex items-center gap-3.5 border-b-2 border-ink bg-vermilion px-4 py-3.5 sm:px-5">
+            <div className="relative flex shrink-0 items-center gap-3.5 border-b-2 border-ink bg-vermilion px-4 py-3 sm:px-5 md:py-3.5">
               {backLink}
               {headerTitle}
               <button type="button" onClick={() => setMenu((on) => !on)} aria-expanded={menu} aria-label={t("optionsLong")}

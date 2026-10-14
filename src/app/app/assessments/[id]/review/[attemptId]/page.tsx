@@ -10,6 +10,7 @@ import { requireStaff } from "@/lib/auth";
 import { deadline } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
 import { getTheme } from "@/lib/theme";
+import { ViewerLink } from "@/components/viewer/file-viewer";
 
 export default async function ReviewPage({ params }: PageProps<"/app/assessments/[id]/review/[attemptId]">) {
   const { id, attemptId } = await params;
@@ -60,7 +61,7 @@ export default async function ReviewPage({ params }: PageProps<"/app/assessments
               <h2 id="handin" className="font-display text-xl font-bold">{t("yourHandIn")}</h2>
               {runner.files.length === 0 && !attempt.link_response && !attempt.text_response && <p className="text-th-muted">{t("review.nothing")}</p>}
               {runner.files.map((file) => (
-                <a key={file.id} href={`/app/assessments/file/${file.id}`} target="_blank" rel="noopener noreferrer" className="text-th-link underline underline-offset-4">{file.name}</a>
+                <ViewerLink key={file.id} name={file.name} href={`/app/assessments/file/${file.id}?inline=1`} downloadHref={`/app/assessments/file/${file.id}`} className="self-start text-th-link underline underline-offset-4">{file.name}</ViewerLink>
               ))}
               {attempt.link_response && <a href={attempt.link_response} target="_blank" rel="noopener noreferrer" className="break-all text-th-link underline underline-offset-4">{attempt.link_response}</a>}
               {attempt.text_response && <p className="whitespace-pre-line">{attempt.text_response}</p>}

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Avatar, avatarColor, initialsOf } from "@/components/avatar";
+import { ViewerLink } from "@/components/viewer/file-viewer";
 import { PeoplePicker } from "@/components/workspace/people-picker";
 import { storageSafeName } from "@/lib/library";
 import type { ChatMessage, SelectedConversation } from "@/lib/messages";
@@ -52,7 +53,7 @@ export function GroupInfo({
   onClose: () => void;
   onChanged: () => void;
   onJump: (id: string) => void;
-  onOpenAttachment: (path: string) => void;
+  onOpenAttachment: (path: string, name: string) => void;
 }) {
   const t = useTranslations("messages");
   const tr = useTranslations("roles");
@@ -256,11 +257,12 @@ export function GroupInfo({
                 {files.map((m) => (
                   <li key={m.id}>
                     {m.attachment_path ? (
-                      <button type="button" onClick={() => onOpenAttachment(m.attachment_path as string)} className="text-left text-sm underline-offset-4 hover:underline">{m.attachment_name}</button>
+                      <button type="button" onClick={() => onOpenAttachment(m.attachment_path as string, m.attachment_name ?? "fișier")} className="text-left text-sm underline-offset-4 hover:underline">{m.attachment_name}</button>
                     ) : (
-                      <a href={`/app/library/file/${m.library_file_id}`} target="_blank" rel="noopener noreferrer" className="text-sm underline-offset-4 hover:underline">
+                      <ViewerLink name={conversation.resources[m.library_file_id as string]?.name ?? "fișier"} mime={conversation.resources[m.library_file_id as string]?.mime_type}
+                        href={`/app/library/file/${m.library_file_id}`} downloadHref={`/app/library/file/${m.library_file_id}?download=1`} className="text-sm underline-offset-4 hover:underline">
                         {conversation.resources[m.library_file_id as string]?.name ?? t("resourceGone")}
-                      </a>
+                      </ViewerLink>
                     )}
                   </li>
                 ))}

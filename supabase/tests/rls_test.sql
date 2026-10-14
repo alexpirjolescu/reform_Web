@@ -326,6 +326,48 @@ select pg_temp.as_user('a0000000-0000-0000-0000-000000000006');
 select pg_temp.check((select count(*) from public.conversation_participants where conversation_id = (select id from t_group) and role = 'admin') = 1, 'the last admin leaving hands over to a member');
 select pg_temp.as_admin_db();
 
+-- ===== Files in tasks: project folders, personal files attached to tasks =====
+select pg_temp.as_admin_db();
+select pg_temp.check((select count(*) from public.library_folders where board_id = 'd0000000-0000-0000-0000-000000000001' and space = 'school'
+  and school_id = '10000000-0000-0000-0000-000000000001' and name = 'Board 1') = 1, 'every project gets a folder in its school''s library');
+update public.boards set name = 'Board one' where id = 'd0000000-0000-0000-0000-000000000001';
+select pg_temp.check((select name from public.library_folders where board_id = 'd0000000-0000-0000-0000-000000000001') = 'Board one', 'the project folder is renamed with the project');
+select pg_temp.as_user('a0000000-0000-0000-0000-000000000003');
+select pg_temp.check((select count(*) from public.library_folders where board_id is not null) = 2, 'a student sees the project folders of their own school only');
+insert into public.library_folders (space, school_id, name, created_by) values
+  ('school', '10000000-0000-0000-0000-000000000001', 'Read back', 'a0000000-0000-0000-0000-000000000003') returning id;
+select pg_temp.check(true, 'a new folder can be read back by the insert that made it (task uploads used to fail here)');
+-- Lead1 uploads a file from a task: it goes to Lead1's own space and is attached to the task.
+select pg_temp.as_admin_db();
+create temp table t_lead_home as
+  select id from public.library_folders where space = 'personal' and owner_id = 'a0000000-0000-0000-0000-000000000004' and parent_id is null order by created_at limit 1;
+grant select on t_lead_home to authenticated;
+insert into storage.objects (bucket_id, name, owner_id, metadata)
+  select 'library', id || '/plan.pdf', 'a0000000-0000-0000-0000-000000000004', '{"size": 2048}' from t_lead_home;
+select pg_temp.as_user('a0000000-0000-0000-0000-000000000004');
+insert into public.library_files (id, folder_id, name, storage_path, mime_type, uploaded_by)
+  select 'c3000000-0000-0000-0000-000000000001', id, 'plan.pdf', id || '/plan.pdf', 'application/pdf', 'a0000000-0000-0000-0000-000000000004' from t_lead_home;
+insert into public.card_attachments (card_id, file_id) values ('f0000000-0000-0000-0000-000000000001', 'c3000000-0000-0000-0000-000000000001');
+select pg_temp.check((select size_bytes from public.library_files where id = 'c3000000-0000-0000-0000-000000000001') = 2048, 'the task file counts towards the uploader''s own space');
+select pg_temp.as_user('a0000000-0000-0000-0000-000000000003');
+select pg_temp.check((select count(*) from public.library_files where id = 'c3000000-0000-0000-0000-000000000001') = 1, 'a teammate sees a personal file attached to the project''s task');
+select pg_temp.check(public.can_read_library_object((select id || '/plan.pdf' from t_lead_home)), 'and can open it');
+select pg_temp.check((select count(*) from public.library_folders where space = 'personal' and owner_id = 'a0000000-0000-0000-0000-000000000004') = 0, 'but not the personal folder it is kept in');
+select pg_temp.check((select count(*) from public.card_attachments a join public.cards c on c.id = a.card_id
+  where c.board_id = 'd0000000-0000-0000-0000-000000000001') = 1, 'the project folder can list the task''s file');
+insert into public.cards (id, board_id, column_id, title) values
+  ('f0000000-0000-0000-0000-000000000002', 'd0000000-0000-0000-0000-000000000001', 'e0000000-0000-0000-0000-000000000001', 'Another task');
+select pg_temp.fails($$insert into public.card_attachments (card_id, file_id) values ('f0000000-0000-0000-0000-000000000002', 'c3000000-0000-0000-0000-000000000001')$$, 'only the owner attaches a personal file to a task');
+select pg_temp.as_user('a0000000-0000-0000-0000-000000000005');
+select pg_temp.check((select count(*) from public.library_files where id = 'c3000000-0000-0000-0000-000000000001') = 0, 'another school cannot see the task file');
+select pg_temp.check(not public.can_read_library_object((select id || '/plan.pdf' from t_lead_home)), 'nor open it');
+select pg_temp.as_user('a0000000-0000-0000-0000-000000000004');
+update public.library_files set deleted_at = now() where id = 'c3000000-0000-0000-0000-000000000001';
+select pg_temp.as_user('a0000000-0000-0000-0000-000000000003');
+select pg_temp.check((select count(*) from public.library_files where id = 'c3000000-0000-0000-0000-000000000001') = 0, 'a task file in its owner''s trash is hidden from the team');
+select pg_temp.check(not public.can_read_library_object((select id || '/plan.pdf' from t_lead_home)), 'and can no longer be opened by them');
+select pg_temp.as_admin_db();
+
 -- ===== Assessment editor and function privileges =====
 select pg_temp.as_user('a0000000-0000-0000-0000-000000000003');
 select pg_temp.fails($$select public.save_assessment('{"title":"Hack","kind":"quiz","opens_at":"2026-01-01T00:00:00Z","closes_at":"2027-01-01T00:00:00Z"}'::jsonb)$$, 'student cannot create assessments');

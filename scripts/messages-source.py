@@ -19,6 +19,22 @@ M = {
     "save": ("Salvează", "Save"),
     "sending": ("Se trimite…", "Sending…"),
   },
+  "viewer": {
+    "loading": ("Se deschide…", "Opening…"),
+    "page": ("pagina {n} din {total}", "page {n} of {total}"),
+    "documentFrame": ("Documentul", "The document"),
+    "sheets": ("Foile din fișier", "Sheets in the file"),
+    "moreRows": ("încă {n} rânduri: descarcă fișierul ca să le vezi pe toate", "{n} more rows: download the file to see them all"),
+    "slidesNote": ("Previzualizare simplificată: textul și pozele fiecărui diapozitiv. Pentru aranjare, animații și grafice, descarcă prezentarea.", "Simplified preview: each slide's text and pictures. Download the presentation for its layout, animations and charts."),
+    "slide": ("Diapozitivul {n}", "Slide {n}"),
+    "failed": ("Nu am putut deschide fișierul aici. Îl poți descărca.", "This file couldn't be opened here. You can download it."),
+    "noPreview": ("Fișierele de acest tip nu se pot deschide în pagină. Îl poți descărca.", "Files of this type can't be shown on the page. You can download it."),
+    "download": ("descarcă", "download"),
+    "close": ("Închide", "Close"),
+    "zoomIn": ("Mărește", "Zoom in"),
+    "zoomOut": ("Micșorează", "Zoom out"),
+    "zoomReset": ("Mărime normală", "Actual size"),
+  },
   "theme": {
     "label": ("Aspect", "Look"),
     "white": ("alb", "white"),
@@ -331,6 +347,11 @@ M = {
     "removeItem": ("Șterge pasul {label}", "Remove item {label}"),
     "attachments": ("Fișiere", "Files"),
     "attachmentsFolder": ("fișiere din proiecte", "project files"),
+    "projectFolder": ("folderul proiectului", "project folder"),
+    "projectFiles": ("fișierele proiectului", "project files"),
+    "uploadHint": ("Ce încarci aici se salvează în „Fișierele mele” (spațiul tău) și apare și în folderul proiectului. Poți și trage fișiere aici.", "What you upload here is saved in your own space (\"My files\") and also shows in the project's folder. You can drop files here too."),
+    "uploadedToMySpace": ("{n, plural, one {Fișierul e salvat} other {# fișiere sunt salvate}} în spațiul tău și atașat{n, plural, one {} other {e}} sarcinii.", "{n, plural, one {The file is saved} other {# files are saved}} in your space and attached to the task."),
+    "noPersonalSpace": ("Nu găsim spațiul tău personal. Reîncarcă pagina.", "Your personal space wasn't found. Reload the page."),
     "uploadFile": ("încarcă un fișier", "upload a file"),
     "uploading": ("se încarcă…", "uploading…"),
     "fromLibrary": ("din resurse", "from the library"),
@@ -494,6 +515,10 @@ M = {
     "tagsHint": ("separate prin virgulă, de ex. comunicare, atelier", "comma-separated, e.g. communication, workshop"),
     "download": ("descarcă", "download"),
     "openLink": ("deschide linkul", "open the link"),
+    "openFile": ("deschide", "open"),
+    "projectTag": ("proiect", "project"),
+    "attachedToTasks": ("atașat la: {tasks}", "attached to: {tasks}"),
+    "tasks": ("Sarcini", "Tasks"),
     "attachToTask": ("atașează la o sarcină", "attach to a task"),
     "searchTasks": ("caută o sarcină", "find a task"),
     "attachedTo": ("Atașat la „{title}”.", "Attached to “{title}”."),
@@ -1421,6 +1446,20 @@ def build(index):
         return {k: walk(v) for k, v in node.items()}
     return walk(M)
 
+
+# A key written twice in one block silently keeps only the last one: refuse instead.
+import ast
+duplicates = []
+for node in ast.walk(ast.parse(Path(__file__).read_text(encoding="utf-8"))):
+    if isinstance(node, ast.Dict):
+        seen = set()
+        for key in node.keys:
+            if isinstance(key, ast.Constant):
+                if key.value in seen:
+                    duplicates.append(f"line {key.lineno}: {key.value}")
+                seen.add(key.value)
+if duplicates:
+    raise SystemExit("duplicate keys: " + ", ".join(duplicates))
 
 root = Path(__file__).resolve().parent.parent
 for i, locale in enumerate(["ro", "en"]):

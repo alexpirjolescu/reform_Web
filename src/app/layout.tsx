@@ -3,6 +3,7 @@ import { Lexend, Outfit, Sour_Gummy } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
 import { AuthLinkHandler } from "@/components/auth-link-handler";
+import { FileViewerProvider } from "@/components/viewer/file-viewer";
 import { getSession } from "@/lib/auth";
 import { getTheme } from "@/lib/theme";
 import "./globals.css";
@@ -32,7 +33,9 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       className={`${outfit.variable} ${lexend.variable} ${sourGummy.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col font-sans">
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider>
+          <FileViewerProvider>{children}</FileViewerProvider>
+        </NextIntlClientProvider>
         <AuthLinkHandler />
       </body>
     </html>

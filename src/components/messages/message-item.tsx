@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { EmbedFrame } from "@/components/news/embed-frame";
+import { ViewerLink } from "@/components/viewer/file-viewer";
 import { embedPlayer, parseLink, providerNames } from "@/lib/embeds";
 import { timeOfDay } from "@/lib/format";
 import { badgeOf } from "@/lib/library";
@@ -67,7 +68,7 @@ export type MessageHandlers = {
   onReact: (message: ChatMessage, emoji: string, on: boolean) => void;
   onPin: (message: ChatMessage, pin: boolean) => void;
   onDelete: (message: ChatMessage) => void;
-  onOpenAttachment: (path: string) => void;
+  onOpenAttachment: (path: string, name: string) => void;
   onVote: (poll: Poll, optionIds: string[]) => Promise<void>;
   onClosePoll: (poll: Poll) => Promise<void>;
   onJump: (id: string) => void;
@@ -166,16 +167,26 @@ export function MessageItem({
       <>
         {message.kind === "resource" && (
           resource ? (
-            <a href={resource.external_url ?? `/app/library/file/${resource.id}`} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-3 px-3.5 py-3 text-left hover:underline ${card}`}>
-              <span className="w-11 shrink-0 py-[5px] text-center font-display text-[11px] font-bold" style={{ background: badgeOf(resource).bg, color: badgeOf(resource).fg }}>{badgeOf(resource).label.slice(0, 5)}</span>
-              <span className="flex min-w-0 flex-col"><span className="text-sm break-words">{resource.name}</span><span className={`text-xs ${muted}`}>{t("fromResourcesShort")} · {t("open")}</span></span>
-            </a>
+            (() => {
+              const inner = (
+                <>
+                  <span className="w-11 shrink-0 py-[5px] text-center font-display text-[11px] font-bold" style={{ background: badgeOf(resource).bg, color: badgeOf(resource).fg }}>{badgeOf(resource).label.slice(0, 5)}</span>
+                  <span className="flex min-w-0 flex-col"><span className="text-sm break-words">{resource.name}</span><span className={`text-xs ${muted}`}>{t("fromResourcesShort")} · {t("open")}</span></span>
+                </>
+              );
+              const look = `flex items-center gap-3 px-3.5 py-3 text-left hover:underline ${card}`;
+              return resource.external_url ? (
+                <a href={resource.external_url} target="_blank" rel="noopener noreferrer" className={look}>{inner}</a>
+              ) : (
+                <ViewerLink name={resource.name} mime={resource.mime_type} href={`/app/library/file/${resource.id}`} downloadHref={`/app/library/file/${resource.id}?download=1`} className={look}>{inner}</ViewerLink>
+              );
+            })()
           ) : (
             <div className={`px-3.5 py-3 text-sm italic ${card} ${muted}`}>{t("resourceGone")}</div>
           )
         )}
         {message.attachment_path && (
-          <button type="button" onClick={() => handlers.onOpenAttachment(message.attachment_path as string)} className={`flex items-center gap-3 px-3.5 py-3 text-left ${card}`}>
+          <button type="button" onClick={() => handlers.onOpenAttachment(message.attachment_path as string, message.attachment_name ?? "fișier")} className={`flex items-center gap-3 px-3.5 py-3 text-left ${card}`}>
             <span className={`px-1.5 py-[5px] font-display text-[11px] font-bold ${studio ? "" : "rounded-xl border-2 border-ink"} ${message.attachment_name?.toLowerCase().endsWith(".pdf") ? "bg-vermilion text-ink" : "bg-lime text-ink"}`}>
               {message.attachment_name?.split(".").pop()?.toUpperCase().slice(0, 4) ?? "FILE"}
             </span>

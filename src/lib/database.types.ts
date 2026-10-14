@@ -625,16 +625,22 @@ isOneToOne: false
                   ]
                 },"library_folders": {
                   Row: {
-                    "created_at": string,"created_by": string | null,"id": string,"is_demo": boolean,"name": string,"owner_id": string | null,"parent_id": string | null,"school_id": string | null,"space": string
+                    "board_id": string | null,"created_at": string,"created_by": string | null,"id": string,"is_demo": boolean,"name": string,"owner_id": string | null,"parent_id": string | null,"school_id": string | null,"space": string
                   }
                   Insert: {
-                    "created_at"?: string,"created_by"?: string | null,"id"?: string,"is_demo"?: boolean,"name": string,"owner_id"?: string | null,"parent_id"?: string | null,"school_id"?: string | null,"space": string
+                    "board_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"id"?: string,"is_demo"?: boolean,"name": string,"owner_id"?: string | null,"parent_id"?: string | null,"school_id"?: string | null,"space": string
                   }
                   Update: {
-                    "created_at"?: string,"created_by"?: string | null,"id"?: string,"is_demo"?: boolean,"name"?: string,"owner_id"?: string | null,"parent_id"?: string | null,"school_id"?: string | null,"space"?: string
+                    "board_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"id"?: string,"is_demo"?: boolean,"name"?: string,"owner_id"?: string | null,"parent_id"?: string | null,"school_id"?: string | null,"space"?: string
                   }
                   Relationships: [
                     {
+      foreignKeyName: "library_folders_board_id_fkey"
+      columns: ["board_id"]
+isOneToOne: false
+      referencedRelation: "boards"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "library_folders_created_by_fkey"
       columns: ["created_by"]
 isOneToOne: false
@@ -1044,6 +1050,9 @@ isOneToOne: false
 "can_access_school":
 { Args: { "target_school": string }; Returns: boolean
                            },
+"can_attach_file":
+{ Args: { "target": string }; Returns: boolean
+                           },
 "can_edit_group":
 { Args: { "target": string }; Returns: boolean
                            },
@@ -1089,8 +1098,14 @@ isOneToOne: false
 "current_school_id":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
+"file_on_my_boards":
+{ Args: { "target": string }; Returns: boolean
+                           },
 "folder_ancestors":
 { Args: { "target": string }; Returns: string[]
+                           },
+"folder_shared_with_me":
+{ Args: { "target": string }; Returns: boolean
                            },
 "is_admin":
 { Args: Record<PropertyKey, never>; Returns: boolean

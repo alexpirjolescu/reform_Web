@@ -33,6 +33,8 @@ export type Member = { id: string; full_name: string; role: string };
 
 export type BoardData = {
   board: { id: string; name: string; description: string; due_date: string | null; school_id: string; schoolName: string };
+  /** The project's folder in the school library (its resources, plus every file attached to its tasks). */
+  folderId: string | null;
   columns: BoardColumn[];
   cards: BoardCard[];
   members: Member[];

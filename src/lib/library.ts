@@ -42,6 +42,10 @@ export type LibraryFile = {
   created_at: string;
   deleted_at: string | null;
   uploaderName: string | null;
+  /** In a project's folder: the project's tasks this file is attached to (it may be stored elsewhere). */
+  tasks?: string[];
+  /** Listed in the project's folder because it is attached to a task, but stored in another folder. */
+  linked?: boolean;
 };
 
 export function kindOf(file: Pick<LibraryFile, "mime_type" | "external_url">): FileKind {

@@ -4,7 +4,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Avatar } from "@/components/avatar";
 import { CloseIcon, TrashIcon, UploadIcon } from "@/components/icons";
-import { maxUploadBytes, storageSafeName } from "@/lib/library";
+import Link from "next/link";
+import { useFileViewer } from "@/components/viewer/file-viewer";
+import { fileSize } from "@/lib/format";
+import { uploadToLibrary } from "@/lib/library-upload";
+import { libraryFileSource } from "@/lib/viewer";
 import { createClient } from "@/lib/supabase/client";
 import type { Theme } from "@/lib/theme-shared";
 import { labelColors, type LabelColor } from "@/lib/types";
@@ -34,14 +38,15 @@ type Detail = {
   assignees: string[];
   checklist: ChecklistItem[];
   comments: Comment[];
-  attachments: { id: string; file: { id: string; name: string; size_bytes: number; storage_path: string | null; external_url: string | null } }[];
+  attachments: { id: string; file: { id: string; name: string; mime_type: string; size_bytes: number; storage_path: string | null; external_url: string | null } }[];
   events: { id: number; actor_id: string | null; kind: string; created_at: string }[];
 };
 
 type LibraryPick = { id: string; name: string; folderName: string };
+type UploadNote = { tone: "ok" | "problem"; text: string };
 
 const detailSelect =
-  "id, title, description, due_date, column_id, stage, card_labels(id, name, color), card_assignees(profile_id), checklist_items(id, label, done, position, done_by, done_at, checklist_item_assignees(profile_id)), card_comments(id, author_id, body, created_at, parent_id), card_attachments(id, library_files(id, name, size_bytes, storage_path, external_url)), card_events(id, actor_id, kind, created_at)";
+  "id, title, description, due_date, column_id, stage, card_labels(id, name, color), card_assignees(profile_id), checklist_items(id, label, done, position, done_by, done_at, checklist_item_assignees(profile_id)), card_comments(id, author_id, body, created_at, parent_id), card_attachments(id, library_files(id, name, mime_type, size_bytes, storage_path, external_url)), card_events(id, actor_id, kind, created_at)";
 
 // Studio (dark and white) window; the colour design has its own. The controls are the iOS-style
 // "ui-" kit in every theme (globals.css); only the comment field differs, white on colour's sand column.
@@ -78,7 +83,7 @@ const ui: Record<Theme, typeof studio> = {
 export function CardDetail({
   cardId,
   boardId,
-  schoolId,
+  projectFolderId,
   columns,
   members,
   currentUserId,
@@ -89,7 +94,8 @@ export function CardDetail({
 }: {
   cardId: string;
   boardId: string;
-  schoolId: string;
+  /** The project's folder in the school library, where task files are listed too. */
+  projectFolderId: string | null;
   columns: BoardColumn[];
   members: Member[];
   currentUserId: string;
@@ -99,6 +105,8 @@ export function CardDetail({
   onChanged: () => void;
 }) {
   const t = useTranslations("workspace");
+  const tLibrary = useTranslations("library");
+  const openInViewer = useFileViewer();
   const s = ui[variant];
   const supabase = useMemo(() => createClient(), []);
   const memberMap = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
@@ -109,6 +117,8 @@ export function CardDetail({
   const [picks, setPicks] = useState<LibraryPick[] | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadNote, setUploadNote] = useState<UploadNote | null>(null);
+  const [dragging, setDragging] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
   const dialog = useRef<HTMLDivElement>(null);
   const titleId = `task-title-${cardId}`;
@@ -212,58 +222,54 @@ export function CardDetail({
   const updateCard = (patch: { title?: string; description?: string; due_date?: string | null; column_id?: string; stage?: Stage | null }) =>
     run(supabase.from("cards").update(patch).eq("id", cardId));
 
-  async function openFile(file: { storage_path: string | null; external_url: string | null }) {
+  function openFile(file: Detail["attachments"][number]["file"]) {
     if (file.external_url) return void window.open(file.external_url, "_blank", "noopener");
-    if (!file.storage_path) return;
-    const { data } = await supabase.storage.from("library").createSignedUrl(file.storage_path, 300);
-    if (data?.signedUrl) window.open(data.signedUrl, "_blank", "noopener");
+    openInViewer(libraryFileSource(file));
   }
 
+  // Files from the library that can be attached: anything readable, except other people's personal files.
   async function loadPicks() {
     const { data } = await supabase
       .from("library_files")
-      .select("id, name, library_folders(name, space, school_id)")
+      .select("id, name, library_folders(name, space, owner_id)")
       .is("deleted_at", null)
       .order("created_at", { ascending: false })
-      .limit(60);
-    setPicks((data ?? []).map((f) => ({ id: f.id, name: f.name, folderName: f.library_folders?.name ?? "" })));
+      .limit(80);
+    const attached = new Set(detail?.attachments.map((a) => a.file.id));
+    setPicks(
+      (data ?? [])
+        .filter((f) => !attached.has(f.id) && (f.library_folders?.space !== "personal" || f.library_folders.owner_id === currentUserId))
+        .map((f) => ({ id: f.id, name: f.name, folderName: f.library_folders?.name ?? "" })),
+    );
   }
 
-  async function uploadAttachment(file: File) {
+  // Files from the device are saved in the uploader's own space (they count towards their storage), then
+  // attached to the task; the project's folder in the library lists them too.
+  async function uploadAttachments(files: File[]) {
+    if (!files.length) return;
     setUploading(true);
-    setError(null);
+    setUploadNote(null);
     try {
-      // Device uploads land in the school's "Attachments" folder so they are also in the library (WS-5).
-      const folderName = t("attachmentsFolder");
-      let { data: folder } = await supabase
+      const { data: home } = await supabase
         .from("library_folders")
         .select("id")
-        .eq("space", "school")
-        .eq("school_id", schoolId)
-        .eq("name", folderName)
+        .eq("space", "personal")
+        .eq("owner_id", currentUserId)
+        .is("parent_id", null)
+        .order("created_at")
+        .limit(1)
         .maybeSingle();
-      if (!folder) {
-        const created = await supabase
-          .from("library_folders")
-          .insert({ space: "school", school_id: schoolId, name: folderName, created_by: currentUserId })
-          .select("id")
-          .single();
-        if (created.error) throw created.error;
-        folder = created.data;
+      if (!home) throw new Error(t("noPersonalSpace"));
+      const { ids, problems } = await uploadToLibrary(supabase, home.id, files, currentUserId, (key, values) => tLibrary(key, values));
+      for (const fileId of ids) {
+        const attached = await supabase.from("card_attachments").insert({ card_id: cardId, file_id: fileId });
+        if (attached.error) problems.push(attached.error.message);
       }
-      if (file.size > maxUploadBytes) throw new Error(t("tooLarge"));
-      const path = `${folder.id}/${crypto.randomUUID()}-${storageSafeName(file.name)}`;
-      const upload = await supabase.storage.from("library").upload(path, file, { contentType: file.type || undefined });
-      if (upload.error) throw upload.error;
-      const inserted = await supabase
-        .from("library_files")
-        .insert({ folder_id: folder.id, name: file.name, mime_type: file.type || "application/octet-stream", size_bytes: file.size, storage_path: path, uploaded_by: currentUserId })
-        .select("id")
-        .single();
-      if (inserted.error) throw inserted.error;
-      await run(supabase.from("card_attachments").insert({ card_id: cardId, file_id: inserted.data.id }));
+      setUploadNote(problems.length ? { tone: "problem", text: problems.join(" ") } : { tone: "ok", text: t("uploadedToMySpace", { n: ids.length }) });
+      await load();
+      onChanged();
     } catch (uploadError) {
-      setError((uploadError as Error).message);
+      setUploadNote({ tone: "problem", text: (uploadError as Error).message });
     } finally {
       setUploading(false);
     }
@@ -416,11 +422,35 @@ export function CardDetail({
         </form>
       </fieldset>
 
-      <div className="flex flex-col gap-2">
-        <h3 className={s.heading}>_ {t("attachments")}</h3>
+      <div
+        className={`flex flex-col gap-2 rounded-[14px] transition-colors ${dragging ? "bg-th-fill outline-2 outline-teal outline-dashed" : ""}`}
+        onDragOver={(e) => {
+          if (![...e.dataTransfer.types].includes("Files")) return;
+          e.preventDefault();
+          setDragging(true);
+        }}
+        onDragLeave={(e) => e.currentTarget.contains(e.relatedTarget as Node) || setDragging(false)}
+        onDrop={(e) => {
+          if (!e.dataTransfer.files.length) return;
+          e.preventDefault();
+          setDragging(false);
+          void uploadAttachments([...e.dataTransfer.files]);
+        }}
+      >
+        <div className="flex items-center justify-between gap-3">
+          <h3 className={s.heading}>_ {t("attachments")}</h3>
+          {projectFolderId && (
+            <Link href={`/app/library?folder=${projectFolderId}`} className="ui-btn ui-plain ui-sm -mr-2">
+              {t("projectFolder")} →
+            </Link>
+          )}
+        </div>
         {detail.attachments.map(({ id, file }) => (
-          <div key={id} className={`flex items-center gap-2 border-b py-2 text-sm ${s.rule}`}>
-            <button type="button" onClick={() => void openFile(file)} className="flex-grow truncate text-left underline-offset-4 hover:underline">{file.name}</button>
+          <div key={id} className={`flex items-center gap-2 border-b py-1.5 text-sm ${s.rule}`}>
+            <button type="button" onClick={() => openFile(file)} className="flex min-w-0 flex-grow items-baseline gap-2 text-left">
+              <span className="truncate underline-offset-4 hover:underline">{file.name}</span>
+              {!file.external_url && <span className={`shrink-0 text-xs ${s.muted}`}>{fileSize(file.size_bytes, locale)}</span>}
+            </button>
             <button type="button" aria-label={t("removeAttachment", { name: file.name })} onClick={() => run(supabase.from("card_attachments").delete().eq("id", id))} className={`ui-btn ui-plain ui-icon ui-sm ui-neutral shrink-0 ${s.muted}`}>
               <TrashIcon size={15} />
             </button>
@@ -430,9 +460,19 @@ export function CardDetail({
           <button type="button" onClick={() => fileInput.current?.click()} disabled={uploading} className="ui-btn ui-tinted">
             <UploadIcon size={16} /> {uploading ? t("uploading") : t("uploadFile")}
           </button>
-          <input ref={fileInput} type="file" className="hidden" onChange={(e) => e.target.files?.[0] && uploadAttachment(e.target.files[0])} />
+          <input ref={fileInput} type="file" multiple className="hidden" onChange={(e) => {
+            const files = [...(e.target.files ?? [])];
+            e.target.value = "";
+            void uploadAttachments(files);
+          }} />
           <button type="button" onClick={loadPicks} className="ui-btn ui-tinted">{t("fromLibrary")}</button>
         </div>
+        <p className={`text-xs ${s.muted}`}>{t("uploadHint")}</p>
+        {uploadNote && (
+          <p role={uploadNote.tone === "problem" ? "alert" : "status"} className={`rounded-[10px] px-3 py-2 text-sm ${uploadNote.tone === "problem" ? "bg-vermilion/20" : "bg-teal/25"}`}>
+            {uploadNote.text}
+          </p>
+        )}
         {picks && (
           <label className="flex flex-col gap-1 text-sm">
             <span className={s.muted}>{t("pickFile")}</span>

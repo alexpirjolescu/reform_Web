@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { deleteFileForever, deleteFolder, restoreFile, trashFile } from "@/app/app/library/actions";
-import { FolderIcon, PlayIcon } from "@/components/icons";
+import { FolderIcon, LinkIcon, PlayIcon } from "@/components/icons";
 import { moduleButtons } from "@/components/page-header";
 import { fileSize, fullDate, shortDate } from "@/lib/format";
 import { badgeOf, fileKinds, kindOf, youtubeEmbed, type LibraryFile } from "@/lib/library";
@@ -10,6 +10,7 @@ import type { Theme } from "@/lib/theme-shared";
 import { Draggable, DropStatus, DropTarget, FolderItem } from "./library-dnd";
 import { AddLinkForm, AttachToCard, CopyLinkButton, EditFileForm, MoveForm, NewFolderForm, SharePanel } from "./library-forms";
 import { Uploader } from "./uploader";
+import { ViewerLink } from "@/components/viewer/file-viewer";
 
 type ViewProps = { data: LibraryData; locale: string };
 type T = Awaited<ReturnType<typeof getTranslations>>;
@@ -36,6 +37,16 @@ function FileBadge({ file, variant, size = "row" }: { file: LibraryFile; variant
   return (
     <span className="w-11 shrink-0 py-[5px] text-center font-display text-[11px] font-bold" style={{ background: badge.bg, color: badge.fg }}>
       {badge.label.slice(0, 5)}
+    </span>
+  );
+}
+
+/** Under a file in a project folder: the tasks it is attached to. */
+function TaskNote({ file, t, className }: { file: LibraryFile; t: T; className: string }) {
+  return (
+    <span className={`flex items-center gap-1 text-xs ${className}`}>
+      <LinkIcon size={12} />
+      <span className="truncate">{t("attachedToTasks", { tasks: (file.tasks ?? []).join(", ") })}</span>
     </span>
   );
 }
@@ -190,16 +201,28 @@ function PreviewMedia({ data, variant, t }: { data: LibraryData; variant: Theme;
     return <video controls preload="metadata" src={file.url} className={`aspect-video w-full bg-ink ${frame}`} />;
   }
   if (kind === "images" && file.url) {
-    // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL from private storage
-    return <img src={file.url} alt={file.description || file.name} className={`max-h-72 w-full object-contain ${variant === "color" ? "bg-sand" : "bg-th-sunk"} ${frame}`} />;
+    return (
+      <ViewerLink name={file.name} mime={file.mime_type} size={file.size_bytes} href={`/app/library/file/${file.id}`} downloadHref={`/app/library/file/${file.id}?download=1`}
+        ariaLabel={t("open", { name: file.name })} className="block cursor-zoom-in">
+        {/* eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL from private storage */}
+        <img src={file.url} alt={file.description || file.name} className={`max-h-72 w-full object-contain ${variant === "color" ? "bg-sand" : "bg-th-sunk"} ${frame}`} />
+      </ViewerLink>
+    );
   }
   const playButton = variant === "color" ? "size-[60px] rounded-full border-2 border-ink bg-honey text-ink" : "size-14 rounded-full bg-white text-ink";
   return (
     <div className="flex flex-col gap-2">
       <div className={`relative grid aspect-video place-items-center ${frame}`} style={{ background: badge.bg }}>
-        <a href={`/app/library/file/${file.id}`} target="_blank" rel="noopener noreferrer" aria-label={t("open", { name: file.name })} className={`grid place-items-center ${playButton}`}>
-          <PlayIcon size={22} />
-        </a>
+        {file.external_url ? (
+          <a href={file.external_url} target="_blank" rel="noopener noreferrer" aria-label={t("open", { name: file.name })} className={`grid place-items-center ${playButton}`}>
+            <PlayIcon size={22} />
+          </a>
+        ) : (
+          <ViewerLink name={file.name} mime={file.mime_type} size={file.size_bytes} href={`/app/library/file/${file.id}`} downloadHref={`/app/library/file/${file.id}?download=1`}
+            ariaLabel={t("open", { name: file.name })} className={`grid place-items-center ${playButton}`}>
+            <PlayIcon size={22} />
+          </ViewerLink>
+        )}
         <span className={`absolute bottom-2 left-2 px-2 text-xs ${variant === "color" ? "rounded-full border-[1.5px] border-ink bg-white" : "bg-ink text-white"}`}>{badge.label}</span>
       </div>
       {kind === "audio" && file.url && <audio controls preload="metadata" src={file.url} className="w-full" />}
@@ -216,14 +239,16 @@ function PreviewActions({ data, variant, t }: { data: LibraryData; variant: Them
   const panel = "ui-menu mt-2 min-w-0 p-3";
   return (
     <div className={`flex flex-col gap-2 ${variant === "color" ? "" : "mt-auto"}`}>
-      <a
-        href={file.external_url ?? `/app/library/file/${file.id}?download=1`}
-        target={file.external_url ? "_blank" : undefined}
-        rel={file.external_url ? "noopener noreferrer" : undefined}
-        className={`${b.primary} w-full`}
-      >
-        {file.external_url ? t("openLink") : t("download")}
-      </a>
+      {file.external_url ? (
+        <a href={file.external_url} target="_blank" rel="noopener noreferrer" className={`${b.primary} w-full`}>{t("openLink")}</a>
+      ) : (
+        <>
+          <ViewerLink name={file.name} mime={file.mime_type} size={file.size_bytes} href={`/app/library/file/${file.id}`} downloadHref={`/app/library/file/${file.id}?download=1`} className={`${b.primary} w-full`}>
+            {t("openFile")}
+          </ViewerLink>
+          <a href={`/app/library/file/${file.id}?download=1`} className={ghost}>{t("download")}</a>
+        </>
+      )}
       {file.canShare && (
         <details>
           <summary className={summary}>{t("share")}{file.shares.length ? ` · ${file.shares.length}` : ""}</summary>
@@ -270,6 +295,7 @@ function PreviewMeta({ data, variant, t, locale }: { data: LibraryData; variant:
           </div>
         )}
         {file.description && <p className="mt-1 text-sm leading-relaxed">{file.description}</p>}
+        {file.tasks && file.tasks.length > 0 && <p className="mt-1 text-[13px]">{t("attachedToTasks", { tasks: file.tasks.join(", ") })}</p>}
       </div>
     );
   }
@@ -297,6 +323,12 @@ function PreviewMeta({ data, variant, t, locale }: { data: LibraryData; variant:
           <>
             <dt className={muted[variant]}>{t("tags")}</dt>
             <dd>{file.tags.join(", ")}</dd>
+          </>
+        )}
+        {file.tasks && file.tasks.length > 0 && (
+          <>
+            <dt className={muted[variant]}>{t("tasks")}</dt>
+            <dd>{file.tasks.join(", ")}</dd>
           </>
         )}
       </dl>
@@ -354,6 +386,7 @@ function FolderNav({ data, variant, t, locale }: { data: LibraryData; variant: T
                     <span className="flex min-w-0 items-center gap-1.5">
                       {depth > 0 && <span aria-hidden="true" className="text-th-muted">└</span>}
                       <span className="truncate">{folder.name}</span>
+                      {folder.boardId && <span className="shrink-0 rounded-full bg-th-fill px-1.5 text-[11px] text-th-muted">{t("projectTag")}</span>}
                     </span>
                     <span className="text-th-muted">{folder.count}</span>
                   </Link>
@@ -486,18 +519,30 @@ export async function LibraryStudio({ data, locale, variant: v }: ViewProps & { 
                     <td className="border-b border-th-rule px-2 py-3 text-th-soft">—</td>
                   </FolderItem>
                 ))}
-                {data.files.map((file) => (
-                  <Draggable key={file.id} as="tr" kind="file" id={file.id} name={file.name} className={data.preview?.id === file.id ? "bg-th-raised" : ""}>
-                    <td className="border-b border-th-rule px-2 py-3">
-                      <Link href={libraryHref(data.query, { file: file.id })} scroll={false} draggable={false} className="flex items-center gap-3 hover:text-th-link">
-                        <FileBadge file={file} variant={v} />
-                        <span className="leading-snug">{file.name}</span>
-                      </Link>
-                    </td>
-                    <td className="hidden border-b border-th-rule px-2 py-3 whitespace-nowrap text-th-soft sm:table-cell">{file.size_bytes ? fileSize(file.size_bytes, locale) : "—"}</td>
-                    <td className="border-b border-th-rule px-2 py-3 whitespace-nowrap text-th-soft">{shortDate(file.created_at, locale)}</td>
-                  </Draggable>
-                ))}
+                {data.files.map((file) => {
+                  const cells = (
+                    <>
+                      <td className="border-b border-th-rule px-2 py-3">
+                        <Link href={libraryHref(data.query, { file: file.id })} scroll={false} draggable={false} className="flex items-center gap-3 hover:text-th-link">
+                          <FileBadge file={file} variant={v} />
+                          <span className="flex min-w-0 flex-col">
+                            <span className="leading-snug">{file.name}</span>
+                            {file.tasks && file.tasks.length > 0 && <TaskNote file={file} t={t} className="text-th-muted" />}
+                          </span>
+                        </Link>
+                      </td>
+                      <td className="hidden border-b border-th-rule px-2 py-3 whitespace-nowrap text-th-soft sm:table-cell">{file.size_bytes ? fileSize(file.size_bytes, locale) : "—"}</td>
+                      <td className="border-b border-th-rule px-2 py-3 whitespace-nowrap text-th-soft">{shortDate(file.created_at, locale)}</td>
+                    </>
+                  );
+                  const selected = data.preview?.id === file.id ? "bg-th-raised" : "";
+                  // Task files kept in someone's own space are listed here, not moved from here.
+                  return file.linked ? (
+                    <tr key={file.id} className={selected}>{cells}</tr>
+                  ) : (
+                    <Draggable key={file.id} as="tr" kind="file" id={file.id} name={file.name} className={selected}>{cells}</Draggable>
+                  );
+                })}
               </tbody>
             </table>
           )}
@@ -619,19 +664,23 @@ export async function LibraryColor({ data, locale }: ViewProps) {
             <ul className="flex flex-col gap-1">
               {data.files.map((file) => {
                 const selected = data.preview?.id === file.id;
-                return (
-                  <Draggable key={file.id} as="li" kind="file" id={file.id} name={file.name}>
-                    <Link href={libraryHref(data.query, { file: file.id })} scroll={false} draggable={false}
-                      className={`flex items-center gap-3.5 rounded-[18px] border-2 py-2.5 pr-3.5 pl-2.5 ${selected ? "border-ink bg-[#fbf3dc]" : "border-transparent hover:border-line"}`}>
-                      <FileBadge file={file} variant={v} />
-                      <span className="flex min-w-0 flex-col gap-0.5">
-                        <span className="text-sm font-medium break-words">{file.name}</span>
-                        <span className="text-xs text-muted">
-                          {[file.size_bytes ? fileSize(file.size_bytes, locale) : null, shortDate(file.created_at, locale), file.uploaderName?.split(" ")[0]].filter(Boolean).join(" · ")}
-                        </span>
+                const row = (
+                  <Link href={libraryHref(data.query, { file: file.id })} scroll={false} draggable={false}
+                    className={`flex items-center gap-3.5 rounded-[18px] border-2 py-2.5 pr-3.5 pl-2.5 ${selected ? "border-ink bg-[#fbf3dc]" : "border-transparent hover:border-line"}`}>
+                    <FileBadge file={file} variant={v} />
+                    <span className="flex min-w-0 flex-col gap-0.5">
+                      <span className="text-sm font-medium break-words">{file.name}</span>
+                      <span className="text-xs text-muted">
+                        {[file.size_bytes ? fileSize(file.size_bytes, locale) : null, shortDate(file.created_at, locale), file.uploaderName?.split(" ")[0]].filter(Boolean).join(" · ")}
                       </span>
-                    </Link>
-                  </Draggable>
+                      {file.tasks && file.tasks.length > 0 && <TaskNote file={file} t={t} className="text-muted" />}
+                    </span>
+                  </Link>
+                );
+                return file.linked ? (
+                  <li key={file.id}>{row}</li>
+                ) : (
+                  <Draggable key={file.id} as="li" kind="file" id={file.id} name={file.name}>{row}</Draggable>
                 );
               })}
             </ul>

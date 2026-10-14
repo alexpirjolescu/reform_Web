@@ -17,9 +17,9 @@ export async function uploadToLibrary(
   profileId: string,
   t: Translate,
   onProgress?: (current: number, total: number) => void,
-): Promise<{ saved: number; problems: string[] }> {
+): Promise<{ saved: number; ids: string[]; problems: string[] }> {
   const problems: string[] = [];
-  let saved = 0;
+  const ids: string[] = [];
   for (const [index, file] of files.entries()) {
     onProgress?.(index + 1, files.length);
     if (file.size > maxUploadBytes) {
@@ -36,18 +36,22 @@ export async function uploadToLibrary(
       problems.push(/row-level security/i.test(stored.error.message) ? t("quotaFull", { name: file.name }) : `${file.name}: ${stored.error.message}`);
       continue;
     }
-    const row = await supabase.from("library_files").insert({
-      folder_id: folderId,
-      name: file.name,
-      mime_type: file.type,
-      size_bytes: file.size,
-      storage_path: path,
-      uploaded_by: profileId,
-    });
+    const row = await supabase
+      .from("library_files")
+      .insert({
+        folder_id: folderId,
+        name: file.name,
+        mime_type: file.type,
+        size_bytes: file.size,
+        storage_path: path,
+        uploaded_by: profileId,
+      })
+      .select("id")
+      .single();
     if (row.error) {
       await supabase.storage.from("library").remove([path]);
       problems.push(row.error.hint === "quota" || /personal storage is full/.test(row.error.message) ? t("quotaFull", { name: file.name }) : `${file.name}: ${row.error.message}`);
-    } else saved += 1;
+    } else ids.push(row.data.id);
   }
-  return { saved, problems };
+  return { saved: ids.length, ids, problems };
 }

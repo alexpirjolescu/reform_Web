@@ -36,7 +36,7 @@ export const getBoard = cache(async (boardId: string, profile: Profile): Promise
     .maybeSingle();
   if (!board) return null;
 
-  const [{ data: columns }, { data: cards }, { data: members }] = await Promise.all([
+  const [{ data: columns }, { data: cards }, { data: members }, { data: folder }] = await Promise.all([
     supabase.from("board_columns").select("id, name, position, is_done").eq("board_id", boardId).order("position"),
     supabase.from("cards").select(cardSelect).eq("board_id", boardId).order("position").overrideTypes<RawCard[], { merge: false }>(),
     supabase
@@ -45,6 +45,7 @@ export const getBoard = cache(async (boardId: string, profile: Profile): Promise
       .is("deactivated_at", null)
       .or(`school_id.eq.${board.school_id},role.in.(staff,admin)`)
       .order("full_name"),
+    supabase.from("library_folders").select("id").eq("board_id", boardId).maybeSingle(),
   ]);
 
   return {
@@ -56,6 +57,7 @@ export const getBoard = cache(async (boardId: string, profile: Profile): Promise
       school_id: board.school_id,
       schoolName: board.schools?.name ?? "",
     },
+    folderId: folder?.id ?? null,
     columns: columns ?? [],
     cards: (cards ?? []).map(toBoardCard),
     members: members ?? [],

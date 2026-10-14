@@ -22,6 +22,8 @@ export type FolderSummary = {
   mine: boolean;
   /** Someone else's personal folder, shared with this person (read-only). */
   sharedWithMe: boolean;
+  /** The project (board) this school folder belongs to: it also lists the files attached to the project's tasks. */
+  boardId: string | null;
 };
 
 export type Share = { id: string; profileId: string; name: string };
@@ -106,16 +108,30 @@ export async function getLibrary(profile: Profile, query: LibraryQuery, labels: 
   const supabase = await createClient();
   const isStaff = isStaffRole(profile.role);
 
-  const [{ data: folderRows }, { data: schoolRows }, { data: storage }, { data: shareRows }] = await Promise.all([
+  const [{ data: folderRows }, { data: schoolRows }, { data: storage }, { data: shareRows }, { data: attachmentRows }] = await Promise.all([
     supabase
       .from("library_folders")
-      .select("id, name, space, school_id, owner_id, parent_id, created_by, schools(name), library_files(count)")
+      .select("id, name, space, school_id, owner_id, parent_id, created_by, board_id, schools(name), library_files(count)")
       .is("library_files.deleted_at", null)
       .order("name"),
     isStaff ? supabase.from("schools").select("id, name").order("name") : Promise.resolve({ data: [] as { id: string; name: string }[] }),
     supabase.rpc("my_personal_storage"),
     supabase.from("library_shares").select("id, folder_id, file_id, profile_id, shared_by, profiles!library_shares_profile_id_fkey(full_name)"),
+    // Files attached to tasks, for the project folders (RLS: the projects this person works on).
+    supabase.from("card_attachments").select("file_id, cards!inner(board_id, title), library_files!inner(folder_id, deleted_at)").is("library_files.deleted_at", null),
   ]);
+
+  // Per project: the attached files and the tasks they are attached to.
+  const attached = new Map<string, Map<string, { folderId: string; tasks: string[] }>>();
+  for (const row of attachmentRows ?? []) {
+    const board = row.cards?.board_id;
+    if (!board || !row.library_files) continue;
+    if (!attached.has(board)) attached.set(board, new Map());
+    const files = attached.get(board)!;
+    const entry = files.get(row.file_id) ?? { folderId: row.library_files.folder_id, tasks: [] };
+    if (row.cards.title && !entry.tasks.includes(row.cards.title)) entry.tasks.push(row.cards.title);
+    files.set(row.file_id, entry);
+  }
 
   const folders: FolderSummary[] = (folderRows ?? []).map((row) => {
     const mine = row.space === "personal" && row.owner_id === profile.id;
@@ -127,12 +143,14 @@ export async function getLibrary(profile: Profile, query: LibraryQuery, labels: 
       schoolName: row.schools?.name ?? (row.space === "personal" ? (mine ? labels.mine : labels.sharedWithMe) : labels.shared),
       ownerId: row.owner_id,
       parentId: row.parent_id,
-      count: row.library_files[0]?.count ?? 0,
+      // A project folder also counts the task files stored elsewhere.
+      count: (row.library_files[0]?.count ?? 0) + [...(row.board_id ? attached.get(row.board_id)?.values() ?? [] : [])].filter((a) => a.folderId !== row.id).length,
       canWrite: row.space === "shared" ? isStaff : row.space === "school" ? isStaff || row.school_id === profile.school_id : mine,
       canManage: mine || (row.space !== "personal" && (isStaff || row.created_by === profile.id)),
       createdBy: row.created_by,
       mine,
       sharedWithMe: row.space === "personal" && !mine,
+      boardId: row.board_id,
     };
   });
   const byId = new Map(folders.map((f) => [f.id, f]));
@@ -188,12 +206,24 @@ export async function getLibrary(profile: Profile, query: LibraryQuery, labels: 
 
   const trashRequest = supabase.from("library_files").select("id", { count: "exact", head: true }).not("deleted_at", "is", null);
 
-  const [{ data: fileRows }, { count: trashCount }] = await Promise.all([
+  // A project folder: its own files plus the files attached to the project's tasks, wherever they are stored.
+  const projectFiles = current?.boardId && !query.trash && !query.shared ? attached.get(current.boardId) ?? new Map() : new Map<string, { folderId: string; tasks: string[] }>();
+  const linkedIds = [...projectFiles.entries()].filter(([, a]) => a.folderId !== current?.id).map(([id]) => id);
+
+  const [{ data: fileRows }, { count: trashCount }, { data: linkedRows }] = await Promise.all([
     filesRequest.overrideTypes<RawFile[], { merge: false }>(),
     trashRequest,
+    linkedIds.length
+      ? supabase.from("library_files").select(fileColumns).in("id", linkedIds).is("deleted_at", null).overrideTypes<RawFile[], { merge: false }>()
+      : Promise.resolve({ data: [] as RawFile[] }),
   ]);
 
-  let scoped = (fileRows ?? []).map(toFile);
+  let scoped = [
+    ...(fileRows ?? []).map(toFile),
+    ...(linkedRows ?? []).map((row) => ({ ...toFile(row), linked: true })),
+  ]
+    .map((file) => (projectFiles.has(file.id) ? { ...file, tasks: projectFiles.get(file.id)?.tasks ?? [] } : file))
+    .sort((a, b) => b.created_at.localeCompare(a.created_at));
   if (query.q) {
     const needle = query.q.toLocaleLowerCase("ro");
     scoped = scoped.filter(
@@ -231,7 +261,8 @@ export async function getLibrary(profile: Profile, query: LibraryQuery, labels: 
       preview = {
         ...picked,
         url,
-        folderName: folder?.name ?? "",
+        // A task file kept in someone's personal space: that space isn't visible here, so no folder name.
+        folderName: folder ? (folder.space === "personal" && folder.mine ? `${labels.mine} / ${folder.name}` : folder.name) : "",
         canEdit: isStaff || picked.uploaded_by === profile.id,
         canShare,
         shares: canShare ? shares.filter((s) => s.fileId === picked.id).map(toShare) : [],

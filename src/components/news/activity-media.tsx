@@ -1,5 +1,6 @@
 import { useTranslations } from "next-intl";
 import { DownloadIcon } from "@/components/icons";
+import { ViewerLink } from "@/components/viewer/file-viewer";
 import { embedPlayer, providerNames } from "@/lib/embeds";
 import { fileSize } from "@/lib/format";
 import { fileLabel } from "@/lib/media";
@@ -47,7 +48,8 @@ export function MediaView({ item, theme, locale, fill = false }: { item: Activit
       );
     case "file":
       return (
-        <a href={item.url} download={item.title || true} target="_blank" rel="noopener noreferrer" className={`${card} hover:underline`}>
+        <ViewerLink name={item.title || "fisier"} mime={item.mimeType} size={item.sizeBytes} href={item.url} download={item.title || true}
+          downloadHref={`${item.url}${item.url.includes("?") ? "&" : "?"}download=${encodeURIComponent(item.title || "fisier")}`} className={`${card} hover:underline`}>
           <span aria-hidden="true" className="grid size-12 shrink-0 place-items-center bg-vermilion font-display text-xs font-bold text-ink">{fileLabel({ title: item.title, mime_type: item.mimeType, path: item.url })}</span>
           <span className="flex min-w-0 flex-col">
             <span className="font-medium break-words">{item.caption || item.title}</span>
@@ -56,7 +58,7 @@ export function MediaView({ item, theme, locale, fill = false }: { item: Activit
             </span>
           </span>
           <DownloadIcon size={18} className="ml-auto shrink-0" />
-        </a>
+        </ViewerLink>
       );
     case "link": {
       const host = item.url.replace(/^https:\/\/(www\.)?/, "").split("/")[0];

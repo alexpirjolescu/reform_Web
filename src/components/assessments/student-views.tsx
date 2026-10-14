@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
+import { ViewerLink } from "@/components/viewer/file-viewer";
 import { getTranslations } from "next-intl/server";
 import {
   canStartAgain,
@@ -211,7 +212,7 @@ async function DetailBody({ data, variant }: { data: StudentScreenData; variant:
       <section aria-labelledby="your-handin" className="flex flex-col gap-2 text-sm">
         <h3 id="your-handin" className="font-display text-lg font-bold">{t("assessments.yourHandIn")}</h3>
         {data.runner.files.map((file) => (
-          <a key={file.id} href={`/app/assessments/file/${file.id}`} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">{file.name}</a>
+          <ViewerLink key={file.id} name={file.name} href={`/app/assessments/file/${file.id}?inline=1`} downloadHref={`/app/assessments/file/${file.id}`} className="self-start underline underline-offset-4">{file.name}</ViewerLink>
         ))}
         {latest.link_response && <a href={latest.link_response} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4 break-all">{latest.link_response}</a>}
         {latest.text_response && <p className="whitespace-pre-line">{latest.text_response}</p>}

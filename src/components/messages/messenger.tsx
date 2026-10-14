@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Avatar } from "@/components/avatar";
 import { ClipIcon, FileIcon, SendIcon } from "@/components/icons";
+import { useFileViewer } from "@/components/viewer/file-viewer";
 import { relativeStamp } from "@/lib/format";
 import type { GifResult } from "@/lib/giphy";
 import { storageSafeName } from "@/lib/library";
@@ -22,6 +23,7 @@ import {
 } from "@/lib/messages";
 import { createClient } from "@/lib/supabase/client";
 import type { Theme } from "@/lib/theme-shared";
+import { storageSource } from "@/lib/viewer";
 import { GroupAvatar, GroupInfo, NewGroup } from "./group-info";
 import { MessageItem, type MessageHandlers } from "./message-item";
 import { PollComposer } from "./poll";
@@ -46,6 +48,7 @@ export function Messenger({ variant, me, inbox, selected, locale }: Props) {
   const tr = useTranslations("roles");
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
+  const openInViewer = useFileViewer();
   const [messages, setMessages] = useState<ChatMessage[]>(selected?.messages ?? []);
   const [reactions, setReactions] = useState<Reaction[]>(selected?.reactions ?? []);
   const [polls, setPolls] = useState<Poll[]>(selected?.polls ?? []);
@@ -246,9 +249,9 @@ export function Messenger({ variant, me, inbox, selected, locale }: Props) {
     return true;
   }
 
-  async function openAttachment(path: string) {
-    const { data } = await supabase.storage.from("messages").createSignedUrl(path, 300);
-    if (data?.signedUrl) window.open(data.signedUrl, "_blank", "noopener");
+  // Files sent in the chat open in the viewer over the conversation.
+  function openAttachment(path: string, name: string) {
+    openInViewer(storageSource(supabase, "messages", path, name));
   }
 
   const handlers: MessageHandlers = {
@@ -275,7 +278,7 @@ export function Messenger({ variant, me, inbox, selected, locale }: Props) {
       if (removeError) return setError(t("errors.deleteFailed"));
       setMessages((prev) => prev.map((m) => (m.id === message.id ? { ...m, body: "", deleted_at: new Date().toISOString() } : m)));
     },
-    onOpenAttachment: (path) => void openAttachment(path),
+    onOpenAttachment: (path, name) => openAttachment(path, name),
     onVote: async (poll, optionIds) => {
       setPolls((prev) => prev.map((p) => (p.id === poll.id ? { ...p, votes: [...p.votes.filter((v) => v.profile_id !== me.id), ...optionIds.map((option_id) => ({ option_id, profile_id: me.id }))] } : p)));
       const { error: voteError } = await supabase.rpc("vote_poll", { target_poll: poll.id, choices: optionIds });
@@ -632,7 +635,7 @@ export function Messenger({ variant, me, inbox, selected, locale }: Props) {
 
   const info = selected && group && infoOpen && (
     <GroupInfo conversation={selected} meId={me.id} variant={variant} messages={messages} onClose={() => setInfoOpen(false)}
-      onChanged={() => router.refresh()} onJump={(id) => { setInfoOpen(false); setTimeout(() => handlers.onJump(id), 50); }} onOpenAttachment={(path) => void openAttachment(path)} />
+      onChanged={() => router.refresh()} onJump={(id) => { setInfoOpen(false); setTimeout(() => handlers.onJump(id), 50); }} onOpenAttachment={(path, name) => openAttachment(path, name)} />
   );
 
   // ---- layouts ------------------------------------------------------------
@@ -665,7 +668,7 @@ export function Messenger({ variant, me, inbox, selected, locale }: Props) {
                 <div className="border-b border-th-line bg-th-sunk px-4 py-3 text-sm sm:px-7">
                   {selected.files.length === 0 ? <span className="text-th-muted">{t("noFiles")}</span> : (
                     <ul className="flex flex-wrap gap-2">
-                      {selected.files.map((f) => <li key={f.id}><button type="button" onClick={() => void openAttachment(f.path)} className="ui-chip">{f.name}</button></li>)}
+                      {selected.files.map((f) => <li key={f.id}><button type="button" onClick={() => openAttachment(f.path, f.name)} className="ui-chip">{f.name}</button></li>)}
                     </ul>
                   )}
                 </div>

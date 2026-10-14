@@ -19,6 +19,7 @@ import {
 import { SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Avatar } from "@/components/avatar";
+import { FolderIcon } from "@/components/icons";
 import { createClient } from "@/lib/supabase/client";
 import type { Theme } from "@/lib/theme-shared";
 import { cardSelect, positionBetween, toBoardCard, type BoardCard, type BoardColumn, type BoardData, type Member, type RawCard } from "@/lib/workspace";
@@ -326,7 +327,7 @@ export function Board({
       key={selected}
       cardId={selected}
       boardId={boardId}
-      schoolId={initial.board.school_id}
+      projectFolderId={initial.folderId}
       columns={columns}
       members={initial.members}
       currentUserId={currentUserId}
@@ -543,6 +544,11 @@ function BoardHeader({
   const daysLeft = data.board.due_date
     ? Math.round((Date.parse(`${data.board.due_date}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000)
     : null;
+  const folderLink = data.folderId && (
+    <Link href={`/app/library?folder=${data.folderId}`} className="ui-btn ui-gray ui-neutral">
+      <FolderIcon size={17} /> {t("projectFiles")}
+    </Link>
+  );
   const mineToggle = (
     <label className="inline-flex min-h-11 cursor-pointer items-center gap-2.5 text-[14px]">
       {t("onlyMine")}
@@ -564,6 +570,7 @@ function BoardHeader({
             <div className="flex" aria-label={t("members")}>
               {students.slice(0, 5).map((m, i) => <Avatar key={m.id} id={m.id} name={m.full_name} size={32} ring="var(--th-bg)" className={i ? "-ml-2" : ""} />)}
             </div>
+            {folderLink}
             <button type="button" onClick={onNewTask} className={s.primary}>+ {t("newTask")}</button>
           </div>
         </div>
@@ -613,7 +620,10 @@ function BoardHeader({
           </div>
           {view !== "map" && mineToggle}
         </div>
-        <button type="button" onClick={onNewTask} className={s.primary}>+ {t("newTask")}</button>
+        <div className="flex flex-wrap items-center gap-2">
+          {folderLink}
+          <button type="button" onClick={onNewTask} className={s.primary}>+ {t("newTask")}</button>
+        </div>
       </div>
     </div>
   );
